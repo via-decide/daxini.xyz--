@@ -1,10 +1,10 @@
 You are working in repository via-decide/daxini.xyz on branch main.
 
 MISSION
-Create branch feature/gn8t-artifact-engine. Update index.html and logic within app object. Add two high-visibility buttons to the footer/action bar: [📄 EXPORT .MD] and [📕 EXPORT PDF]. Implement app.exportToMarkdown(): Generate a structured .md file.
+Create branch docs/gn8t-master-readme. Update README.md to be the definitive guide for the GN8T Engine.
 
 CONSTRAINTS
-Strict Vanilla JS. No NPM. No external CSS libraries. Use CDN for jsPDF only if necessary, otherwise prefer a lightweight SVG-to-PDF approach.
+Use professional Markdown formatting. Use emojis sparingly for a "High-Tech" feel. Ensure all links point to the new Daxini domains.
 
 PROCESS (MANDATORY)
 1. Read README.md and AGENTS.md before editing.
