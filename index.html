@@ -211,15 +211,97 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(124, 77, 255, 0.15);
         }
 
+        /* --- PERSISTENT NAV BAR --- */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            height: 52px;
+            background: rgba(3, 5, 8, 0.85);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .nav-logo {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+            border-color: var(--border-bright);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .nav-links a.nav-zayvora:hover {
+            color: #b39dff;
+            border-color: rgba(124, 77, 255, 0.3);
+            background: rgba(124, 77, 255, 0.06);
+        }
+
+        .nav-links a.nav-active {
+            color: var(--accent-cyan);
+            border-color: rgba(0, 229, 255, 0.25);
+            background: rgba(0, 229, 255, 0.04);
+        }
+
+        /* push hero content below fixed nav */
+        body { padding-top: 52px; }
+
         /* Responsive Fixes */
         @media (max-width: 768px) {
             h1 { font-size: 4rem; letter-spacing: -2px; }
             .grid { grid-template-columns: 1fr; }
             .hero { padding: 3rem 1rem; }
+            nav { padding: 0 1rem; }
+            .nav-links { gap: 0; }
+            .nav-links a { font-size: 0.65rem; padding: 0.35rem 0.5rem; letter-spacing: 0.5px; }
         }
     </style>
 </head>
 <body>
+
+    <nav>
+        <a href="/" class="nav-logo">DAXINI</a>
+        <ul class="nav-links">
+            <li><a href="https://logichub.app">LogicHub</a></li>
+            <li><a href="https://viadecide.com">Via</a></li>
+            <li><a href="/zayvora" class="nav-zayvora">Zayvora</a></li>
+            <li><a href="/studyos">StudyOS</a></li>
+        </ul>
+    </nav>
 
     <main class="hero">
         <div class="badge">Daxini Holding Co.</div>
