@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zayvora AI Credits - Buy Now</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 16px;
+      opacity: 0.9;
+      margin-bottom: 5px;
+    }
+
+    .header .subtitle {
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    .pricing-cards {
+      display: grid;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .card.selected {
+      border-color: #667eea;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+
+    .card.popular {
+      border-color: #667eea;
+      background: white;
+    }
+
+    .card.popular::before {
+      content: "BEST VALUE";
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .card-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .card-info h3 {
+      font-size: 24px;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .card-info p {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .card-price {
+      text-align: right;
+    }
+
+    .card-price .amount {
+      font-size: 32px;
+      font-weight: 700;
+      color: #667eea;
+      line-height: 1;
+    }
+
+    .card-price .period {
+      font-size: 12px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .bonus-badge {
+      display: inline-block;
+      background: #10b981;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    .features {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .features p {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+    }
+
+    .features p::before {
+      content: "✓";
+      margin-right: 8px;
+      color: #10b981;
+      font-weight: bold;
+    }
+
+    .features p:last-child {
+      margin-bottom: 0;
+    }
+
+    .balance-info {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .balance-info p {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .balance-info .balance {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .cta-section {
+      display: grid;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 16px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+    }
+
+    .btn-secondary:hover {
+      background: #f8f9fa;
+    }
+
+    .info-section {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+
+    .info-section h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      opacity: 0.9;
+    }
+
+    .info-section ul {
+      list-style: none;
+    }
+
+    .info-section li {
+      font-size: 13px;
+      margin-bottom: 8px;
+      opacity: 0.8;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .info-section li::before {
+      content: "•";
+      margin-right: 8px;
+      margin-top: 2px;
+    }
+
+    .legal-links {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .legal-links a {
+      color: white;
+      text-decoration: none;
+      font-size: 12px;
+      margin: 0 8px;
+      opacity: 0.7;
+      transition: opacity 0.3s ease;
+    }
+
+    .legal-links a:hover {
+      opacity: 1;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid white;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: none;
+      border-left: 4px solid #c33;
+    }
+
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 28px;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      .card-info h3 {
+        font-size: 20px;
+      }
+
+      .card-price .amount {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>Zayvora AI</h1>
+      <p>Credit Store</p>
+      <p class="subtitle">Get instant access to advanced AI capabilities</p>
+    </div>
+
+    <!-- Current Balance -->
+    <div class="balance-info" id="balanceSection" style="display: none;">
+      <p>Your Current Balance</p>
+      <div class="balance" id="currentBalance">0</div>
+      <p style="font-size: 12px; margin-top: 8px;">Credits</p>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" id="errorMessage"></div>
+
+    <!-- Pricing Cards -->
+    <div class="pricing-cards" id="pricingCards"></div>
+
+    <!-- CTA Section -->
+    <div class="cta-section">
+      <button class="btn btn-primary" id="buyBtn" onclick="initiatePayment()" disabled>
+        <span>💳</span>
+        <span>Buy Selected Credits</span>
+      </button>
+      <button class="btn btn-secondary" onclick="showLegal()">
+        Learn More
+      </button>
+    </div>
+
+    <!-- Info Section -->
+    <div class="info-section">
+      <h4>✓ Secure Payment</h4>
+      <ul>
+        <li>Powered by PhonePe & RBI</li>
+        <li>Instant credit delivery</li>
+        <li>All major UPI methods</li>
+        <li>GST included in price</li>
+      </ul>
+    </div>
+
+    <!-- Legal Links -->
+    <div class="legal-links">
+      <a href="/docs/TERMS_AND_CONDITIONS.md" target="_blank">Terms</a>
+      <a href="/docs/PRIVACY_POLICY.md" target="_blank">Privacy</a>
+      <a href="/docs/NO_REFUND_POLICY.md" target="_blank">Refunds</a>
+      <a href="mailto:legal@daxini.xyz">Support</a>
+    </div>
+  </div>
+
+  <script>
+    // Initialize
+    let selectedPackage = null;
+    let userBalance = 0;
+    const API_URL = '/api';
+    const FRONTEND_URL = window.location.origin;
+
+    // Initialize page
+    async function init() {
+      try {
+        // Check authentication
+        const user = await checkAuth();
+        if (user) {
+          document.getElementById('balanceSection').style.display = 'block';
+          await loadUserBalance(user.uid);
+        }
+
+        // Load packages
+        await loadPackages();
+      } catch (error) {
+        showError('Failed to load page: ' + error.message);
+      }
+    }
+
+    // Check if user is authenticated
+    async function checkAuth() {
+      try {
+        // Check if user is logged in via Firebase
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+          return firebase.auth().currentUser;
+        }
+        return null;
+      } catch (error) {
+        console.error('Auth check error:', error);
+        return null;
+      }
+    }
+
+    // Load user balance
+    async function loadUserBalance(uid) {
+      try {
+        const response = await fetch(`${API_URL}/credits/balance/${uid}`);
+        if (response.ok) {
+          const data = await response.json();
+          userBalance = data.balance || 0;
+          document.getElementById('currentBalance').textContent = userBalance.toLocaleString();
+        }
+      } catch (error) {
+        console.error('Error loading balance:', error);
+      }
+    }
+
+    // Load credit packages
+    async function loadPackages() {
+      try {
+        const response = await fetch(`${API_URL}/payments/packages`);
+        if (!response.ok) throw new Error('Failed to load packages');
+
+        const data = await response.json();
+        const container = document.getElementById('pricingCards');
+        container.innerHTML = '';
+
+        data.packages.forEach((pkg, index) => {
+          const isPopular = pkg.id === 'credits-120';
+          const card = document.createElement('div');
+          card.className = `card ${isPopular ? 'popular' : ''}`;
+          card.onclick = () => selectPackage(pkg.id, card);
+
+          const bonusPercent = pkg.id === 'credits-120' ? '20%' : '0%';
+          const bonusText = bonusPercent !== '0%' ? `
+            <div class="bonus-badge">
+              💰 ${bonusPercent} Extra Credits
+            </div>
+          ` : '';
+
+          card.innerHTML = `
+            <div class="card-content">
+              <div class="card-info">
+                <h3>${pkg.credits} Credits</h3>
+                <p>Perfect for ${pkg.id === 'credits-50' ? 'getting started' : 'heavy users'}</p>
+              </div>
+              <div class="card-price">
+                <div class="amount">${pkg.price}</div>
+                <div class="period">One-time</div>
+              </div>
+            </div>
+            ${bonusText}
+            <div class="features">
+              <p>₹${(pkg.amount / 100 / pkg.credits).toFixed(2)} per credit</p>
+              <p>Instant delivery to your account</p>
+              <p>Never expires, use anytime</p>
+            </div>
+          `;
+
+          container.appendChild(card);
+        });
+
+        // Select first package by default
+        selectPackage('credits-50', container.firstChild);
+      } catch (error) {
+        showError('Failed to load packages: ' + error.message);
+      }
+    }
+
+    // Select package
+    function selectPackage(packageId, cardElement) {
+      selectedPackage = packageId;
+      document.querySelectorAll('.card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      cardElement.classList.add('selected');
+      document.getElementById('buyBtn').disabled = false;
+    }
+
+    // Initiate payment
+    async function initiatePayment() {
+      try {
+        const user = await checkAuth();
+        if (!user) {
+          showError('Please log in to purchase credits');
+          window.location.href = '/auth/login';
+          return;
+        }
+
+        if (!selectedPackage) {
+          showError('Please select a credit package');
+          return;
+        }
+
+        document.getElementById('buyBtn').disabled = true;
+        const originalText = document.getElementById('buyBtn').innerHTML;
+        document.getElementById('buyBtn').innerHTML = '<div class="spinner"></div> Processing...';
+
+        const response = await fetch(`${API_URL}/payments/initiate-payment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            userId: user.uid,
+            packageId: selectedPackage
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Payment initiation failed');
+        }
+
+        const data = await response.json();
+
+        // Redirect to PhonePe
+        if (data.redirectUrl) {
+          // For mobile: try UPI intent first
+          if (isMobileDevice() && isPhoneNumber(user.phoneNumber)) {
+            const upiString = generateUPIString(data);
+            if (upiString && tryOpenUPI(upiString)) {
+              return;
+            }
+          }
+
+          // Fallback: redirect to PhonePe URL
+          window.location.href = data.redirectUrl;
+        } else {
+          throw new Error('No redirect URL received');
+        }
+
+      } catch (error) {
+        document.getElementById('buyBtn').disabled = false;
+        document.getElementById('buyBtn').innerHTML = originalText;
+        showError('Payment error: ' + error.message);
+      }
+    }
+
+    // Check if device is mobile
+    function isMobileDevice() {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    // Validate phone number
+    function isPhoneNumber(phone) {
+      return phone && phone.length >= 10;
+    }
+
+    // Generate UPI string
+    function generateUPIString(paymentData) {
+      const { credits } = CREDIT_PACKAGES[selectedPackage] || {};
+      if (!credits) return null;
+
+      return `upi://pay?pa=6351537770@yapl&pn=Zayvora&am=${(CREDIT_PACKAGES[selectedPackage].amount / 100)}&tn=${selectedPackage}&tr=${paymentData.merchantTransactionId}`;
+    }
+
+    // Try to open UPI intent
+    function tryOpenUPI(upiString) {
+      try {
+        window.location.href = upiString;
+        return true;
+      } catch (error) {
+        console.error('UPI intent failed:', error);
+        return false;
+      }
+    }
+
+    // Show error message
+    function showError(message) {
+      const errorEl = document.getElementById('errorMessage');
+      errorEl.textContent = message;
+      errorEl.style.display = 'block';
+      setTimeout(() => {
+        errorEl.style.display = 'none';
+      }, 5000);
+    }
+
+    // Show legal docs
+    function showLegal() {
+      alert('Terms, Privacy Policy, and No-Refund Policy are available at the bottom of this page.');
+    }
+
+    // Credit packages
+    const CREDIT_PACKAGES = {
+      'credits-50': { amount: 5000, credits: 50 },
+      'credits-120': { amount: 11800, credits: 120 }
+    };
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
