@@ -246,6 +246,41 @@
             opacity: 0.4;
         }
 
+        /* --- TRY ZAYVORA BUTTON --- */
+        .try-zayvora-btn {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 1rem 3rem;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+            margin-bottom: 3rem;
+            display: inline-block;
+        }
+
+        .try-zayvora-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(76, 175, 80, 0.5);
+            background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+        }
+
+        .try-zayvora-btn:active {
+            transform: translateY(-2px);
+        }
+
+        .try-zayvora-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .card.zayvora:hover, .card.zayvora:focus {
             border-color: #7c4dff;
             background: rgba(124, 77, 255, 0.05);
@@ -408,6 +443,10 @@
             PR generation, and infrastructure workflows—all through natural language commands. Powered by local LLMs and designed for developer autonomy.
         </p>
 
+        <button id="try-zayvora" class="try-zayvora-btn">
+            Try Zayvora →
+        </button>
+
         <div class="grid">
             <!-- PORTAL 1: DAXINI.SPACE (THE HUB) -->
             <a href="https://daxini.space" class="card featured" tabindex="0">
@@ -457,6 +496,48 @@
             <div class="location">ENGINEERED IN GANDHIDHAM, GUJARAT, INDIA 🇮🇳</div>
         </div>
     </footer>
+
+    <!-- Zayvora Launch Logic -->
+    <script>
+        // ========================================================================
+        // TRY ZAYVORA - INTELLIGENT ROUTING
+        // ========================================================================
+        // Routes user based on authentication and onboarding state:
+        // 1. Not logged in → /login
+        // 2. Logged in but onboarding incomplete → /zayvora-onboarding
+        // 3. Onboarding complete → /zayvora-chat
+
+        function launchZayvora() {
+            const authToken = localStorage.getItem('zayvora_token');
+            const onboardingComplete = localStorage.getItem('zayvora_onboarding');
+
+            // Step 1: Check authentication
+            if (!authToken) {
+                console.log('[Zayvora] No auth token found, redirecting to login');
+                window.location.href = '/login';
+                return;
+            }
+
+            // Step 2: Check onboarding completion
+            if (!onboardingComplete) {
+                console.log('[Zayvora] Auth token found but onboarding incomplete, redirecting to onboarding');
+                window.location.href = '/zayvora-onboarding';
+                return;
+            }
+
+            // Step 3: User is authenticated and onboarded
+            console.log('[Zayvora] User authenticated and onboarded, launching chat');
+            window.location.href = '/zayvora-chat';
+        }
+
+        // Attach click handler to button
+        document.addEventListener('DOMContentLoaded', () => {
+            const tryZayvoraBtn = document.getElementById('try-zayvora');
+            if (tryZayvoraBtn) {
+                tryZayvoraBtn.onclick = launchZayvora;
+            }
+        });
+    </script>
 
 </body>
 </html>

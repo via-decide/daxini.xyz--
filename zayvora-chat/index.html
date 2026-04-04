@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zayvora Engine - Workspace</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    .chat-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+      margin-bottom: 30px;
+      border-radius: 8px;
+      background: rgba(102, 126, 234, 0.05);
+    }
+
+    .header-title {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-info {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+
+    .info-item {
+      text-align: right;
+    }
+
+    .info-label {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .credits-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .workspace-area {
+      flex: 1;
+      background: rgba(102, 126, 234, 0.08);
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      border-radius: 12px;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 20px;
+    }
+
+    .workspace-icon {
+      font-size: 64px;
+      opacity: 0.6;
+    }
+
+    .workspace-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .workspace-description {
+      font-size: 16px;
+      color: #999;
+      max-width: 500px;
+      line-height: 1.6;
+    }
+
+    /* NO CREDITS WARNING */
+    .no-credits-alert {
+      background: linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(244, 67, 54, 0.05) 100%);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .alert-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .alert-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f44336;
+      margin-bottom: 8px;
+    }
+
+    .alert-description {
+      color: #ccc;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .btn {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #667eea;
+      border: 2px solid rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(102, 126, 234, 0.1);
+      border-color: #667eea;
+    }
+
+    .logout-btn {
+      padding: 8px 16px;
+      background: transparent;
+      color: #999;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      color: #f44336;
+      border-color: #f44336;
+    }
+
+    @media (max-width: 768px) {
+      .header-info {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .info-item {
+        text-align: center;
+      }
+
+      .workspace-area {
+        padding: 20px;
+      }
+
+      .workspace-title {
+        font-size: 20px;
+      }
+
+      .workspace-icon {
+        font-size: 48px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <!-- Header with user info and credits -->
+    <div class="chat-header">
+      <div class="header-title">Zayvora Workspace</div>
+      <div class="header-info">
+        <div class="info-item">
+          <div class="info-label">User</div>
+          <div class="info-value" id="userEmail">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Available Credits</div>
+          <div class="credits-badge" id="creditsBadge">120</div>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <!-- No Credits Warning (shown if credits == 0) -->
+    <div id="noCreditAlert" class="no-credits-alert hidden">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-title">No Credits Remaining</div>
+      <div class="alert-description">
+        You have used all your credits. Purchase additional credits to continue using Zayvora Engine.
+      </div>
+      <button class="btn btn-primary" onclick="goToPricing()">
+        Buy Credits
+      </button>
+    </div>
+
+    <!-- Workspace Area -->
+    <div class="workspace-area">
+      <div class="workspace-icon">◈</div>
+      <div class="workspace-title">Welcome to Zayvora Engine</div>
+      <div class="workspace-description">
+        Your sovereign AI engineering workspace is ready. Start by describing your task or uploading a GitHub repository.
+      </div>
+      <button class="btn btn-primary" onclick="startTask()">
+        Start a Task
+      </button>
+    </div>
+  </div>
+
+  <!-- Route Protection & Credit Checking -->
+  <script src="/zayvora-onboarding/route-guard.js"></script>
+  <script>
+    // ========================================================================
+    // ZAYVORA CHAT - CREDIT CHECKING & SETUP
+    // ========================================================================
+
+    const AUTH_TOKEN_KEY = 'zayvora_token';
+
+    // Initialize chat on load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadUserInfo();
+      checkCredits();
+    });
+
+    // Load user information from token
+    function loadUserInfo() {
+      try {
+        const tokenStr = localStorage.getItem(AUTH_TOKEN_KEY);
+        if (!tokenStr) {
+          logout();
+          return;
+        }
+
+        const token = JSON.parse(tokenStr);
+        document.getElementById('userEmail').textContent = token.email || 'User';
+      } catch (error) {
+        console.error('Error loading user info:', error);
+      }
+    }
+
+    // Check user credits from API
+    async function checkCredits() {
+      try {
+        const tokenStr = localStorage.getItem(AUTH_TOKEN_KEY);
+        if (!tokenStr) return;
+
+        const token = JSON.parse(tokenStr);
+        const response = await fetch(`/api/user-wallet/${token.user_id || 'demo'}`);
+
+        if (response.ok) {
+          const data = await response.json();
+          const credits = data.available_credits || 0;
+
+          // Update credits display
+          document.getElementById('creditsBadge').textContent = credits;
+
+          // Show warning if no credits
+          if (credits === 0) {
+            document.getElementById('noCreditAlert').classList.remove('hidden');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking credits:', error);
+        // Fall back to display 120 (demo value)
+        document.getElementById('creditsBadge').textContent = '120';
+      }
+    }
+
+    // Start a new task
+    function startTask() {
+      console.log('Starting new task...');
+      // This would launch the task creation flow
+      alert('Task creation flow coming soon!');
+    }
+
+    // Go to pricing page
+    function goToPricing() {
+      window.location.href = '/zayvora-pricing';
+    }
+
+    // Logout handler
+    function logout() {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem('zayvora_onboarding');
+      localStorage.removeItem('zayvora_workspace');
+      window.location.href = '/';
+    }
+  </script>
+</body>
+</html>

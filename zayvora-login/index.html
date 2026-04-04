@@ -355,9 +355,16 @@
             return token;
         }
 
-        function redirectToPricing() {
+        function redirectAfterLogin() {
             setTimeout(() => {
-                window.location.href = '/zayvora-pricing';
+                // After login, redirect to onboarding if not completed
+                // This ensures users complete onboarding before accessing chat
+                const onboardingComplete = localStorage.getItem('zayvora_onboarding');
+                if (onboardingComplete) {
+                    window.location.href = '/zayvora-chat';
+                } else {
+                    window.location.href = '/zayvora-onboarding';
+                }
             }, 1000);
         }
 
@@ -430,7 +437,7 @@
                 if (email === 'demo@zayvora.ai' && password === 'demo123') {
                     saveToken({ email });
                     showSuccess('✓ Login successful! Redirecting...');
-                    redirectToPricing();
+                    redirectAfterLogin();
                     return;
                 }
 
@@ -445,7 +452,7 @@
                     const data = await response.json();
                     saveToken({ email, ...data });
                     showSuccess('✓ Login successful! Redirecting...');
-                    redirectToPricing();
+                    redirectAfterLogin();
                 } else {
                     showError('Invalid email or password');
                     btn.disabled = false;
