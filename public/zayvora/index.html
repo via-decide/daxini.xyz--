@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#030508">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ZAYVORA // AI Infrastructure Ecosystem</title>
+
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@600;800&display=swap" rel="stylesheet">
+
+    <!-- Vercel Web Analytics -->
+    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+
+    <style>
+        :root {
+            --void: #030508;
+            --surface: rgba(10, 12, 18, 0.8);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-bright: rgba(255, 255, 255, 0.15);
+            --accent-cyan: #00e5ff;
+            --accent-saffron: #ff671f;
+            --accent-zayvora: #7c4dff;
+            --accent-zayvora-bright: #b39dff;
+            --text-primary: #ffffff;
+            --text-muted: #888899;
+            --font-display: 'Syne', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--void);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            padding-top: 52px;
+            background-image:
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px),
+                radial-gradient(circle at 50% 20%, rgba(124, 77, 255, 0.04) 0%, transparent 60%);
+            background-size: 40px 40px, 40px 40px, 100% 100%;
+        }
+
+        /* --- NAV --- */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            height: 52px;
+            background: rgba(3, 5, 8, 0.85);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .nav-logo {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+            border-color: var(--border-bright);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .nav-links a.nav-active {
+            color: var(--accent-zayvora-bright);
+            border-color: rgba(124, 77, 255, 0.3);
+            background: rgba(124, 77, 255, 0.06);
+        }
+
+        .nav-links a.nav-zayvora:hover {
+            color: var(--accent-zayvora-bright);
+            border-color: rgba(124, 77, 255, 0.3);
+            background: rgba(124, 77, 255, 0.06);
+        }
+
+        /* --- HERO --- */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5rem 1.5rem 3rem;
+            text-align: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .badge {
+            font-family: var(--font-mono);
+            font-size: clamp(0.65rem, 1.4vw, 0.8rem);
+            color: var(--accent-zayvora-bright);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 2rem;
+            padding: 0.5rem 1.2rem;
+            border: 1px solid rgba(124, 77, 255, 0.3);
+            background: rgba(124, 77, 255, 0.05);
+            border-radius: 4px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 9vw, 7rem);
+            font-weight: 800;
+            line-height: 0.9;
+            letter-spacing: -3px;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #b39dff 0%, #7c4dff 50%, #4a1fff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline {
+            font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+            color: var(--text-muted);
+            max-width: 620px;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--accent-zayvora-bright);
+            text-decoration: none;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border: 1px solid rgba(124, 77, 255, 0.25);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 4rem;
+            transition: all 0.2s ease;
+            background: rgba(124, 77, 255, 0.04);
+        }
+
+        .github-link:hover {
+            border-color: rgba(124, 77, 255, 0.5);
+            background: rgba(124, 77, 255, 0.1);
+            color: #fff;
+        }
+
+        /* --- SECTION LABEL --- */
+        .section-label {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-label span {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* --- REPO GRID --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.25rem;
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 5rem;
+        }
+
+        .repo-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem 2rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: relative;
+            outline: none;
+        }
+
+        .repo-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(124, 77, 255, 0.2), transparent, transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .repo-card:hover, .repo-card:focus {
+            border-color: rgba(124, 77, 255, 0.5);
+            background: rgba(124, 77, 255, 0.05);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(124, 77, 255, 0.1);
+        }
+
+        .repo-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .repo-name {
+            font-family: var(--font-display);
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--accent-zayvora-bright);
+            line-height: 1.2;
+        }
+
+        .repo-arrow {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .repo-card:hover .repo-arrow,
+        .repo-card:focus .repo-arrow {
+            opacity: 1;
+            transform: translate(2px, -2px);
+        }
+
+        .repo-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        .repo-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 0.25rem;
+        }
+
+        .repo-tag {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent-zayvora-bright);
+            background: rgba(124, 77, 255, 0.1);
+            border: 1px solid rgba(124, 77, 255, 0.2);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+        }
+
+        .repo-license {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            margin-top: auto;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            width: 100%;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .copy {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .location {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            opacity: 0.4;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            h1 { font-size: 3.5rem; letter-spacing: -2px; }
+            .grid { grid-template-columns: 1fr; }
+            .hero { padding: 3rem 1rem 2rem; }
+            nav { padding: 0 1rem; }
+            .nav-links a { font-size: 0.65rem; padding: 0.35rem 0.5rem; letter-spacing: 0.5px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="/" class="nav-logo">DAXINI</a>
+        <ul class="nav-links">
+            <li><a href="https://logichub.app">LogicHub</a></li>
+            <li><a href="https://viadecide.com">Via</a></li>
+            <li><a href="/zayvora" class="nav-active nav-zayvora">Zayvora</a></li>
+            <li><a href="/studyos">StudyOS</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <div class="badge">AI Infrastructure Ecosystem</div>
+            <h1>ZAYVORA</h1>
+            <p class="tagline">
+                Local LLMs. Infrastructure intelligence. Autonomous agents.
+                Sensor networks. Protocol experimentation.
+            </p>
+            <a href="https://github.com/zayvora" class="github-link" target="_blank" rel="noopener">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+                github.com/zayvora
+            </a>
+
+            <div class="section-label">
+                <span>Public Repositories</span>
+            </div>
+
+            <div class="grid">
+
+                <!-- zayvora-agent -->
+                <a href="https://github.com/zayvora/zayvora-agent" class="repo-card" target="_blank" rel="noopener" tabindex="0">
+                    <div class="repo-header">
+                        <div class="repo-name">zayvora-agent</div>
+                        <div class="repo-arrow">↗</div>
+                    </div>
+                    <div class="repo-desc">
+                        Autonomous agent framework. Tool-use, task planning, and multi-agent coordination built on top of local LLM inference.
+                    </div>
+                    <div class="repo-footer">
+                        <span class="repo-tag">Agents</span>
+                        <span class="repo-license">AGPL-3.0</span>
+                    </div>
+                </a>
+
+                <!-- zayvora-sim-lab -->
+                <a href="https://github.com/zayvora/zayvora-sim-lab" class="repo-card" target="_blank" rel="noopener" tabindex="0">
+                    <div class="repo-header">
+                        <div class="repo-name">zayvora-sim-lab</div>
+                        <div class="repo-arrow">↗</div>
+                    </div>
+                    <div class="repo-desc">
+                        Simulation laboratory for AI infrastructure scenarios. Test and validate agent behavior in controlled environments before physical deployment.
+                    </div>
+                    <div class="repo-footer">
+                        <span class="repo-tag">Simulation</span>
+                        <span class="repo-license">AGPL-3.0</span>
+                    </div>
+                </a>
+
+                <!-- zayvora-highway-v2i -->
+                <a href="https://github.com/zayvora/zayvora-highway-v2i" class="repo-card" target="_blank" rel="noopener" tabindex="0">
+                    <div class="repo-header">
+                        <div class="repo-name">zayvora-highway-v2i</div>
+                        <div class="repo-arrow">↗</div>
+                    </div>
+                    <div class="repo-desc">
+                        Vehicle-to-Infrastructure communication research. Smart highway simulation with AI-enabled roadside units and V2I protocol experimentation.
+                    </div>
+                    <div class="repo-footer">
+                        <span class="repo-tag">Infrastructure</span>
+                        <span class="repo-license">AGPL-3.0</span>
+                    </div>
+                </a>
+
+                <!-- zayvora-research -->
+                <a href="https://github.com/zayvora/zayvora-research" class="repo-card" target="_blank" rel="noopener" tabindex="0">
+                    <div class="repo-header">
+                        <div class="repo-name">zayvora-research</div>
+                        <div class="repo-arrow">↗</div>
+                    </div>
+                    <div class="repo-desc">
+                        Core research repository. Papers, experiments, findings, and technical notes spanning all Zayvora layers — from local LLMs to sensor networks.
+                    </div>
+                    <div class="repo-footer">
+                        <span class="repo-tag">Research</span>
+                        <span class="repo-license">AGPL-3.0</span>
+                    </div>
+                </a>
+
+                <!-- zayvora-engine-tools -->
+                <a href="https://github.com/zayvora/zayvora-engine-tools" class="repo-card" target="_blank" rel="noopener" tabindex="0">
+                    <div class="repo-header">
+                        <div class="repo-name">zayvora-engine-tools</div>
+                        <div class="repo-arrow">↗</div>
+                    </div>
+                    <div class="repo-desc">
+                        Internal tooling and development utilities powering the Zayvora engineering stack. Build scripts, CLI tools, and automation harnesses.
+                    </div>
+                    <div class="repo-footer">
+                        <span class="repo-tag">Tooling</span>
+                        <span class="repo-license">AGPL-3.0</span>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="copy">&copy; 2026 DAXINI. ZAYVORA SYSTEMS ONLINE.</div>
+            <div class="location">ENGINEERED IN GANDHIDHAM, GUJARAT, INDIA &#x1F1EE;&#x1F1F3;</div>
+        </div>
+    </footer>
+
+</body>
+</html>

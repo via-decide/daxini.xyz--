@@ -211,6 +211,54 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(124, 77, 255, 0.15);
         }
 
+        .zayvora-showcase {
+            width: 100%;
+            max-width: 1100px;
+            margin-top: 2rem;
+            padding: 2rem;
+            border: 1px solid rgba(124, 77, 255, 0.25);
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(124, 77, 255, 0.09), rgba(3, 5, 8, 0.75));
+            text-align: left;
+        }
+
+        .zayvora-showcase h2 {
+            font-family: var(--font-display);
+            font-size: clamp(1.5rem, 4vw, 2.4rem);
+            color: #b39dff;
+            margin-bottom: 0.7rem;
+        }
+
+        .zayvora-showcase p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 1.3rem;
+        }
+
+        .zayvora-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .zayvora-actions a {
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1.1px;
+            font-size: 0.72rem;
+            border-radius: 6px;
+            padding: 0.55rem 0.95rem;
+            border: 1px solid rgba(124, 77, 255, 0.35);
+            color: #d5c8ff;
+            background: rgba(124, 77, 255, 0.08);
+        }
+
+        .zayvora-actions a:hover {
+            color: #fff;
+            border-color: rgba(124, 77, 255, 0.6);
+            background: rgba(124, 77, 255, 0.16);
+        }
+
         /* --- PERSISTENT NAV BAR --- */
         nav {
             position: fixed;
@@ -288,6 +336,7 @@
             nav { padding: 0 1rem; }
             .nav-links { gap: 0; }
             .nav-links a { font-size: 0.65rem; padding: 0.35rem 0.5rem; letter-spacing: 0.5px; }
+            .zayvora-showcase { padding: 1.4rem; }
         }
     </style>
 </head>
@@ -341,6 +390,18 @@
                 <div class="card-desc">The AI Infrastructure Layer. Local LLMs, infrastructure intelligence, sensor networks, and protocol experimentation.</div>
             </a>
         </div>
+
+        <section class="zayvora-showcase" aria-label="Zayvora showcase">
+            <h2>Zayvora Showcase</h2>
+            <p>
+                Explore the live Zayvora ecosystem page, research structure, and current credits/pricing gateway from the Daxini homepage.
+            </p>
+            <div class="zayvora-actions">
+                <a href="/zayvora">Open Zayvora Ecosystem</a>
+                <a href="/zayvora-pricing.html">Open Zayvora Pricing</a>
+                <a href="https://github.com/zayvora" target="_blank" rel="noopener">View GitHub Organization</a>
+            </div>
+        </section>
     </main>
 
     <footer>
@@ -352,4 +413,3 @@
 
 </body>
 </html>
-

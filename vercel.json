@@ -1,0 +1,13 @@
+{
+  "cleanUrls": true,
+  "env": {
+    "ZAYVORA_API": "https://daxini.xyz/api",
+    "ZAYVORA_LOGIN_URL": "https://daxini.xyz/login"
+  },
+  "rewrites": [
+    {
+      "source": "/zayvora",
+      "destination": "/zayvora/index.html"
+    }
+  ]
+}
