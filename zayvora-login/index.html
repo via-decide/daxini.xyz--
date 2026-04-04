@@ -211,7 +211,8 @@
         <div class="demo-info">
             <strong>Demo Login:</strong><br>
             Email: <code>demo@zayvora.ai</code><br>
-            Password: <code>demo123</code>
+            Password: <code>demo1234</code><br>
+            <small style="color: #888;">Min 8 characters required</small>
         </div>
 
         <!-- Error Message -->
@@ -415,6 +416,7 @@
             e.preventDefault();
             clearMessages();
 
+            // ISSUE 6: Input Sanitization
             const email = document.getElementById('username').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
             const btn = document.getElementById('loginSubmitBtn');
@@ -429,12 +431,14 @@
                 return;
             }
 
+            // ISSUE 8: UX Improvement - Disable button during processing
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner"></span>Signing in...';
 
             try {
                 // Demo login
-                if (email === 'demo@zayvora.ai' && password === 'demo123') {
+                if (email === 'demo@zayvora.ai' && password === 'demo1234') {
+                    console.log('[Auth] Demo login successful');
                     saveToken({ email });
                     showSuccess('✓ Login successful! Redirecting...');
                     redirectAfterLogin();
@@ -451,16 +455,24 @@
                 if (response.ok) {
                     const data = await response.json();
                     saveToken({ email, ...data });
+                    console.log('[Auth] Login successful for:', email);
                     showSuccess('✓ Login successful! Redirecting...');
                     redirectAfterLogin();
                 } else {
+                    // ISSUE 7: Debug logging - Show specific error messages
+                    console.error('[Auth] Login failed:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        email: email
+                    });
                     showError('Invalid email or password');
                     btn.disabled = false;
                     btn.innerHTML = 'Sign In';
                 }
             } catch (error) {
-                console.error('Login error:', error);
-                showError('Login failed. Please try again.');
+                // ISSUE 7: Debug logging
+                console.error('[Auth] Login error:', error.message, error);
+                showError('Login failed. Please check your connection and try again.');
                 btn.disabled = false;
                 btn.innerHTML = 'Sign In';
             }
@@ -471,12 +483,14 @@
             e.preventDefault();
             clearMessages();
 
+            // ISSUE 6: Input Sanitization
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
             const email = document.getElementById('regEmail').value.trim().toLowerCase();
             const password = document.getElementById('regPassword').value;
             const btn = document.getElementById('registerSubmitBtn');
 
+            // Validation checks
             if (!firstName || !lastName || !email || !password) {
                 showError('Please fill in all fields');
                 return;
@@ -487,15 +501,18 @@
                 return;
             }
 
+            // ISSUE 2: Frontend Password Validation
             if (password.length < 8) {
                 showError('Password must be at least 8 characters');
                 return;
             }
 
+            // ISSUE 8: UX Improvement - Disable button during processing
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner"></span>Creating account...';
 
             try {
+                // ISSUE 3: Registration API with improved error handling
                 const response = await fetch('/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -507,22 +524,75 @@
                     })
                 });
 
+                // Parse response
+                let responseData = {};
+                try {
+                    responseData = await response.json();
+                } catch {
+                    responseData = { message: await response.text() };
+                }
+
                 if (response.ok) {
+                    // ISSUE 4: Success flow - Create and store token
+                    const token = JSON.stringify({
+                        user_id: email.split('@')[0],
+                        email: email,
+                        firstName: firstName,
+                        lastName: lastName,
+                        timestamp: Date.now(),
+                        signature: btoa(email + Date.now())
+                    });
+                    localStorage.setItem('zayvora_token', token);
+                    localStorage.setItem('zayvora_user', JSON.stringify({ firstName, lastName, email }));
+
                     showSuccess('✓ Account created! Redirecting to login...');
+                    console.log('[Auth] Registration successful for:', email);
+
                     setTimeout(() => {
+                        // Clear form and redirect to login
+                        document.getElementById('firstName').value = '';
+                        document.getElementById('lastName').value = '';
+                        document.getElementById('regEmail').value = '';
+                        document.getElementById('regPassword').value = '';
                         toggleLoginForm({ preventDefault: () => {} });
                         btn.disabled = false;
                         btn.innerHTML = 'Create Account';
+
+                        // Redirect to onboarding
+                        setTimeout(() => {
+                            window.location.href = '/zayvora-onboarding';
+                        }, 1000);
                     }, 2000);
                 } else {
-                    const data = await response.json();
-                    showError(data.message || 'Registration failed');
+                    // ISSUE 5: Duplicate email detection
+                    let errorMsg = 'Registration failed';
+
+                    if (response.status === 409 || responseData.message?.includes('already')) {
+                        errorMsg = 'Email already registered. Please use a different email or login.';
+                    } else if (responseData.message) {
+                        errorMsg = responseData.message;
+                    } else if (response.status === 400) {
+                        errorMsg = 'Invalid registration data. Please check your inputs.';
+                    } else if (response.status === 500) {
+                        errorMsg = 'Server error. Please try again later.';
+                    }
+
+                    // ISSUE 7: Debug logging
+                    console.error('[Auth] Registration failed:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        message: responseData.message,
+                        email: email
+                    });
+
+                    showError(errorMsg);
                     btn.disabled = false;
                     btn.innerHTML = 'Create Account';
                 }
             } catch (error) {
-                console.error('Register error:', error);
-                showError('Registration failed. Please try again.');
+                // ISSUE 7: Debug logging
+                console.error('[Auth] Registration error:', error);
+                showError('Registration failed. Please check your connection and try again.');
                 btn.disabled = false;
                 btn.innerHTML = 'Create Account';
             }
@@ -533,6 +603,7 @@
             e.preventDefault();
             clearMessages();
 
+            // ISSUE 6: Input Sanitization
             const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
             const btn = document.getElementById('forgotSubmitBtn');
 
@@ -546,6 +617,7 @@
                 return;
             }
 
+            // ISSUE 8: UX Improvement - Disable button during processing
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner"></span>Sending...';
 
@@ -556,21 +628,37 @@
                     body: JSON.stringify({ email })
                 });
 
+                let responseData = {};
+                try {
+                    responseData = await response.json();
+                } catch {
+                    responseData = { message: await response.text() };
+                }
+
                 if (response.ok) {
+                    console.log('[Auth] Password reset link sent to:', email);
                     showSuccess('✓ Reset link sent to your email!');
                     setTimeout(() => {
+                        document.getElementById('forgotEmail').value = '';
                         toggleLoginForm({ preventDefault: () => {} });
                         btn.disabled = false;
                         btn.innerHTML = 'Send Reset Link';
                     }, 2000);
                 } else {
-                    showError('Failed to send reset link. Please try again.');
+                    // ISSUE 7: Debug logging
+                    console.error('[Auth] Forgot password failed:', {
+                        status: response.status,
+                        message: responseData.message,
+                        email: email
+                    });
+                    showError(responseData.message || 'Failed to send reset link. Please try again.');
                     btn.disabled = false;
                     btn.innerHTML = 'Send Reset Link';
                 }
             } catch (error) {
-                console.error('Forgot password error:', error);
-                showError('Failed to send reset link. Please try again.');
+                // ISSUE 7: Debug logging
+                console.error('[Auth] Forgot password error:', error.message, error);
+                showError('Failed to send reset link. Please check your connection and try again.');
                 btn.disabled = false;
                 btn.innerHTML = 'Send Reset Link';
             }
