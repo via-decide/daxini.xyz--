@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zayvora Engine — Secure Login</title>
+    <meta name="description" content="Login to Zayvora Engine — India's Sovereign AI Engineering Agent">
+    <meta property="og:title" content="Zayvora Engine — Secure Login">
+    <meta property="og:description" content="Access your Zayvora AI credit store">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        /* Zayvora Brand Styling */
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-header h1 {
+            font-size: 32px;
+            color: #667eea;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+            display: none;
+            font-size: 14px;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2e7d32;
+            display: none;
+            font-size: 14px;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .demo-info {
+            background: #f0f4ff;
+            border: 1px solid #dde4ff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .demo-info strong {
+            color: #667eea;
+        }
+
+        .demo-info code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .form-toggle {
+            display: none;
+        }
+
+        .form-toggle.active {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            .login-header h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <!-- Header -->
+        <div class="login-header">
+            <h1>🚀 Zayvora</h1>
+            <p>India's Sovereign AI Engineering Agent</p>
+        </div>
+
+        <!-- Demo Info -->
+        <div class="demo-info">
+            <strong>Demo Login:</strong><br>
+            Email: <code>demo@zayvora.ai</code><br>
+            Password: <code>demo123</code>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" id="authLoginError"></div>
+
+        <!-- Success Message -->
+        <div class="success-message" id="authSuccessMessage"></div>
+
+        <!-- Login Form -->
+        <form id="authLoginForm" class="form-toggle active" onsubmit="handleLoginSubmit(event)">
+            <div class="form-group">
+                <label for="username">Email Address</label>
+                <input
+                    type="text"
+                    id="username"
+                    placeholder="your@email.com"
+                    autocomplete="email"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="••••••••"
+                    autocomplete="current-password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn-login" id="loginSubmitBtn">
+                Sign In
+            </button>
+
+            <div class="form-footer">
+                <a href="#" onclick="toggleRegisterForm(event)">Create account</a>
+                •
+                <a href="#" onclick="toggleForgotPasswordForm(event)">Forgot password?</a>
+            </div>
+        </form>
+
+        <!-- Register Form -->
+        <form id="authRegisterForm" class="form-toggle" onsubmit="handleRegisterSubmit(event)">
+            <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input
+                    type="text"
+                    id="firstName"
+                    placeholder="John"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input
+                    type="text"
+                    id="lastName"
+                    placeholder="Doe"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="regEmail">Email Address</label>
+                <input
+                    type="text"
+                    id="regEmail"
+                    placeholder="your@email.com"
+                    autocomplete="email"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="regPassword">Password</label>
+                <input
+                    type="password"
+                    id="regPassword"
+                    placeholder="••••••••"
+                    autocomplete="new-password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn-login" id="registerSubmitBtn">
+                Create Account
+            </button>
+
+            <div class="form-footer">
+                <a href="#" onclick="toggleLoginForm(event)">Back to login</a>
+            </div>
+        </form>
+
+        <!-- Forgot Password Form -->
+        <form id="authForgotPasswordForm" class="form-toggle" onsubmit="handleForgotPasswordSubmit(event)">
+            <div class="form-group">
+                <label for="forgotEmail">Email Address</label>
+                <input
+                    type="text"
+                    id="forgotEmail"
+                    placeholder="your@email.com"
+                    autocomplete="email"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn-login" id="forgotSubmitBtn">
+                Send Reset Link
+            </button>
+
+            <div class="form-footer">
+                <a href="#" onclick="toggleLoginForm(event)">Back to login</a>
+            </div>
+        </form>
+    </div>
+
+    <script type="module" src="utils.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script>
+        // ============================================================================
+        // ZAYVORA LOGIN INTEGRATION
+        // ============================================================================
+
+        // Token generation and storage
+        function generateToken(userData) {
+            const token = {
+                user_id: userData.email.split('@')[0],
+                email: userData.email,
+                timestamp: Date.now(),
+                signature: btoa(userData.email + Date.now())
+            };
+            return JSON.stringify(token);
+        }
+
+        function saveToken(userData) {
+            const token = generateToken(userData);
+            localStorage.setItem('zayvora_token', token);
+            return token;
+        }
+
+        function redirectToPricing() {
+            setTimeout(() => {
+                window.location.href = '/zayvora-pricing';
+            }, 1000);
+        }
+
+        // Form management
+        function toggleLoginForm(e) {
+            e.preventDefault();
+            document.getElementById('authLoginForm').classList.add('active');
+            document.getElementById('authRegisterForm').classList.remove('active');
+            document.getElementById('authForgotPasswordForm').classList.remove('active');
+            clearMessages();
+        }
+
+        function toggleRegisterForm(e) {
+            e.preventDefault();
+            document.getElementById('authLoginForm').classList.remove('active');
+            document.getElementById('authRegisterForm').classList.add('active');
+            document.getElementById('authForgotPasswordForm').classList.remove('active');
+            clearMessages();
+        }
+
+        function toggleForgotPasswordForm(e) {
+            e.preventDefault();
+            document.getElementById('authLoginForm').classList.remove('active');
+            document.getElementById('authRegisterForm').classList.remove('active');
+            document.getElementById('authForgotPasswordForm').classList.add('active');
+            clearMessages();
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('authLoginError');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            const successEl = document.getElementById('authSuccessMessage');
+            successEl.textContent = message;
+            successEl.style.display = 'block';
+        }
+
+        function clearMessages() {
+            document.getElementById('authLoginError').style.display = 'none';
+            document.getElementById('authSuccessMessage').style.display = 'none';
+        }
+
+        // Login handler
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            clearMessages();
+
+            const email = document.getElementById('username').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginSubmitBtn');
+
+            if (!email || !password) {
+                showError('Please enter email and password');
+                return;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>Signing in...';
+
+            try {
+                // Demo login
+                if (email === 'demo@zayvora.ai' && password === 'demo123') {
+                    saveToken({ email });
+                    showSuccess('✓ Login successful! Redirecting...');
+                    redirectToPricing();
+                    return;
+                }
+
+                // API login
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: email, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    saveToken({ email, ...data });
+                    showSuccess('✓ Login successful! Redirecting...');
+                    redirectToPricing();
+                } else {
+                    showError('Invalid email or password');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Sign In';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('Login failed. Please try again.');
+                btn.disabled = false;
+                btn.innerHTML = 'Sign In';
+            }
+        }
+
+        // Register handler
+        async function handleRegisterSubmit(e) {
+            e.preventDefault();
+            clearMessages();
+
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('regEmail').value.trim().toLowerCase();
+            const password = document.getElementById('regPassword').value;
+            const btn = document.getElementById('registerSubmitBtn');
+
+            if (!firstName || !lastName || !email || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>Creating account...';
+
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        firstName,
+                        lastName,
+                        email,
+                        password
+                    })
+                });
+
+                if (response.ok) {
+                    showSuccess('✓ Account created! Redirecting to login...');
+                    setTimeout(() => {
+                        toggleLoginForm({ preventDefault: () => {} });
+                        btn.disabled = false;
+                        btn.innerHTML = 'Create Account';
+                    }, 2000);
+                } else {
+                    const data = await response.json();
+                    showError(data.message || 'Registration failed');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Create Account';
+                }
+            } catch (error) {
+                console.error('Register error:', error);
+                showError('Registration failed. Please try again.');
+                btn.disabled = false;
+                btn.innerHTML = 'Create Account';
+            }
+        }
+
+        // Forgot password handler
+        async function handleForgotPasswordSubmit(e) {
+            e.preventDefault();
+            clearMessages();
+
+            const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+            const btn = document.getElementById('forgotSubmitBtn');
+
+            if (!email) {
+                showError('Please enter your email address');
+                return;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>Sending...';
+
+            try {
+                const response = await fetch('/api/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                if (response.ok) {
+                    showSuccess('✓ Reset link sent to your email!');
+                    setTimeout(() => {
+                        toggleLoginForm({ preventDefault: () => {} });
+                        btn.disabled = false;
+                        btn.innerHTML = 'Send Reset Link';
+                    }, 2000);
+                } else {
+                    showError('Failed to send reset link. Please try again.');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Send Reset Link';
+                }
+            } catch (error) {
+                console.error('Forgot password error:', error);
+                showError('Failed to send reset link. Please try again.');
+                btn.disabled = false;
+                btn.innerHTML = 'Send Reset Link';
+            }
+        }
+
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('zayvora_token');
+            if (token) {
+                window.location.href = '/zayvora-pricing';
+            }
+        });
+    </script>
+    <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}</script>
+</body>
+</html>

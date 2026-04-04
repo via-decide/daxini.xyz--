@@ -56,6 +56,22 @@
   ],
   "rewrites": [
     {
+      "source": "/login",
+      "destination": "/zayvora-login/index.html"
+    },
+    {
+      "source": "/login/",
+      "destination": "/zayvora-login/index.html"
+    },
+    {
+      "source": "/zayvora-pricing",
+      "destination": "/zayvora-pricing.html"
+    },
+    {
+      "source": "/zayvora-pricing/",
+      "destination": "/zayvora-pricing.html"
+    },
+    {
       "source": "/zayvora",
       "destination": "/zayvora/index.html"
     },
