@@ -30,6 +30,7 @@
       text-align: center;
       color: white;
       margin-bottom: 40px;
+      position: relative;
     }
 
     .header h1 {
@@ -47,6 +48,25 @@
     .header .subtitle {
       font-size: 14px;
       opacity: 0.7;
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: white;
     }
 
     .pricing-cards {
@@ -380,6 +400,9 @@
   <div class="container">
     <!-- Header -->
     <div class="header">
+      <button class="logout-btn" id="logoutBtn" style="display: none;">
+        🚪 Logout
+      </button>
       <h1>Zayvora AI</h1>
       <p>Credit Store</p>
       <p class="subtitle">Get instant access to advanced AI capabilities</p>
@@ -736,6 +759,26 @@
 
     async function init() {
       try {
+        // Check zayvora token
+        const token = localStorage.getItem('zayvora_token');
+        if (!token) {
+          // Redirect to login
+          window.location.href = '/zayvora-login';
+          return;
+        }
+
+        // Show logout button
+        document.getElementById('logoutBtn').style.display = 'block';
+        document.getElementById('logoutBtn').onclick = handleLogout;
+
+        // Parse token and display user info
+        try {
+          const tokenData = JSON.parse(token);
+          console.log('User logged in:', tokenData.email);
+        } catch (e) {
+          console.warn('Invalid token format');
+        }
+
         // Check authentication
         const user = await checkAuth();
         if (user) {
@@ -751,6 +794,13 @@
       } catch (error) {
         showError('Failed to load page: ' + error.message);
       }
+    }
+
+    function handleLogout() {
+      // Remove token from localStorage
+      localStorage.removeItem('zayvora_token');
+      // Redirect to login
+      window.location.href = '/zayvora-login';
     }
 
     async function checkAuth() {
