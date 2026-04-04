@@ -1,29 +1,70 @@
 {
+  "buildCommand": "echo 'Static site - no build required'",
+  "outputDirectory": ".",
+  "public": true,
   "cleanUrls": true,
-  "env": {
-    "ZAYVORA_API": "https://daxini.xyz/api",
-    "ZAYVORA_LOGIN_URL": "https://daxini.xyz/login"
-  },
-  "routes": [
+  "trailingSlash": false,
+  "headers": [
     {
-      "handle": "filesystem"
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
     },
     {
-      "src": "^/zayvora/?$",
-      "dest": "/zayvora/index.html"
+      "source": "/(.*)\\.html$",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/html; charset=utf-8"
+        }
+      ]
     },
     {
-      "src": "^/(.*)$",
-      "dest": "/index.html"
+      "source": "/(.*)\\.js$",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.css$",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/css; charset=utf-8"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
       "source": "/zayvora",
       "destination": "/zayvora/index.html"
     },
     {
-      "source": "/",
-      "destination": "/index.html"
+      "source": "/zayvora/",
+      "destination": "/zayvora/index.html"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
     }
   ]
