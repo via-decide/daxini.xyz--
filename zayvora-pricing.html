@@ -314,6 +314,44 @@
       border-left: 4px solid #c33;
     }
 
+    /* QR Code Modal */
+    .qr-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+
+    .qr-modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .qr-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .qr-modal-close:hover {
+      color: #333;
+    }
+
     @media (max-width: 480px) {
       .header h1 {
         font-size: 28px;
@@ -329,6 +367,11 @@
 
       .card-price .amount {
         font-size: 28px;
+      }
+
+      .qr-modal-content {
+        max-width: 90vw;
+        margin: 20px;
       }
     }
   </style>
@@ -386,14 +429,311 @@
     </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.5.3/qrcode.min.js"></script>
   <script>
-    // Initialize
+    // ============================================================================
+    // ZAYVORA PAYMENT ENGINE - Stateless UPI Payment Integration
+    // ============================================================================
+
+    // Global state
     let selectedPackage = null;
     let userBalance = 0;
+    let currentPaymentIntent = null;
+    let qrModal = null;
+
     const API_URL = '/api';
     const FRONTEND_URL = window.location.origin;
+    const NODE_ID = 'macmini-gandhidham-01';
+    const SECRET_KEY = 'zayvora-sovereign-secret-key-2026'; // Fallback secret (ideally from server)
+    const UPI_ID = 'dharam@viadecide';
+    const UPI_NAME = 'Zayvora%20Engine';
 
-    // Initialize page
+    // ============================================================================
+    // SECTION 2: EXPLICIT PACKAGE DEFINITIONS
+    // ============================================================================
+    const PACKAGES = [
+      {
+        id: 'starter',
+        credits: 50,
+        price: 99,
+        description: 'Getting Started'
+      },
+      {
+        id: 'pro',
+        credits: 120,
+        price: 799,
+        description: 'Heavy Users',
+        bonus: '20%'
+      },
+      {
+        id: 'enterprise',
+        credits: 1000,
+        price: 4999,
+        description: 'Enterprise'
+      }
+    ];
+
+    // ============================================================================
+    // SECTION 3-4: CRYPTOGRAPHIC UTILITIES
+    // ============================================================================
+
+    // Helper: Convert string to ArrayBuffer
+    function stringToArrayBuffer(str) {
+      const encoder = new TextEncoder();
+      return encoder.encode(str);
+    }
+
+    // Helper: Convert ArrayBuffer to hex string
+    function arrayBufferToHex(buffer) {
+      const view = new Uint8Array(buffer);
+      let hex = '';
+      for (let i = 0; i < view.length; i++) {
+        hex += ('00' + view[i].toString(16)).slice(-2);
+      }
+      return hex;
+    }
+
+    // HMAC-SHA256 signature
+    async function hmacSHA256(message, key) {
+      try {
+        const keyBuffer = stringToArrayBuffer(key);
+        const messageBuffer = stringToArrayBuffer(message);
+
+        const cryptoKey = await crypto.subtle.importKey(
+          'raw',
+          keyBuffer,
+          { name: 'HMAC', hash: 'SHA-256' },
+          false,
+          ['sign']
+        );
+
+        const signature = await crypto.subtle.sign(
+          'HMAC',
+          cryptoKey,
+          messageBuffer
+        );
+
+        return arrayBufferToHex(signature);
+      } catch (error) {
+        console.error('HMAC-SHA256 error:', error);
+        // Fallback: simple hash (not cryptographically secure, for fallback only)
+        return btoa(message + key).substring(0, 64);
+      }
+    }
+
+    // Base64 encoding
+    function base64Encode(str) {
+      try {
+        return btoa(unescape(encodeURIComponent(str)));
+      } catch (e) {
+        return btoa(str);
+      }
+    }
+
+    // ============================================================================
+    // SECTION 3: BUILD STATELESS PAYMENT INTENT
+    // ============================================================================
+
+    async function createPaymentIntent(packageId) {
+      const pkg = PACKAGES.find(p => p.id === packageId);
+      if (!pkg) {
+        throw new Error('Invalid package');
+      }
+
+      const intentId = crypto.randomUUID();
+
+      const intent = {
+        intent_id: intentId,
+        package_id: pkg.id,
+        credits: pkg.credits,
+        amount: pkg.price,
+        timestamp: Date.now(),
+        node_id: NODE_ID
+      };
+
+      // Encode payload to base64
+      const payloadJson = JSON.stringify(intent);
+      const payloadV1 = base64Encode(payloadJson);
+
+      // Create signature
+      const messageToSign = payloadV1 + intentId;
+      const signature = await hmacSHA256(messageToSign, SECRET_KEY);
+
+      return {
+        intent,
+        payload: payloadV1,
+        signature,
+        signed: true
+      };
+    }
+
+    // ============================================================================
+    // SECTION 5: BUILD SOVEREIGN DEEP LINK
+    // ============================================================================
+
+    function buildSovereignLink(paymentIntent) {
+      const { intent, payload, signature } = paymentIntent;
+      return `sov://${intent.node_id}/REVENUE_SETTLEMENT?payload=${payload}&sig=${signature}&intent=${intent.intent_id}`;
+    }
+
+    // ============================================================================
+    // SECTION 6: CONVERT TO UPI PAYMENT LINK
+    // ============================================================================
+
+    function buildUPILink(paymentIntent) {
+      const { intent } = paymentIntent;
+      const upiLink = `upi://pay?pa=${UPI_ID}&pn=${UPI_NAME}&am=${intent.amount}&cu=INR&tn=ZAYVORA_${intent.intent_id.substring(0, 8)}`;
+      return upiLink;
+    }
+
+    // ============================================================================
+    // SECTION 7: QR CODE GENERATION
+    // ============================================================================
+
+    function generateQRCode(upiLink) {
+      return new Promise((resolve) => {
+        try {
+          const qrCode = new QRCode({
+            text: upiLink,
+            width: 200,
+            height: 200,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+          });
+          const canvas = qrCode._canvas;
+          resolve(canvas.toDataURL('image/png'));
+        } catch (error) {
+          console.error('QR generation error:', error);
+          resolve(null);
+        }
+      });
+    }
+
+    function showQRFallback(paymentIntent, upiLink) {
+      // Create modal for QR code
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      `;
+
+      const content = document.createElement('div');
+      content.style.cssText = `
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        max-width: 400px;
+        text-align: center;
+      `;
+
+      const closeBtn = document.createElement('button');
+      closeBtn.style.cssText = `
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+      `;
+      closeBtn.innerHTML = '×';
+      closeBtn.onclick = () => modal.remove();
+
+      content.appendChild(closeBtn);
+
+      const title = document.createElement('h3');
+      title.textContent = 'Scan to Pay';
+      title.style.cssText = 'margin-bottom: 16px; color: #333;';
+      content.appendChild(title);
+
+      const qrContainer = document.createElement('div');
+      qrContainer.id = 'qr-fallback';
+      qrContainer.style.cssText = 'margin-bottom: 20px;';
+      content.appendChild(qrContainer);
+
+      const fallbackText = document.createElement('p');
+      fallbackText.innerHTML = `<small style="color: #666;">If QR doesn't work, copy this UPI link:</small><br><code style="font-size: 11px; word-break: break-all; background: #f0f0f0; padding: 8px; border-radius: 4px; display: block; margin-top: 10px;">${upiLink}</code>`;
+      content.appendChild(fallbackText);
+
+      const copyBtn = document.createElement('button');
+      copyBtn.textContent = '📋 Copy UPI Link';
+      copyBtn.style.cssText = `
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 12px;
+        font-weight: 600;
+      `;
+      copyBtn.onclick = () => {
+        navigator.clipboard.writeText(upiLink);
+        copyBtn.textContent = '✓ Copied!';
+        setTimeout(() => { copyBtn.textContent = '📋 Copy UPI Link'; }, 2000);
+      };
+      content.appendChild(copyBtn);
+
+      modal.appendChild(content);
+      document.body.appendChild(modal);
+
+      // Generate QR asynchronously
+      generateQRCode(upiLink).then(qrImage => {
+        if (qrImage) {
+          const img = document.createElement('img');
+          img.src = qrImage;
+          img.style.cssText = 'width: 180px; height: 180px; margin: 0 auto;';
+          qrContainer.appendChild(img);
+        }
+      });
+
+      qrModal = modal;
+    }
+
+    // ============================================================================
+    // SECTION 8: POST PAYMENT CREDIT DELIVERY
+    // ============================================================================
+
+    async function grantCredits(intentId, credits) {
+      try {
+        const response = await fetch(`${API_URL}/credits/grant`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            intent_id: intentId,
+            credits: credits
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          console.error('Credit grant error:', error);
+          return false;
+        }
+
+        const data = await response.json();
+        return data.success || false;
+      } catch (error) {
+        console.error('Credit grant network error:', error);
+        return false;
+      }
+    }
+
+    // ============================================================================
+    // PAGE INITIALIZATION
+    // ============================================================================
+
     async function init() {
       try {
         // Check authentication
@@ -403,17 +743,18 @@
           await loadUserBalance(user.uid);
         }
 
-        // Load packages
-        await loadPackages();
+        // Render packages
+        renderPackages();
+
+        // Listen for payment completion (from callback)
+        window.addEventListener('message', handlePaymentCallback);
       } catch (error) {
         showError('Failed to load page: ' + error.message);
       }
     }
 
-    // Check if user is authenticated
     async function checkAuth() {
       try {
-        // Check if user is logged in via Firebase
         if (typeof firebase !== 'undefined' && firebase.auth) {
           return firebase.auth().currentUser;
         }
@@ -424,7 +765,6 @@
       }
     }
 
-    // Load user balance
     async function loadUserBalance(uid) {
       try {
         const response = await fetch(`${API_URL}/credits/balance/${uid}`);
@@ -438,116 +778,61 @@
       }
     }
 
-    // Fallback pricing data (used when API fails)
-    const FALLBACK_PACKAGES = [
-      {
-        id: 'credits-50',
-        credits: 50,
-        amount: 5000,
-        price: '₹99',
-        description: 'Getting Started'
-      },
-      {
-        id: 'credits-120',
-        credits: 120,
-        amount: 11800,
-        price: '₹799',
-        description: 'Heavy Users',
-        bonus: '20%'
-      },
-      {
-        id: 'credits-500',
-        credits: 500,
-        amount: 39900,
-        price: '₹2,999',
-        description: 'Enterprise'
-      }
-    ];
+    // ============================================================================
+    // RENDER PACKAGES WITH DYNAMIC PRICING
+    // ============================================================================
 
-    // Load credit packages
-    async function loadPackages() {
-      let packages = FALLBACK_PACKAGES;
-      let usingFallback = false;
+    function renderPackages() {
+      const container = document.getElementById('pricingCards');
+      container.innerHTML = '';
 
-      try {
-        const response = await fetch(`${API_URL}/payments/packages`, { timeout: 5000 });
-        if (response.ok) {
-          const data = await response.json();
-          if (data.packages && data.packages.length > 0) {
-            packages = data.packages;
-          }
-        }
-      } catch (error) {
-        console.warn('Pricing API failed, loading fallback packages:', error.message);
-        usingFallback = true;
-      }
+      PACKAGES.forEach((pkg) => {
+        const isPopular = pkg.bonus;
+        const card = document.createElement('div');
+        card.className = `card ${isPopular ? 'popular' : ''}`;
+        card.onclick = () => selectPackage(pkg.id, card);
 
-      renderPackages(packages, usingFallback);
-    }
+        const bonusText = pkg.bonus ? `
+          <div class="bonus-badge">
+            💰 ${pkg.bonus} Extra Credits
+          </div>
+        ` : '';
 
-    // Render pricing packages
-    function renderPackages(packages, usingFallback) {
-      try {
-        const container = document.getElementById('pricingCards');
-        container.innerHTML = '';
+        // Calculate per-credit price dynamically
+        const perCredit = (pkg.price / pkg.credits).toFixed(2);
 
-        packages.forEach((pkg) => {
-          const isPopular = pkg.id === 'credits-120' || pkg.bonus;
-          const card = document.createElement('div');
-          card.className = `card ${isPopular ? 'popular' : ''}`;
-          card.onclick = () => selectPackage(pkg.id, card);
-
-          const bonusPercent = pkg.bonus || '0%';
-          const bonusText = bonusPercent !== '0%' ? `
-            <div class="bonus-badge">
-              💰 ${bonusPercent} Extra Credits
+        card.innerHTML = `
+          <div class="card-content">
+            <div class="card-info">
+              <h3>${pkg.credits} Credits</h3>
+              <p>Perfect for ${pkg.description.toLowerCase()}</p>
             </div>
-          ` : '';
-
-          const priceDisplay = typeof pkg.price === 'number' ? `₹${pkg.price}` : pkg.price;
-          const description = pkg.description || (pkg.id === 'credits-50' ? 'Getting Started' : 'Heavy Users');
-
-          card.innerHTML = `
-            <div class="card-content">
-              <div class="card-info">
-                <h3>${pkg.credits} Credits</h3>
-                <p>Perfect for ${description.toLowerCase()}</p>
-              </div>
-              <div class="card-price">
-                <div class="amount">${priceDisplay}</div>
-                <div class="period">One-time</div>
-              </div>
+            <div class="card-price">
+              <div class="amount">₹${pkg.price}</div>
+              <div class="period">One-time</div>
             </div>
-            ${bonusText}
-            <div class="features">
-              <p>₹${(pkg.amount / 100 / pkg.credits).toFixed(2)} per credit</p>
-              <p>Instant delivery to your account</p>
-              <p>Never expires, use anytime</p>
-            </div>
-          `;
+          </div>
+          ${bonusText}
+          <div class="features">
+            <p>₹${perCredit} per credit</p>
+            <p>Instant delivery to your account</p>
+            <p>Never expires, use anytime</p>
+          </div>
+        `;
 
-          container.appendChild(card);
-        });
+        container.appendChild(card);
+      });
 
-        // Show fallback message if using fallback data
-        if (usingFallback) {
-          const infoEl = document.createElement('div');
-          infoEl.style.cssText = 'background: rgba(255, 193, 7, 0.2); color: white; padding: 12px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #ffc107;';
-          infoEl.textContent = '📋 Packages temporarily loading default plans.';
-          document.getElementById('pricingCards').parentElement.insertBefore(infoEl, document.getElementById('pricingCards'));
-        }
-
-        // Select first package by default
-        if (container.firstChild) {
-          selectPackage(packages[0].id, container.firstChild);
-        }
-      } catch (error) {
-        console.error('Error rendering packages:', error);
-        showError('Unable to load pricing packages. Please refresh and try again.');
+      // Select first package by default
+      if (container.firstChild) {
+        selectPackage(PACKAGES[0].id, container.firstChild);
       }
     }
 
-    // Select package
+    // ============================================================================
+    // PACKAGE SELECTION & PAYMENT INITIATION
+    // ============================================================================
+
     function selectPackage(packageId, cardElement) {
       selectedPackage = packageId;
       document.querySelectorAll('.card').forEach(card => {
@@ -557,115 +842,99 @@
       document.getElementById('buyBtn').disabled = false;
     }
 
-    // Initiate payment
-    async function initiatePayment() {
+    async function initiatePayment(pkg) {
       try {
-        const user = await checkAuth();
-        if (!user) {
-          showError('Please log in to purchase credits');
-          window.location.href = '/auth/login';
-          return;
-        }
-
         if (!selectedPackage) {
           showError('Please select a credit package');
           return;
         }
 
+        const user = await checkAuth();
+        if (!user) {
+          showError('Please log in to purchase credits');
+          // Redirect to login without leaving page
+          return;
+        }
+
         document.getElementById('buyBtn').disabled = true;
         const originalText = document.getElementById('buyBtn').innerHTML;
-        document.getElementById('buyBtn').innerHTML = '<div class="spinner"></div> Processing...';
+        document.getElementById('buyBtn').innerHTML = '<div class="spinner"></div> Generating payment link...';
 
-        const response = await fetch(`${API_URL}/payments/initiate-payment`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            userId: user.uid,
-            packageId: selectedPackage
-          })
-        });
+        // Create payment intent
+        const paymentIntent = await createPaymentIntent(selectedPackage);
+        currentPaymentIntent = paymentIntent;
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || 'Payment initiation failed');
+        // Build UPI link
+        const upiLink = buildUPILink(paymentIntent);
+        const sovereignLink = buildSovereignLink(paymentIntent);
+
+        console.log('Payment Intent:', paymentIntent);
+        console.log('UPI Link:', upiLink);
+        console.log('Sovereign Link:', sovereignLink);
+
+        // Store intent in session for callback verification
+        sessionStorage.setItem('zayvora_intent_id', paymentIntent.intent.intent_id);
+        sessionStorage.setItem('zayvora_credits', paymentIntent.intent.credits);
+
+        // Attempt UPI payment
+        const upiOpened = await attemptUPIPayment(upiLink, paymentIntent);
+
+        if (!upiOpened) {
+          // Show QR fallback
+          showQRFallback(paymentIntent, upiLink);
         }
 
-        const data = await response.json();
-
-        // Redirect to PhonePe
-        if (data.redirectUrl) {
-          // For mobile: try UPI intent first
-          if (isMobileDevice() && isPhoneNumber(user.phoneNumber)) {
-            const upiString = generateUPIString(data);
-            if (upiString && tryOpenUPI(upiString)) {
-              return;
-            }
-          }
-
-          // Fallback: redirect to PhonePe URL
-          window.location.href = data.redirectUrl;
-        } else {
-          throw new Error('No redirect URL received');
-        }
+        document.getElementById('buyBtn').disabled = false;
+        document.getElementById('buyBtn').innerHTML = originalText;
 
       } catch (error) {
+        console.error('Payment error:', error);
         document.getElementById('buyBtn').disabled = false;
         document.getElementById('buyBtn').innerHTML = originalText;
         showError('Payment error: ' + error.message);
       }
     }
 
-    // Check if device is mobile
-    function isMobileDevice() {
-      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    }
-
-    // Validate phone number
-    function isPhoneNumber(phone) {
-      return phone && phone.length >= 10;
-    }
-
-    // Generate UPI string
-    function generateUPIString(paymentData) {
-      const { credits } = CREDIT_PACKAGES[selectedPackage] || {};
-      if (!credits) return null;
-
-      return `upi://pay?pa=6351537770@yapl&pn=Zayvora&am=${(CREDIT_PACKAGES[selectedPackage].amount / 100)}&tn=${selectedPackage}&tr=${paymentData.merchantTransactionId}`;
-    }
-
-    // Try to open UPI intent
-    function tryOpenUPI(upiString) {
+    async function attemptUPIPayment(upiLink, paymentIntent) {
       try {
-        window.location.href = upiString;
-        return true;
+        // For web, show fallback immediately
+        // For native apps, this would trigger UPI intent
+        return false;
       } catch (error) {
-        console.error('UPI intent failed:', error);
+        console.error('UPI attempt error:', error);
         return false;
       }
     }
 
-    // Show error message
+    function handlePaymentCallback(event) {
+      // Listen for postMessage from UPI payment callback
+      if (event.data.type === 'PAYMENT_SUCCESS') {
+        const { intentId, credits } = event.data;
+        if (intentId && credits) {
+          grantCredits(intentId, credits).then(success => {
+            if (success) {
+              showError('✓ Credits added to your account!');
+              renderPackages();
+            }
+          });
+        }
+      }
+    }
+
+    // ============================================================================
+    // UI UTILITIES
+    // ============================================================================
+
     function showError(message) {
       const errorEl = document.getElementById('errorMessage');
       errorEl.textContent = message;
       errorEl.style.display = 'block';
-      setTimeout(() => {
-        errorEl.style.display = 'none';
-      }, 5000);
+      if (!message.includes('✓')) {
+        setTimeout(() => {
+          errorEl.style.display = 'none';
+        }, 5000);
+      }
     }
-
-    // Show legal docs (now links to proper pages)
-    function showLegal() {
-      window.location.href = '/terms.html';
-    }
-
-    // Credit packages
-    const CREDIT_PACKAGES = {
-      'credits-50': { amount: 5000, credits: 50 },
-      'credits-120': { amount: 11800, credits: 120 }
-    };
 
     // Initialize on load
     window.addEventListener('DOMContentLoaded', init);
