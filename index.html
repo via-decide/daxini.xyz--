@@ -443,7 +443,7 @@
             PR generation, and infrastructure workflows—all through natural language commands. Powered by local LLMs and designed for developer autonomy.
         </p>
 
-        <button id="try-zayvora" class="try-zayvora-btn">
+        <button type="button" id="try-zayvora" class="try-zayvora-btn">
             Try Zayvora →
         </button>
 
@@ -507,7 +507,12 @@
         // 2. Logged in but onboarding incomplete → /zayvora-onboarding
         // 3. Onboarding complete → /zayvora-chat
 
-        function launchZayvora() {
+        function launchZayvora(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
             const authToken = localStorage.getItem('zayvora_token');
             const onboardingComplete = localStorage.getItem('zayvora_onboarding');
 
