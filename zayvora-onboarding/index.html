@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zayvora Engine Onboarding</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="onboarding-container">
+    <!-- Progress Bar -->
+    <div class="progress-section">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text">
+        <span id="stepCounter">Step 1 of 4</span>
+      </div>
+    </div>
+
+    <!-- Step Container -->
+    <div class="step-container">
+      <!-- Step 1: Welcome -->
+      <div class="step" id="step-1">
+        <div class="step-content">
+          <div class="welcome-hero">
+            <div class="logo-icon">🚀</div>
+            <h1>Welcome to Zayvora Engine</h1>
+            <p class="subtitle">India's Sovereign AI Engineering Agent</p>
+          </div>
+
+          <div class="description">
+            <p>Zayvora is your autonomous AI engineering assistant, designed to:</p>
+            <ul>
+              <li>Generate production-ready code</li>
+              <li>Analyze and improve GitHub repositories</li>
+              <li>Design scalable infrastructure</li>
+              <li>Execute complex engineering tasks autonomously</li>
+            </ul>
+          </div>
+
+          <button class="btn btn-primary btn-large" onclick="nextStep()">
+            Start Setup →
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Capabilities -->
+      <div class="step hidden" id="step-2">
+        <div class="step-content">
+          <h1>What Can Zayvora Do?</h1>
+          <p class="step-description">Zayvora Engine empowers you with AI-driven engineering capabilities:</p>
+
+          <div class="capabilities-grid">
+            <div class="capability-card">
+              <div class="capability-icon">💻</div>
+              <h3>AI Code Generation</h3>
+              <p>Generate, refactor, and optimize code across any language or framework</p>
+            </div>
+
+            <div class="capability-card">
+              <div class="capability-icon">📊</div>
+              <h3>Repository Analysis</h3>
+              <p>Deep dive into GitHub repos, identify patterns, and suggest improvements</p>
+            </div>
+
+            <div class="capability-card">
+              <div class="capability-icon">🏗️</div>
+              <h3>Infrastructure Design</h3>
+              <p>Design scalable, secure architectures for your systems</p>
+            </div>
+
+            <div class="capability-card">
+              <div class="capability-icon">⚙️</div>
+              <h3>Autonomous Tasks</h3>
+              <p>Execute complex engineering workflows end-to-end</p>
+            </div>
+          </div>
+
+          <div class="step-actions">
+            <button class="btn btn-secondary" onclick="previousStep()">← Back</button>
+            <button class="btn btn-primary" onclick="nextStep()">Continue →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Connect Workspace -->
+      <div class="step hidden" id="step-3">
+        <div class="step-content">
+          <h1>Connect Your Workspace</h1>
+          <p class="step-description">Choose how you want to work with Zayvora:</p>
+
+          <div class="workspace-options">
+            <div class="workspace-option" onclick="selectWorkspaceOption('repo')">
+              <div class="option-icon">🔗</div>
+              <h3>Import GitHub Repo</h3>
+              <p>Analyze an existing repository</p>
+              <input type="text" id="repoInput" placeholder="github.com/owner/repo" class="repo-input hidden" />
+              <div id="repoStatus" class="status-message hidden"></div>
+            </div>
+
+            <div class="workspace-option" onclick="selectWorkspaceOption('files')">
+              <div class="option-icon">📁</div>
+              <h3>Upload Project Files</h3>
+              <p>Upload your project for analysis</p>
+            </div>
+
+            <div class="workspace-option" onclick="selectWorkspaceOption('empty')">
+              <div class="option-icon">✨</div>
+              <h3>Start Empty Workspace</h3>
+              <p>Begin with a fresh workspace</p>
+            </div>
+          </div>
+
+          <div class="step-actions">
+            <button class="btn btn-secondary" onclick="previousStep()">← Back</button>
+            <button class="btn btn-primary" id="continueBtn" onclick="continueWorkspace()" disabled>Continue →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Credits & Usage -->
+      <div class="step hidden" id="step-4">
+        <div class="step-content">
+          <h1>Your Credits & Usage</h1>
+
+          <div class="credits-display">
+            <div class="credits-card">
+              <div class="credits-icon">💎</div>
+              <div class="credits-info">
+                <span class="credits-label">Your Balance</span>
+                <span class="credits-amount" id="creditsAmount">120</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="credits-explanation">
+            <h3>How Credits Work</h3>
+            <div class="credit-item">
+              <div class="credit-icon">1️⃣</div>
+              <div class="credit-text">
+                <strong>1 credit per request</strong>
+                <p>Each Zayvora task costs 1 credit</p>
+              </div>
+            </div>
+
+            <div class="credit-item">
+              <div class="credit-icon">📈</div>
+              <div class="credit-text">
+                <strong>Track your usage</strong>
+                <p>Monitor credits in real-time as you work</p>
+              </div>
+            </div>
+
+            <div class="credit-item">
+              <div class="credit-icon">🎁</div>
+              <div class="credit-text">
+                <strong>Buy more credits</strong>
+                <p>Purchase additional credits in the settings</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-actions">
+            <button class="btn btn-secondary" onclick="previousStep()">← Back</button>
+            <button class="btn btn-primary btn-large" onclick="completeOnboarding()">
+              Enter Workspace →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="onboarding.js"></script>
+</body>
+</html>

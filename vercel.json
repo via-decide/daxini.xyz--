@@ -72,6 +72,22 @@
       "destination": "/zayvora-pricing.html"
     },
     {
+      "source": "/zayvora-onboarding",
+      "destination": "/zayvora-onboarding/index.html"
+    },
+    {
+      "source": "/zayvora-onboarding/",
+      "destination": "/zayvora-onboarding/index.html"
+    },
+    {
+      "source": "/zayvora-chat",
+      "destination": "/zayvora-chat/index.html"
+    },
+    {
+      "source": "/zayvora-chat/",
+      "destination": "/zayvora-chat/index.html"
+    },
+    {
       "source": "/zayvora",
       "destination": "/zayvora/index.html"
     },
