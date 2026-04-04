@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Status — Zayvora Engine</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      color: #667eea;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 30px 0;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(102, 126, 234, 0.2);
+      border-radius: 50%;
+      border-top-color: #667eea;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .status-text {
+      font-size: 18px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      color: #ff9800;
+    }
+
+    .status-paid {
+      color: #4caf50;
+    }
+
+    .status-expired {
+      color: #f44336;
+    }
+
+    .details {
+      background: #f5f5f5;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .detail-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-label {
+      color: #666;
+      font-weight: 600;
+    }
+
+    .detail-value {
+      color: #333;
+      font-weight: 500;
+      font-family: monospace;
+    }
+
+    .success-message {
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 16px;
+      border-radius: 8px;
+      border-left: 4px solid #4caf50;
+      display: none;
+      margin: 20px 0;
+    }
+
+    .success-message.show {
+      display: block;
+    }
+
+    .error-message {
+      background: #ffebee;
+      color: #c62828;
+      padding: 16px;
+      border-radius: 8px;
+      border-left: 4px solid #f44336;
+      display: none;
+      margin: 20px 0;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+    }
+
+    .btn-secondary:hover {
+      background: #f8f9fa;
+    }
+
+    .countdown {
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .timer-badge {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-top: 10px;
+    }
+
+    .credits-badge {
+      display: inline-block;
+      background: #4caf50;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 16px;
+      margin: 20px 0;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 30px 20px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>💳 Payment Status</h1>
+      <p style="color: #666; font-size: 14px; margin-top: 5px;">Zayvora Engine Credit Purchase</p>
+    </div>
+
+    <!-- Status Indicator -->
+    <div class="status-indicator">
+      <div class="spinner" id="spinner"></div>
+      <div class="status-text status-pending" id="statusText">
+        Waiting for payment...
+      </div>
+    </div>
+
+    <!-- Details -->
+    <div class="details">
+      <div class="detail-row">
+        <span class="detail-label">Intent ID</span>
+        <span class="detail-value" id="intentId">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Amount</span>
+        <span class="detail-value" id="amount">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Credits</span>
+        <span class="detail-value" id="credits">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Status</span>
+        <span class="detail-value" id="status">Pending</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Expires In</span>
+        <span class="detail-value" id="expiresIn">—</span>
+      </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="success-message" id="successMessage">
+      <strong>✓ Payment Confirmed!</strong>
+      <p style="margin-top: 8px; font-size: 14px;">Credits have been added to your account. You can now use them to access Zayvora Engine.</p>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" id="errorMessage"></div>
+
+    <!-- Credits Badge (hidden until paid) -->
+    <div style="text-align: center;">
+      <div class="credits-badge" id="creditsBadge" style="display: none;">
+        🎉 <span id="creditsBadgeText">0</span> Credits Added
+      </div>
+    </div>
+
+    <!-- Countdown Timer -->
+    <div class="countdown">
+      <div>Checking payment status...</div>
+      <div style="margin-top: 5px;">
+        <span id="checkCounter">0</span> checks • Last update: <span id="lastUpdate">just now</span>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="button-group">
+      <button class="btn btn-secondary" id="viewCreditsBtn" style="display: none;" onclick="goToPricing()">
+        View Credits
+      </button>
+      <button class="btn btn-secondary" id="refreshBtn" onclick="manualRefresh()">
+        🔄 Refresh
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // ========================================================================
+    // PAYMENT STATUS POLLING
+    // ========================================================================
+
+    const config = {
+      poll_interval: 3000, // 3 seconds
+      max_duration: 900000, // 15 minutes
+      api_base: '/api'
+    };
+
+    let state = {
+      intent_id: new URLSearchParams(window.location.search).get('intent_id'),
+      start_time: Date.now(),
+      check_count: 0,
+      last_check: null,
+      polling: false
+    };
+
+    // Validate intent_id
+    if (!state.intent_id) {
+      showError('No payment intent found. Please try again.');
+      document.querySelector('.spinner').style.display = 'none';
+      document.getElementById('refreshBtn').style.display = 'none';
+    }
+
+    // ========================================================================
+    // SECTION 7: PAYMENT STATUS POLLING
+    // ========================================================================
+
+    async function checkPaymentStatus() {
+      try {
+        state.check_count++;
+        state.last_check = new Date();
+
+        // Poll endpoint every 3 seconds
+        const response = await fetch(
+          `${config.api_base}/payment-status?intent_id=${state.intent_id}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+          showError(`Payment error: ${data.message}`);
+          stopPolling();
+          return;
+        }
+
+        // Update UI with response
+        updateUI(data);
+
+        // Check if payment is complete
+        if (data.status === 'paid') {
+          handlePaymentSuccess(data);
+          stopPolling();
+        } else if (data.status === 'expired') {
+          handlePaymentExpired(data);
+          stopPolling();
+        }
+
+      } catch (error) {
+        console.error('Poll error:', error);
+        // Continue polling even on error
+      }
+
+      // Update last update time
+      const now = new Date();
+      const elapsed = Math.floor((now - state.last_check) / 1000);
+      document.getElementById('lastUpdate').textContent =
+        elapsed === 0 ? 'just now' : `${elapsed}s ago`;
+    }
+
+    function updateUI(data) {
+      // Update intent ID
+      document.getElementById('intentId').textContent = data.intent_id.substring(0, 20) + '...';
+
+      // Update amount and credits if available
+      if (data.amount) {
+        document.getElementById('amount').textContent = `₹${data.amount}`;
+      }
+      if (data.credits) {
+        document.getElementById('credits').textContent = data.credits;
+      }
+
+      // Update status
+      const statusEl = document.getElementById('status');
+      const statusText = document.getElementById('statusText');
+      const spinner = document.getElementById('spinner');
+
+      if (data.status === 'pending') {
+        statusEl.textContent = 'Pending';
+        statusText.textContent = 'Waiting for payment...';
+        statusText.className = 'status-text status-pending';
+
+        // Update countdown
+        if (data.expires_in_seconds !== undefined) {
+          const minutes = Math.floor(data.expires_in_seconds / 60);
+          const seconds = data.expires_in_seconds % 60;
+          document.getElementById('expiresIn').textContent =
+            `${minutes}m ${seconds}s`;
+        }
+      } else if (data.status === 'paid') {
+        statusEl.textContent = 'Paid';
+        spinner.style.display = 'none';
+      } else if (data.status === 'expired') {
+        statusEl.textContent = 'Expired';
+        statusText.textContent = 'Payment intent expired';
+        statusText.className = 'status-text status-expired';
+      }
+
+      // Update check counter
+      document.getElementById('checkCounter').textContent = state.check_count;
+    }
+
+    function handlePaymentSuccess(data) {
+      // Hide spinner
+      document.getElementById('spinner').style.display = 'none';
+
+      // Update status
+      document.getElementById('statusText').textContent = 'Payment Confirmed!';
+      document.getElementById('statusText').className = 'status-text status-paid';
+
+      // Show success message
+      document.getElementById('successMessage').classList.add('show');
+
+      // Show credits badge
+      const badge = document.getElementById('creditsBadge');
+      document.getElementById('creditsBadgeText').textContent = data.credits;
+      badge.style.display = 'block';
+
+      // Show view credits button
+      document.getElementById('viewCreditsBtn').style.display = 'block';
+
+      // Update details
+      document.getElementById('status').textContent = 'Paid ✓';
+      document.getElementById('expiresIn').textContent = '—';
+    }
+
+    function handlePaymentExpired(data) {
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('statusText').textContent = 'Payment Expired';
+      document.getElementById('statusText').className = 'status-text status-expired';
+      document.getElementById('status').textContent = 'Expired';
+      showError('Payment intent has expired. Please create a new payment.');
+    }
+
+    function showError(message) {
+      const errorEl = document.getElementById('errorMessage');
+      errorEl.textContent = message;
+      errorEl.classList.add('show');
+    }
+
+    function startPolling() {
+      if (state.polling) return;
+      state.polling = true;
+      state.start_time = Date.now();
+
+      // Initial check
+      checkPaymentStatus();
+
+      // Poll every 3 seconds
+      state.pollInterval = setInterval(() => {
+        const elapsed = Date.now() - state.start_time;
+
+        // Stop polling after 15 minutes
+        if (elapsed > config.max_duration) {
+          handlePaymentExpired({});
+          stopPolling();
+          return;
+        }
+
+        checkPaymentStatus();
+      }, config.poll_interval);
+    }
+
+    function stopPolling() {
+      state.polling = false;
+      if (state.pollInterval) {
+        clearInterval(state.pollInterval);
+      }
+    }
+
+    function manualRefresh() {
+      checkPaymentStatus();
+    }
+
+    function goToPricing() {
+      window.location.href = '/zayvora-pricing';
+    }
+
+    // Start polling on load
+    window.addEventListener('DOMContentLoaded', () => {
+      startPolling();
+    });
+
+    // Stop polling on unload
+    window.addEventListener('beforeunload', () => {
+      stopPolling();
+    });
+  </script>
+</body>
+</html>
