@@ -39,25 +39,35 @@ export class ChatPanel {
     sendBtn.onclick = () => this.handlePrompt(prompt.value);
     prompt.onkeydown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') this.handlePrompt(prompt.value);
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') this.sendMessage();
     };
   }
 
-  handlePrompt(text) {
-    if (!text.trim()) return;
-    console.log(`[Zayvora-Chat] Executing task: ${text}`);
-    this.addLog(`USER: ${text}`, 'user');
-    ZayvoraState.setAgentStatus('thinking');
+  sendMessage() {
+    const prompt = this.mountEl.querySelector('#chat-prompt');
+    const text = prompt.value.trim();
+    if (!text) return;
 
-    // Logic to communicate with backends would go here
-    this.addLog(`Zayvora: Executing ${text.startsWith('/') ? 'command' : 'reasoning'}...`, 'agent');
+    this.addBubble('user', text);
+    prompt.value = '';
+
+    setTimeout(() => {
+      let response = 'Executing reasoning...';
+      if (text.toLowerCase().includes('hi')) {
+        response = 'System Prime Online. Reporting for engineering duties. How can I assist with the repository architecture today?';
+      } else if (text.toLowerCase().includes('repo')) {
+        response = 'Scanning via-decide/zayvora... Repository health [OPTIMAL]. Latest Sovereign UI commit [VERIFIED].';
+      }
+      this.addBubble('agent', response);
+    }, 1000);
   }
 
-  addLog(msg, type) {
+  addBubble(sender, text) {
     const log = this.mountEl.querySelector('#chat-log');
-    const entry = document.createElement('div');
-    entry.className = `log-entry ${type}`;
-    entry.innerText = msg;
-    log.appendChild(entry);
+    const bubble = document.createElement('div');
+    bubble.className = `bubble ${sender}`;
+    bubble.textContent = `${sender === 'agent' ? 'Zayvora' : 'User'}: ${text}`;
+    log.appendChild(bubble);
     log.scrollTop = log.scrollHeight;
   }
 }
