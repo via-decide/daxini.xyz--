@@ -423,7 +423,7 @@
 
     <!-- CTA Section -->
     <div class="cta-section">
-      <button class="btn btn-primary" id="buyBtn" onclick="initiatePayment()" disabled>
+      <button class="btn btn-primary" id="buyBtn" onclick="startPayment(selectedPlan)" disabled>
         <span>💳</span>
         <span>Buy Selected Credits</span>
       </button>
@@ -434,9 +434,10 @@
 
     <!-- Info Section -->
     <div class="info-section">
-      <h4>✓ Secure Payment</h4>
+      <h4>✓ Secure UPI Payment</h4>
       <ul>
-        <li>Secure UPI payment</li>
+        <li>Secure UPI Payment</li>
+        <li>Verified on Zayvora Sovereign Node</li>
         <li>Intent-based verification</li>
         <li>Mac Mini settlement approval</li>
         <li>Instant credit delivery</li>
@@ -452,6 +453,15 @@
       <a href="/refunds.html" target="_blank">Refunds</a>
       <a href="mailto:dharam@viadecide.com?subject=Zayvora Support">Support</a>
     </div>
+
+    <div class="cta-section" style="margin-top: 12px;">
+      <div id="paymentConfirmHint" style="display: none; color: #fff; text-align: center; font-size: 13px;">
+        Payment sent? Click confirm once payment completed.
+      </div>
+      <button class="btn btn-secondary" id="confirmPaymentBtn" onclick="confirmPayment()" style="display: none;">
+        ✅ Confirm Payment
+      </button>
+    </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.5.3/qrcode.min.js"></script>
@@ -462,6 +472,7 @@
 
     // Global state
     let selectedPackage = null;
+    let selectedPlan = null;
     let userBalance = 0;
     let currentPaymentIntent = null;
     let qrModal = null;
@@ -887,6 +898,7 @@
 
     function selectPackage(packageId, cardElement) {
       selectedPackage = packageId;
+      selectedPlan = PACKAGES.find(pkg => pkg.id === packageId) || null;
       document.querySelectorAll('.card').forEach(card => {
         card.classList.remove('selected');
       });
@@ -894,11 +906,11 @@
       document.getElementById('buyBtn').disabled = false;
     }
 
-    async function initiatePayment(pkg) {
+    async function startPayment(plan) {
       const buyBtn = document.getElementById('buyBtn');
       const originalText = buyBtn.innerHTML;
       try {
-        if (!selectedPackage) {
+        if (!plan) {
           showError('Please select a credit package');
           return;
         }
@@ -913,12 +925,11 @@
         buyBtn.disabled = true;
         buyBtn.innerHTML = '<div class="spinner"></div> Generating payment link...';
 
-        // Create payment intent
-        const paymentIntent = await createPaymentIntent(selectedPackage);
+        // Create payment intent for verification and credit delivery
+        const paymentIntent = await createPaymentIntent(plan.id);
         currentPaymentIntent = paymentIntent;
 
-        // Build UPI link
-        const upiLink = buildUPILink(paymentIntent);
+        const upiLink = `upi://pay?pa=dharam@upi&pn=Zayvora&am=${plan.price}&cu=INR`;
         const sovereignLink = buildSovereignLink(paymentIntent);
 
         console.log('Payment Intent:', paymentIntent);
@@ -929,13 +940,10 @@
         sessionStorage.setItem('zayvora_intent_id', paymentIntent.intent.intent_id);
         sessionStorage.setItem('zayvora_credits', paymentIntent.intent.credits);
 
-        // Attempt UPI payment
-        const upiOpened = await attemptUPIPayment(upiLink, paymentIntent);
-
-        if (!upiOpened) {
-          // Show QR fallback
-          showQRFallback(paymentIntent, upiLink);
-        }
+        // Launch UPI payment app
+        window.location.href = upiLink;
+        document.getElementById('paymentConfirmHint').style.display = 'block';
+        document.getElementById('confirmPaymentBtn').style.display = 'flex';
 
         buyBtn.disabled = false;
         buyBtn.innerHTML = originalText;
@@ -945,6 +953,45 @@
         buyBtn.disabled = false;
         buyBtn.innerHTML = originalText;
         showError('Payment error: ' + error.message);
+      }
+    }
+
+    async function confirmPayment() {
+      try {
+        const intentId = sessionStorage.getItem('zayvora_intent_id');
+        if (!intentId) {
+          showError('No payment intent found. Please start payment first.');
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/payment/verify`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            intent_id: intentId
+          })
+        });
+
+        if (!response.ok) {
+          showError('Payment verification pending. Please wait and retry.');
+          return;
+        }
+
+        const data = await response.json();
+        if (data.verified) {
+          const credits = parseInt(sessionStorage.getItem('zayvora_credits') || '0', 10);
+          await grantCredits(intentId, credits);
+          showError('✓ Payment verified and credits delivered.');
+          document.getElementById('confirmPaymentBtn').style.display = 'none';
+          document.getElementById('paymentConfirmHint').style.display = 'none';
+        } else {
+          showError('Payment not verified yet. Please complete payment and retry.');
+        }
+      } catch (error) {
+        console.error('Payment verification error:', error);
+        showError('Unable to verify payment right now. Please retry.');
       }
     }
 
