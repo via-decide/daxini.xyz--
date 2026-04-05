@@ -96,6 +96,14 @@
       "destination": "/zayvora/index.html"
     },
     {
+      "source": "/studyos",
+      "destination": "/studyos.html"
+    },
+    {
+      "source": "/studyos/",
+      "destination": "/studyos.html"
+    },
+    {
       "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
     }
