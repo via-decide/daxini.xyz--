@@ -436,7 +436,9 @@
     <div class="info-section">
       <h4>✓ Secure Payment</h4>
       <ul>
-        <li>Powered by PhonePe & RBI</li>
+        <li>Secure UPI payment</li>
+        <li>Intent-based verification</li>
+        <li>Mac Mini settlement approval</li>
         <li>Instant credit delivery</li>
         <li>All major UPI methods</li>
         <li>GST included in price</li>
@@ -893,6 +895,8 @@
     }
 
     async function initiatePayment(pkg) {
+      const buyBtn = document.getElementById('buyBtn');
+      const originalText = buyBtn.innerHTML;
       try {
         if (!selectedPackage) {
           showError('Please select a credit package');
@@ -906,9 +910,8 @@
           return;
         }
 
-        document.getElementById('buyBtn').disabled = true;
-        const originalText = document.getElementById('buyBtn').innerHTML;
-        document.getElementById('buyBtn').innerHTML = '<div class="spinner"></div> Generating payment link...';
+        buyBtn.disabled = true;
+        buyBtn.innerHTML = '<div class="spinner"></div> Generating payment link...';
 
         // Create payment intent
         const paymentIntent = await createPaymentIntent(selectedPackage);
@@ -934,22 +937,26 @@
           showQRFallback(paymentIntent, upiLink);
         }
 
-        document.getElementById('buyBtn').disabled = false;
-        document.getElementById('buyBtn').innerHTML = originalText;
+        buyBtn.disabled = false;
+        buyBtn.innerHTML = originalText;
 
       } catch (error) {
         console.error('Payment error:', error);
-        document.getElementById('buyBtn').disabled = false;
-        document.getElementById('buyBtn').innerHTML = originalText;
+        buyBtn.disabled = false;
+        buyBtn.innerHTML = originalText;
         showError('Payment error: ' + error.message);
       }
     }
 
     async function attemptUPIPayment(upiLink, paymentIntent) {
       try {
-        // For web, show fallback immediately
-        // For native apps, this would trigger UPI intent
-        return false;
+        if (!upiLink || !upiLink.startsWith('upi://')) {
+          return false;
+        }
+
+        // Launch native UPI app intent flow
+        window.location.href = upiLink;
+        return true;
       } catch (error) {
         console.error('UPI attempt error:', error);
         return false;
