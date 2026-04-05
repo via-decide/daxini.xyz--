@@ -57,11 +57,11 @@
   "rewrites": [
     {
       "source": "/login",
-      "destination": "/zayvora-login/index.html"
+      "destination": "/ui/auth/login.html"
     },
     {
       "source": "/login/",
-      "destination": "/zayvora-login/index.html"
+      "destination": "/ui/auth/login.html"
     },
     {
       "source": "/zayvora-pricing",
@@ -73,27 +73,35 @@
     },
     {
       "source": "/zayvora-onboarding",
-      "destination": "/zayvora-onboarding/index.html"
+      "destination": "/ui/auth/onboarding.html"
     },
     {
       "source": "/zayvora-onboarding/",
-      "destination": "/zayvora-onboarding/index.html"
+      "destination": "/ui/auth/onboarding.html"
     },
     {
       "source": "/zayvora-chat",
-      "destination": "/zayvora-chat/index.html"
+      "destination": "/ui/workspace/index.html"
     },
     {
       "source": "/zayvora-chat/",
-      "destination": "/zayvora-chat/index.html"
+      "destination": "/ui/workspace/index.html"
     },
     {
       "source": "/zayvora",
-      "destination": "/zayvora/index.html"
+      "destination": "/ui/workspace/mission-control.html"
     },
     {
       "source": "/zayvora/",
-      "destination": "/zayvora/index.html"
+      "destination": "/ui/workspace/mission-control.html"
+    },
+    {
+      "source": "/zayvora-dev",
+      "destination": "/ui/workspace/dev-workspace.html"
+    },
+    {
+      "source": "/zayvora-dev/",
+      "destination": "/ui/workspace/dev-workspace.html"
     },
     {
       "source": "/studyos",
