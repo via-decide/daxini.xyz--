@@ -5,6 +5,9 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" },
     { "source": "/early-access", "destination": "/zayvora-onboarding/index.html" },
-    { "source": "/((?!api/|.*\.).*)", "destination": "/index.html" }
+    { "source": "/login", "destination": "/zayvora-login/index.html" },
+    { "source": "/pricing", "destination": "/zayvora-pricing.html" },
+    { "source": "/workspace", "destination": "/ui/workspace/mission-control.html" },
+    { "source": "/((?!api/|.*\\.).*)", "destination": "/index.html" }
   ]
 }

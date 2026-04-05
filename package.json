@@ -1,9 +1,13 @@
 {
   "name": "daxini-xyz-core",
-  "version": "2.0.4",
+  "version": "3.0.0",
   "main": "api/index.js",
   "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
   "dependencies": {
-    "node-fetch": "^3.3.2"
+    "ws": "^8.16.0"
   }
 }

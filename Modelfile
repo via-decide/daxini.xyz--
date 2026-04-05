@@ -74,13 +74,14 @@ You are an advanced AI system designed to assist with software engineering tasks
 PARAMETER temperature 0.2
 PARAMETER top_p 0.95
 PARAMETER top_k 40
-PARAMETER num_ctx 8192
-PARAMETER num_predict 4096
+PARAMETER num_ctx 4096
+PARAMETER num_predict 2048
 
-# Optimization parameters
+# Optimization for 8GB RAM Apple Silicon (local-first)
 PARAMETER repeat_last_n 64
 PARAMETER repeat_penalty 1.1
 PARAMETER num_gpu 1
+PARAMETER num_thread 4
 
 # Metadata
 METADATA author "Zayvora / via-decide"
