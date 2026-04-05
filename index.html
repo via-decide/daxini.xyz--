@@ -536,6 +536,26 @@
         // 2. Logged in but onboarding incomplete → /zayvora-onboarding
         // 3. Onboarding complete → /zayvora-chat
 
+        const STATIC_ROUTE_MAP = {
+            '/zayvora': '/zayvora/index.html',
+            '/zayvora-pricing': '/zayvora-pricing.html',
+            '/login': '/ui/auth/login.html',
+            '/workspace': '/ui/workspace/mission-control.html'
+        };
+
+        function handleSpaFallbackRoute() {
+            const path = window.location.pathname.replace(/\/$/, '') || '/';
+
+            if (path === '/') return;
+
+            if (STATIC_ROUTE_MAP[path]) {
+                window.location.replace(STATIC_ROUTE_MAP[path]);
+                return;
+            }
+
+            window.location.replace('/');
+        }
+
         async function launchZayvora(modeOrEvent) {
             const mode = (typeof modeOrEvent === 'string') ? modeOrEvent : 'demo';
             console.log(`[Zayvora] Launching Workspace (${mode.toUpperCase()} Mode)...`);
@@ -544,6 +564,7 @@
 
         // Attach click handler to button
         document.addEventListener('DOMContentLoaded', () => {
+            handleSpaFallbackRoute();
             const tryBtn = document.getElementById('try-zayvora');
             if (tryBtn) tryBtn.addEventListener('click', launchZayvora);
         });
