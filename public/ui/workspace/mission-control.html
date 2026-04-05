@@ -57,6 +57,11 @@
 
         // Load desktop mission control
         const { missionControl } = await import('/ui/layout/mission-control.js?v=2.04');
+        const { ToolkitHub } = await import('/ui/layout/toolkit-hub.js?v=0.1');
+        
+        window.__toolkitHub = new ToolkitHub();
+        window.__toolkitHub.init();
+        
         currentMode = 'desktop';
       }
     }
