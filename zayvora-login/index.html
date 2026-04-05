@@ -207,14 +207,6 @@
             <p>India's Sovereign AI Engineering Agent</p>
         </div>
 
-        <!-- Demo Info -->
-        <div class="demo-info">
-            <strong>Demo Login:</strong><br>
-            Email: <code>demo@zayvora.ai</code><br>
-            Password: <code>demo1234</code><br>
-            <small style="color: #888;">Min 8 characters required</small>
-        </div>
-
         <!-- Error Message -->
         <div class="error-message" id="authLoginError"></div>
 
@@ -226,7 +218,7 @@
             <div class="form-group">
                 <label for="username">Email Address</label>
                 <input
-                    type="text"
+                    type="email"
                     id="username"
                     placeholder="your@email.com"
                     autocomplete="email"
@@ -281,7 +273,7 @@
             <div class="form-group">
                 <label for="regEmail">Email Address</label>
                 <input
-                    type="text"
+                    type="email"
                     id="regEmail"
                     placeholder="your@email.com"
                     autocomplete="email"
@@ -314,7 +306,7 @@
             <div class="form-group">
                 <label for="forgotEmail">Email Address</label>
                 <input
-                    type="text"
+                    type="email"
                     id="forgotEmail"
                     placeholder="your@email.com"
                     autocomplete="email"
@@ -332,8 +324,6 @@
         </form>
     </div>
 
-    <script type="module" src="utils.js"></script>
-    <script type="module" src="auth.js"></script>
     <script>
         // ============================================================================
         // ZAYVORA LOGIN INTEGRATION
@@ -545,24 +535,13 @@
                     localStorage.setItem('zayvora_token', token);
                     localStorage.setItem('zayvora_user', JSON.stringify({ firstName, lastName, email }));
 
-                    showSuccess('✓ Account created! Redirecting to login...');
+                    showSuccess('✓ Account created! Setting up your workspace...');
                     console.log('[Auth] Registration successful for:', email);
 
+                    // Go directly to onboarding — no flash of login form
                     setTimeout(() => {
-                        // Clear form and redirect to login
-                        document.getElementById('firstName').value = '';
-                        document.getElementById('lastName').value = '';
-                        document.getElementById('regEmail').value = '';
-                        document.getElementById('regPassword').value = '';
-                        toggleLoginForm({ preventDefault: () => {} });
-                        btn.disabled = false;
-                        btn.innerHTML = 'Create Account';
-
-                        // Redirect to onboarding
-                        setTimeout(() => {
-                            window.location.href = '/zayvora-onboarding';
-                        }, 1000);
-                    }, 2000);
+                        window.location.href = '/zayvora-onboarding';
+                    }, 1500);
                 } else {
                     // ISSUE 5: Duplicate email detection
                     let errorMsg = 'Registration failed';
@@ -664,11 +643,16 @@
             }
         }
 
-        // Check if already logged in
+        // Check if already logged in — route to proper destination
         window.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('zayvora_token');
             if (token) {
-                window.location.href = '/zayvora-pricing';
+                const onboardingComplete = localStorage.getItem('zayvora_onboarding');
+                if (onboardingComplete) {
+                    window.location.href = '/zayvora-chat';
+                } else {
+                    window.location.href = '/zayvora-onboarding';
+                }
             }
         });
     </script>

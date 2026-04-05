@@ -2,6 +2,16 @@
   "routes": [
     { "src": "/", "dest": "/index.html" },
     { "src": "/zayvora", "dest": "/zayvora/index.html" },
+    { "src": "/login", "dest": "/zayvora-login/index.html" },
+    { "src": "/early-access", "dest": "/zayvora-login/index.html" },
+    { "src": "/zayvora-login", "dest": "/zayvora-login/index.html" },
+    { "src": "/zayvora-onboarding", "dest": "/zayvora-onboarding/index.html" },
+    { "src": "/zayvora-chat", "dest": "/zayvora-chat/index.html" },
+    { "src": "/zayvora-pricing", "dest": "/zayvora-pricing.html" },
+    { "src": "/workspace", "dest": "/ui/workspace/mission-control.html" },
+    { "src": "/privacy", "dest": "/privacy.html" },
+    { "src": "/terms", "dest": "/terms.html" },
+    { "src": "/refunds", "dest": "/refunds.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }

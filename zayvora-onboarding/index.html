@@ -91,7 +91,7 @@
           <p class="step-description">Choose how you want to work with Zayvora:</p>
 
           <div class="workspace-options">
-            <div class="workspace-option" onclick="selectWorkspaceOption('repo')">
+            <div class="workspace-option" onclick="selectWorkspaceOption('repo', event)">
               <div class="option-icon">🔗</div>
               <h3>Import GitHub Repo</h3>
               <p>Analyze an existing repository</p>
@@ -99,13 +99,13 @@
               <div id="repoStatus" class="status-message hidden"></div>
             </div>
 
-            <div class="workspace-option" onclick="selectWorkspaceOption('files')">
+            <div class="workspace-option" onclick="selectWorkspaceOption('files', event)">
               <div class="option-icon">📁</div>
               <h3>Upload Project Files</h3>
               <p>Upload your project for analysis</p>
             </div>
 
-            <div class="workspace-option" onclick="selectWorkspaceOption('empty')">
+            <div class="workspace-option" onclick="selectWorkspaceOption('empty', event)">
               <div class="option-icon">✨</div>
               <h3>Start Empty Workspace</h3>
               <p>Begin with a fresh workspace</p>
@@ -129,7 +129,7 @@
               <div class="credits-icon">💎</div>
               <div class="credits-info">
                 <span class="credits-label">Your Balance</span>
-                <span class="credits-amount" id="creditsAmount">120</span>
+                <span class="credits-amount" id="creditsAmount">—</span>
               </div>
             </div>
           </div>
@@ -172,6 +172,15 @@
     </div>
   </div>
 
+  <!-- Auth protection: redirect to login if no token -->
+  <script>
+    (function() {
+      const token = localStorage.getItem('zayvora_token');
+      if (!token) {
+        window.location.href = '/zayvora-login';
+      }
+    })();
+  </script>
   <script src="onboarding.js"></script>
 </body>
 </html>

@@ -78,14 +78,15 @@ function scrollToTop() {
 // SECTION 3: WORKSPACE SELECTION
 // ============================================================================
 
-function selectWorkspaceOption(option) {
+function selectWorkspaceOption(option, e) {
   // Remove previous selection styling
   document.querySelectorAll('.workspace-option').forEach(opt => {
     opt.classList.remove('selected');
   });
 
-  // Add selection styling
-  event.currentTarget.classList.add('selected');
+  // Add selection styling to clicked element
+  const target = e ? e.currentTarget : document.querySelector(`[onclick*="'${option}'"]`);
+  if (target) target.classList.add('selected');
   selectedWorkspace = option;
 
   // Show repo input if importing repo
@@ -207,8 +208,7 @@ async function fetchUserCredits() {
     // Get user_id from zayvora_token if available
     const tokenStr = localStorage.getItem('zayvora_token');
     if (!tokenStr) {
-      // Default demo credits
-      document.getElementById('creditsAmount').textContent = '120';
+      document.getElementById('creditsAmount').textContent = '0';
       return;
     }
 
@@ -221,8 +221,8 @@ async function fetchUserCredits() {
     }
   } catch (error) {
     console.error('Error fetching credits:', error);
-    // Fallback to demo amount
-    document.getElementById('creditsAmount').textContent = '120';
+    // Fallback on error
+    document.getElementById('creditsAmount').textContent = '0';
   }
 }
 
