@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zayvora Workspace Desktop</title>
+  <link rel="stylesheet" href="/ui/workspace/workspace-layout.css" />
+  <link rel="stylesheet" href="/ui/explorer/left-panel.css" />
+  <link rel="stylesheet" href="/ui/editor/editor.css" />
+  <link rel="stylesheet" href="/ui/terminal/terminal.css" />
+  <link rel="stylesheet" href="/ui/image-editor/image-editor.css" />
+</head>
+<body>
+  <div id="mission-control-workspace" style="display: grid; grid-template-columns: 300px 8px 1fr 8px 300px; height: 100vh;">
+    <!-- LEFT: CHAT -->
+    <div id="chat-panel-mount" class="panel-section"></div>
+    <div id="resizer-left" class="panel-resizer"></div>
+    
+    <!-- CENTER: PREVIEW -->
+    <div id="preview-panel-mount" class="panel-section"></div>
+    <div id="resizer-right" class="panel-resizer"></div>
+    
+    <!-- RIGHT: WORKSPACE (PRs / FILES) -->
+    <div id="workspace-panel-mount" class="panel-section"></div>
+  </div>
+
+  <script type="module">
+    import { missionControl } from '/ui/layout/mission-control.js?v=2.03';
+    import { ZayvoraState } from '/ui/state/zayvora-state.js';
+    
+    // Auto-detect the repo from the URL or state
+    ZayvoraState.setActiveRepo('via-decide/zayvora');
+  </script>
+</body>
+</html>
