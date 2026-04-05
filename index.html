@@ -445,8 +445,8 @@
         </p>
 
         <div class="launch-actions" style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 3rem;">
-            <button type="button" id="try-zayvora" class="try-zayvora-btn" onclick="window.location.href='/zayvora'">Mission Control →</button>
-            <button type="button" id="dev-workbench" class="try-zayvora-btn secondary" onclick="window.location.href='/zayvora-dev'" style="background: rgba(13, 17, 23, 0.7); border: 1px solid #00e5ff; color: #00e5ff;">Dev Studio →</button>
+            <button type="button" id="try-zayvora" class="try-zayvora-btn" onclick="window.location.href='/ui/workspace/mission-control.html'">Mission Control →</button>
+            <button type="button" id="dev-workbench" class="try-zayvora-btn secondary" onclick="window.location.href='/ui/workspace/dev-workspace.html'" style="background: rgba(13, 17, 23, 0.7); border: 1px solid #00e5ff; color: #00e5ff;">Dev Studio →</button>
         </div>
 
         <div class="grid">
@@ -509,22 +509,16 @@
         // 2. Logged in but onboarding incomplete → /zayvora-onboarding
         // 3. Onboarding complete → /zayvora-chat
 
-        function launchZayvora(e) {
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-
-            console.log('[Zayvora] Launching Workspace (Demo Mode)...');
-            window.location.href = '/ui/workspace/index.html';
+        async function launchZayvora(modeOrEvent) {
+            const mode = (typeof modeOrEvent === 'string') ? modeOrEvent : 'demo';
+            console.log(`[Zayvora] Launching Workspace (${mode.toUpperCase()} Mode)...`);
+            window.location.href = '/ui/workspace/mission-control.html';
         }
 
         // Attach click handler to button
         document.addEventListener('DOMContentLoaded', () => {
-            const tryZayvoraBtn = document.getElementById('try-zayvora');
-            if (tryZayvoraBtn) {
-                tryZayvoraBtn.onclick = launchZayvora;
-            }
+            const tryBtn = document.getElementById('try-zayvora');
+            if (tryBtn) tryBtn.addEventListener('click', launchZayvora);
         });
     </script>
 
