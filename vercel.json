@@ -3,15 +3,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/api/auth/:path*", "destination": "/api/index.js" },
-    { "source": "/api/git/:path*", "destination": "/api/index.js" },
-    { "source": "/api/repos/:path*", "destination": "/api/index.js" },
-    { "source": "/api/:path*", "destination": "/api/index.js" },
-    { "source": "/ui/workspace/:path*", "destination": "/ui/workspace/:path*.html" },
-    { "source": "/ui/auth/:path*", "destination": "/ui/auth/:path*.html" },
-    { "source": "/zayvora", "destination": "/ui/workspace/mission-control.html" },
-    { "source": "/zayvora-dev", "destination": "/ui/workspace/dev-workspace.html" },
-    { "source": "/login", "destination": "/ui/auth/login.html" },
-    { "source": "/((?!api/|ui/|site/|public/|.*\\.).*)", "destination": "/index.html" }
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/((?!api/|.*\\.).*)", "destination": "/index.html" }
   ]
 }
