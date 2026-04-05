@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/ui/editor/editor.css" />
   <link rel="stylesheet" href="/ui/terminal/terminal.css" />
   <link rel="stylesheet" href="/ui/image-editor/image-editor.css" />
+  <link rel="stylesheet" href="/styles/mobile.css" />
 </head>
 <body>
   <div id="mission-control-workspace" style="display: grid; grid-template-columns: 300px 8px 1fr 8px 300px; height: 100vh;">
@@ -25,11 +26,43 @@
   </div>
 
   <script type="module">
-    import { missionControl } from '/ui/layout/mission-control.js?v=2.03';
+    import { MobileDetect } from '/ui/utils/mobileDetect.js';
     import { ZayvoraState } from '/ui/state/zayvora-state.js';
-    
+
     // Auto-detect the repo from the URL or state
     ZayvoraState.setActiveRepo('via-decide/zayvora');
+
+    let currentMode = null;
+
+    async function bootstrap(isMobile) {
+      if (isMobile && currentMode !== 'mobile') {
+        // Hide desktop layout
+        const desktop = document.getElementById('mission-control-workspace');
+        if (desktop) desktop.style.display = 'none';
+
+        // Load mobile workspace
+        const { MobileWorkspace } = await import('/ui/mobile/mobileWorkspace.js');
+        window.__mobileWorkspace = new MobileWorkspace();
+        currentMode = 'mobile';
+      } else if (!isMobile && currentMode !== 'desktop') {
+        // Remove mobile workspace if present
+        if (window.__mobileWorkspace) {
+          window.__mobileWorkspace.destroy();
+          window.__mobileWorkspace = null;
+        }
+
+        // Show desktop layout
+        const desktop = document.getElementById('mission-control-workspace');
+        if (desktop) desktop.style.display = 'grid';
+
+        // Load desktop mission control
+        const { missionControl } = await import('/ui/layout/mission-control.js?v=2.04');
+        currentMode = 'desktop';
+      }
+    }
+
+    bootstrap(MobileDetect.isMobile());
+    MobileDetect.onChange((isMobile) => bootstrap(isMobile));
   </script>
 </body>
 </html>
