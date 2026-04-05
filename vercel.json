@@ -3,9 +3,9 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/check.js" },
     { "source": "/login", "destination": "/ui/auth/login.html" },
     { "source": "/zayvora", "destination": "/ui/workspace/mission-control.html" },
-    { "source": "/((?!api/|.*\\.).*)", "destination": "/index.html" }
+    { "source": "/zayvora-dev", "destination": "/ui/workspace/dev-workspace.html" },
+    { "source": "/((?!api/|ui/|site/|public/|.*\\.).*)", "destination": "/index.html" }
   ]
 }
