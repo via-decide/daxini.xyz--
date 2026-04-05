@@ -36,9 +36,8 @@ export class ChatPanel {
     const prompt = this.mountEl.querySelector('#chat-prompt');
     const sendBtn = this.mountEl.querySelector('#chat-send');
 
-    sendBtn.onclick = () => this.handlePrompt(prompt.value);
+    sendBtn.onclick = () => this.sendMessage();
     prompt.onkeydown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') this.handlePrompt(prompt.value);
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') this.sendMessage();
     };
   }

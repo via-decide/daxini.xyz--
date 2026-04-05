@@ -54,7 +54,7 @@ export class WorkspacePanel {
       this.renderPRs(prs);
     } catch (err) {
       console.error('[Zayv_Workspace] Error loading PRs:', err);
-      this.mountEl.querySelector('#pr-list').innerHTML = `
+      historyEl.innerHTML = `
         <div class="error-state" style="padding: 20px; text-align: center;">
           <p style="color: #ff5c5c;">GITHUB API Error: Permission Denied</p>
           <p style="font-size: 11px; margin-bottom: 15px;">A GitHub Personal Access Token (PAT) is required for full repository history.</p>
