@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zayvora Workspace</title>
+  <link rel="stylesheet" href="./workspace-layout.css" />
+  <link rel="stylesheet" href="../editor/editor.css" />
+  <link rel="stylesheet" href="../terminal/terminal.css" />
+</head>
+<body>
+  <main class="workspace" aria-label="Zayvora workspace">
+    <section class="top-grid" id="topGrid">
+      <section class="panel panel-projects" aria-label="Project explorer">
+        <header class="panel-header">Project explorer</header>
+        <div class="panel-body explorer-shell">
+          <div class="project-create-row">
+            <input id="projectNameInput" type="text" placeholder="New project name" aria-label="New project name" />
+            <button id="createProjectBtn" type="button">Create</button>
+          </div>
+          <p id="projectStatus" class="explorer-status" aria-live="polite">Loading projects...</p>
+          <h3 class="explorer-subheader">Projects</h3>
+          <ul id="projectTree" class="tree"></ul>
+          <h3 id="fileTreeHeader" class="explorer-subheader">Files</h3>
+          <ul id="fileTree" class="tree"></ul>
+        </div>
+      </section>
+
+      <div class="resizer resizer-vertical" id="resizeLeft" role="separator" aria-orientation="vertical" aria-label="Resize project panel"></div>
+
+      <section class="panel panel-preview" aria-label="Live preview and editor">
+        <header class="panel-header">Code editor + live preview</header>
+        <div class="panel-body editor-shell">
+          <div class="editor-toolbar">
+            <p id="editorStatus" class="editor-status" aria-live="polite">Loading editor...</p>
+            <button id="saveFileBtn" class="editor-save" type="button">Save file</button>
+          </div>
+          <div id="codeEditor" class="code-editor" aria-label="Code editor"></div>
+          <iframe id="previewFrame" class="editor-preview" title="Live preview"></iframe>
+        </div>
+      </section>
+
+      <div class="resizer resizer-vertical" id="resizeRight" role="separator" aria-orientation="vertical" aria-label="Resize chat panel"></div>
+
+      <section class="panel panel-chat" aria-label="Zayvora chat">
+        <header class="panel-header">Zayvora chat</header>
+        <div class="panel-body chat-mock">
+          <div class="bubble agent">How can I help with this repo?</div>
+          <div class="bubble user">Create a Monaco editor with live preview.</div>
+        </div>
+      </section>
+    </section>
+
+    <div class="resizer resizer-horizontal" id="resizeBottom" role="separator" aria-orientation="horizontal" aria-label="Resize terminal panel"></div>
+
+    <section class="panel panel-terminal" aria-label="Terminal">
+      <header class="panel-header">Terminal</header>
+      <div class="panel-body terminal-body">
+        <div class="terminal-shell">
+          <div id="terminalLog" class="terminal-log" aria-live="polite"></div>
+          <div class="terminal-controls">
+            <input id="terminalInput" class="terminal-input" type="text" placeholder="Run shell command" aria-label="Run shell command" />
+            <button id="terminalRun" class="terminal-run" type="button">Run</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+
+  <script>
+    (function authGuard() {
+      const token = localStorage.getItem('zayvora_token');
+      const authBase = localStorage.getItem('zayvora_auth_base') || 'http://localhost:4000';
+
+      if (!token) {
+        // window.location.href = '/ui/auth/login.html';
+        return;
+      }
+
+      fetch(`${authBase}/auth/verify`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error('Invalid token');
+        })
+        .catch(() => {
+          // localStorage.removeItem('zayvora_token');
+          // window.location.href = '/ui/auth/login.html';
+        });
+    })();
+  </script>
+
+  <script src="../explorer/repo-loader.js"></script>
+  <script src="../explorer/project-tree.js"></script>
+  <script src="../explorer/file-tree.js"></script>
+  <script src="../editor/code-editor.js"></script>
+  <script src="../terminal/terminal.js"></script>
+  <script src="./workspace-layout.js"></script>
+</body>
+</html>

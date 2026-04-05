@@ -89,11 +89,19 @@
     },
     {
       "source": "/zayvora",
-      "destination": "/ui/workspace/index.html"
+      "destination": "/ui/workspace/mission-control.html"
     },
     {
       "source": "/zayvora/",
-      "destination": "/ui/workspace/index.html"
+      "destination": "/ui/workspace/mission-control.html"
+    },
+    {
+      "source": "/zayvora-dev",
+      "destination": "/ui/workspace/dev-workspace.html"
+    },
+    {
+      "source": "/zayvora-dev/",
+      "destination": "/ui/workspace/dev-workspace.html"
     },
     {
       "source": "/studyos",
