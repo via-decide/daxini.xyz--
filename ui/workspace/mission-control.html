@@ -11,7 +11,14 @@
   <link rel="stylesheet" href="/ui/image-editor/image-editor.css" />
 </head>
 <body>
-  <div id="mission-control-workspace" style="display: grid; grid-template-columns: 300px 8px 1fr 8px 300px; height: 100vh;">
+  <div class="header-main">
+    <h1>MISSION_CONTROL</h1>
+    <div class="system-status">
+      <span class="status-dot pulsing"></span>
+      <span class="status-text">SYSTEM STATUS: SOVEREIGN PRIME (v2.02)</span>
+    </div>
+  </div>
+  <div id="mission-control-workspace" style="display: grid; grid-template-columns: 300px 8px 1fr 8px 300px; height: calc(100vh - 60px);">
     <!-- LEFT: CHAT -->
     <div id="chat-panel-mount" class="panel-section"></div>
     <div id="resizer-left" class="panel-resizer"></div>
@@ -25,7 +32,7 @@
   </div>
 
   <script type="module">
-    import { missionControl } from '/ui/layout/mission-control.js?v=2.02';
+    import { missionControl } from '/ui/layout/mission-control.js?v=2.03';
     import { ZayvoraState } from '/ui/state/zayvora-state.js';
     
     // Auto-detect the repo from the URL or state

@@ -216,3 +216,54 @@ body {
 .pr-item.closed .pr-status-badge { color: #ff5c5c; border: 1px solid #ff5c5c33; }
 .pr-item.open .pr-status-badge { color: #5cff9a; border: 1px solid #5cff9a33; }
 .pr-item.merged .pr-status-badge { color: #5ca6ff; border: 1px solid #5ca6ff33; }
+
+/* Mission Control Header & Status */
+.header-main {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background: rgba(10, 15, 25, 0.8);
+  border-bottom: 1px solid rgba(80, 200, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+.header-main h1 {
+  font-size: 1.2rem;
+  letter-spacing: 0.3rem;
+  color: #fff;
+  margin: 0;
+  background: linear-gradient(90deg, #60efff, #0061ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.system-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px 15px;
+  border-radius: 20px;
+  border: 1px solid rgba(80, 200, 255, 0.1);
+}
+.status-text {
+  font-size: 0.65rem;
+  letter-spacing: 0.1rem;
+  color: rgba(80, 200, 255, 0.8);
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #00ff8c;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #00ff8c;
+}
+.pulsing {
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 140, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 255, 140, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 140, 0); }
+}
