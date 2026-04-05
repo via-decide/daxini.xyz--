@@ -429,6 +429,19 @@
           color: #00ff8c;
           letter-spacing: 0.1rem;
         }
+        #daxini-fallback {
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            text-align: center;
+            padding: 2rem 1rem;
+            letter-spacing: 0.05em;
+        }
+
+        #app[hidden],
+        #legacy-home[hidden] {
+            display: none !important;
+        }
+
         .pulsing { animation: pulse 2s infinite; }
         @keyframes pulse {
           0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 140, 0.7); }
@@ -438,7 +451,9 @@
     </style>
 </head>
 <body>
+    <div id="daxini-fallback">Loading Daxini Engine...</div>
     <div id="app" hidden></div>
+    <div id="legacy-home">
 
     <nav>
         <a href="/" class="nav-logo">DAXINI</a>
@@ -524,55 +539,12 @@
         </div>
     </footer>
 
+    </div>
+
+    <noscript>Loading Daxini Engine...</noscript>
     <script src="/scripts/app.js"></script>
-
-    <!-- Zayvora Launch Logic -->
-    <script>
-        // ========================================================================
-        // TRY ZAYVORA - INTELLIGENT ROUTING
-        // ========================================================================
-        // Routes user based on authentication and onboarding state:
-        // 1. Not logged in → /login
-        // 2. Logged in but onboarding incomplete → /zayvora-onboarding
-        // 3. Onboarding complete → /zayvora-chat
-
-        const STATIC_ROUTE_MAP = {
-            '/zayvora': '/zayvora/index.html',
-            '/zayvora-pricing': '/zayvora-pricing/index.html',
-            '/login': '/zayvora-login/index.html',
-            '/early-access': '/zayvora-login/index.html',
-            '/zayvora-login': '/zayvora-login/index.html',
-            '/zayvora-onboarding': '/zayvora-onboarding/index.html',
-            '/zayvora-chat': '/zayvora-chat/index.html',
-            '/workspace': '/ui/workspace/mission-control.html'
-        };
-
-        function handleSpaFallbackRoute() {
-            const path = window.location.pathname.replace(/\/$/, '') || '/';
-
-            if (path === '/') return;
-
-            if (STATIC_ROUTE_MAP[path]) {
-                window.location.replace(STATIC_ROUTE_MAP[path]);
-                return;
-            }
-
-            window.location.replace('/');
-        }
-
-        async function launchZayvora(modeOrEvent) {
-            const mode = (typeof modeOrEvent === 'string') ? modeOrEvent : 'demo';
-            console.log(`[Zayvora] Launching Workspace (${mode.toUpperCase()} Mode)...`);
-            window.location.href = '/ui/workspace/mission-control.html';
-        }
-
-        // Attach click handler to button
-        document.addEventListener('DOMContentLoaded', () => {
-            handleSpaFallbackRoute();
-            const tryBtn = document.getElementById('try-zayvora');
-            if (tryBtn) tryBtn.addEventListener('click', launchZayvora);
-        });
-    </script>
+    <script src="/app/router.js"></script>
+    <script src="/app/bootstrap.js"></script>
 
 </body>
 </html>
