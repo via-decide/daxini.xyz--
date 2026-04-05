@@ -32,7 +32,7 @@ import { isValidEmail } from './utils.js';
      */
     async function login(username, password) {
         try {
-            const response = await fetch('/auth/login', {
+            const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -54,7 +54,7 @@ import { isValidEmail } from './utils.js';
 
     async function register(formData) {
         try {
-            const response = await fetch('/auth/register', {
+            const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -69,7 +69,7 @@ import { isValidEmail } from './utils.js';
 
     async function forgotPassword(email) {
         try {
-            const response = await fetch('/api/forgot-password', {
+            const response = await fetch('/api/auth/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
@@ -84,7 +84,7 @@ import { isValidEmail } from './utils.js';
 
     async function resetPassword(token, newPassword) {
         try {
-            const response = await fetch('/api/reset-password', {
+            const response = await fetch('/api/auth/reset-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token, newPassword })
@@ -103,7 +103,7 @@ import { isValidEmail } from './utils.js';
      */
     function logout() {
         const token = getAuthToken();
-        fetch('/auth/logout', {
+        fetch('/api/auth/logout', {
             method: 'POST',
             headers: token ? { Authorization: `Bearer ${token}` } : {}
         }).catch(() => {});

@@ -26,7 +26,35 @@ export default async function handler(req, res) {
       return res.status(200).json({ authenticated: true, user: { id: 'daxini_01', name: 'Dharam Daxini' } });
     }
     if (path === '/api/auth/login') {
+      if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
       return res.status(200).json({ success: true, token: 'Bearer sovereign_' + Math.random().toString(36).substring(7) });
+    }
+    if (path === '/api/auth/register') {
+      if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+      return res.status(200).json({ success: true, message: 'Account created successfully' });
+    }
+    if (path === '/api/auth/forgot-password') {
+      if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+      return res.status(200).json({ success: true, message: 'If this email exists, a reset link has been sent.' });
+    }
+    if (path === '/api/auth/logout') {
+      return res.status(200).json({ success: true });
+    }
+
+    // --- USER WALLET ---
+    if (path.startsWith('/api/user-wallet/')) {
+      return res.status(200).json({ available_credits: 0, currency: 'INR' });
+    }
+
+    // --- REPO ANALYZE ---
+    if (path === '/api/repo-analyze') {
+      if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+      return res.status(200).json({ success: true, structure: { files: [], languages: [] } });
+    }
+
+    // --- CREDITS ---
+    if (path === '/api/credits/balance' || path.startsWith('/api/credits/balance/')) {
+      return res.status(200).json({ available_credits: 0 });
     }
 
     // --- GITHUB PROXIES ---
