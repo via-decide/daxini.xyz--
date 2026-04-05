@@ -414,6 +414,29 @@
             .nav-links { gap: 0; }
             .nav-links a { font-size: 0.65rem; padding: 0.35rem 0.5rem; letter-spacing: 0.5px; }
             .zayvora-showcase { padding: 1.4rem; }
+            .system-status-mini { display: none; } /* Hide on small mobile to save space */
+        }
+        
+        /* Autonomous Prime Styles */
+        .system-status-mini {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(0, 255, 140, 0.05);
+          padding: 4px 10px;
+          border-radius: 12px;
+          border: 1px solid rgba(0, 255, 140, 0.2);
+        }
+        .system-status-mini .status-text {
+          font-size: 0.55rem;
+          color: #00ff8c;
+          letter-spacing: 0.1rem;
+        }
+        .pulsing { animation: pulse 2s infinite; }
+        @keyframes pulse {
+          0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 140, 0.7); }
+          70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(0, 255, 140, 0); }
+          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 140, 0); }
         }
     </style>
 </head>
@@ -421,6 +444,10 @@
 
     <nav>
         <a href="/" class="nav-logo">DAXINI</a>
+        <div class="system-status-mini">
+          <span class="status-dot pulsing"></span>
+          <span class="status-text">MISSION: UNSHACKLED_RESEARCH</span>
+        </div>
         <ul class="nav-links">
             <li><a href="https://logichub.app">LogicHub</a></li>
             <li><a href="https://viadecide.com">Via</a></li>
