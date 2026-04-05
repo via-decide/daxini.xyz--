@@ -1,19 +1,20 @@
 #!/usr/bin/env node
 
 async function runHealthcheck() {
-  const target = process.env.HEALTHCHECK_URL || 'http://127.0.0.1:3000/';
+  const baseUrl = process.env.HEALTHCHECK_URL || 'http://127.0.0.1:3000';
+  const target = new URL('/', baseUrl);
 
   try {
     const response = await fetch(target);
     if (response.status === 200) {
-      console.log(`OK: ${target} returned 200`);
+      console.log('SITE_HEALTH_OK');
       process.exit(0);
     }
 
-    console.error(`FAIL: ${target} returned ${response.status}`);
+    console.error(`SITE_HEALTH_FAIL status=${response.status}`);
     process.exit(1);
   } catch (error) {
-    console.error(`FAIL: unable to fetch ${target}`);
+    console.error(`SITE_HEALTH_FAIL fetch_error target=${target}`);
     console.error(error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
