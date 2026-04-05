@@ -121,15 +121,7 @@ body {
   cursor: pointer;
 }
 
-@media (max-width:900px) {
-  body > :not(#mobile-blocker) {
-    display: none;
-  }
-
-  #mobile-blocker {
-    display: block;
-  }
-}
+/* Mobile layout is handled by /styles/mobile.css and /ui/mobile/ modules */
 
 .image-editor-mount {
   height: 100%;
