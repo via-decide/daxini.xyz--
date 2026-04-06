@@ -1,1048 +1,270 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zayvora AI Credits - Buy Now</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zayvora Credit Store</title>
+  <meta name="description" content="Purchase Zayvora credits with clear local-first AI compute tiers for Explorer, Pro, and Enterprise operators." />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --bg: #06080f;
+      --panel: #101726;
+      --line: #22314d;
+      --text: #ecf1ff;
+      --muted: #a1afcd;
+      --accent: #7f5cff;
+      --accent-2: #00d5ff;
+      --good: #45cf8f;
+      --radius: 14px;
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 80% -10%, rgba(127, 92, 255, 0.2), transparent 35%),
+        radial-gradient(circle at 10% 0, rgba(0, 213, 255, 0.1), transparent 32%),
+        var(--bg);
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
     }
 
-    .container {
-      width: 100%;
-      max-width: 500px;
+    .wrap {
+      width: min(1120px, 92vw);
+      margin: 0 auto;
+      padding: 2.5rem 0 2.2rem;
     }
 
-    .header {
-      text-align: center;
-      color: white;
-      margin-bottom: 40px;
-      position: relative;
-    }
-
-    .header h1 {
-      font-size: 32px;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    .header p {
-      font-size: 16px;
-      opacity: 0.9;
-      margin-bottom: 5px;
-    }
-
-    .header .subtitle {
-      font-size: 14px;
-      opacity: 0.7;
-    }
-
-    .logout-btn {
-      position: absolute;
-      top: 0;
-      right: 0;
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .logout-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
-      border-color: white;
-    }
-
-    .pricing-cards {
-      display: grid;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-      position: relative;
-    }
-
-    .card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    }
-
-    .card.selected {
-      border-color: #667eea;
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-    }
-
-    .card.popular {
-      border-color: #667eea;
-      background: white;
-    }
-
-    .card.popular::before {
-      content: "BEST VALUE";
-      position: absolute;
-      top: -12px;
-      left: 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    .card-content {
+    .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
     }
 
-    .card-info h3 {
-      font-size: 24px;
-      color: #333;
-      margin-bottom: 4px;
+    h1 {
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      letter-spacing: -0.02em;
     }
 
-    .card-info p {
-      font-size: 14px;
-      color: #666;
+    .sub {
+      color: var(--muted);
+      margin-top: 0.45rem;
+      line-height: 1.5;
+      max-width: 65ch;
     }
 
-    .card-price {
-      text-align: right;
-    }
-
-    .card-price .amount {
-      font-size: 32px;
-      font-weight: 700;
-      color: #667eea;
-      line-height: 1;
-    }
-
-    .card-price .period {
-      font-size: 12px;
-      color: #999;
-      margin-top: 4px;
-    }
-
-    .bonus-badge {
-      display: inline-block;
-      background: #10b981;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
+    .back-btn {
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid var(--line);
+      padding: 0.65rem 1rem;
+      border-radius: 10px;
+      background: rgba(16, 23, 38, 0.8);
+      transition: 160ms ease;
+      white-space: nowrap;
       font-weight: 600;
-      margin-top: 12px;
     }
 
-    .features {
-      background: #f8f9fa;
-      border-radius: 12px;
-      padding: 16px;
-      margin-top: 16px;
+    .back-btn:hover {
+      border-color: var(--accent-2);
+      color: var(--accent-2);
     }
 
-    .features p {
-      font-size: 14px;
-      color: #555;
-      margin-bottom: 8px;
+    .credit-store {
+      border: 1px solid var(--line);
+      border-radius: calc(var(--radius) + 2px);
+      padding: 1rem;
+      margin-bottom: 1.2rem;
+      background: rgba(16, 23, 38, 0.9);
       display: flex;
+      justify-content: space-between;
       align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
     }
 
-    .features p::before {
-      content: "✓";
-      margin-right: 8px;
-      color: #10b981;
-      font-weight: bold;
+    .credit-store strong {
+      color: var(--accent-2);
+      font-size: 1.05rem;
     }
 
-    .features p:last-child {
-      margin-bottom: 0;
+    .credit-store p {
+      color: var(--muted);
+      line-height: 1.5;
     }
 
-    .balance-info {
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      padding: 16px;
-      border-radius: 12px;
-      margin-bottom: 30px;
-      text-align: center;
-    }
-
-    .balance-info p {
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-
-    .balance-info .balance {
-      font-size: 28px;
-      font-weight: 700;
-    }
-
-    .cta-section {
+    .plans {
       display: grid;
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.4rem;
     }
 
-    .btn {
-      padding: 16px 24px;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
+    .plan {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(16, 23, 38, 0.94), rgba(10, 14, 24, 0.9));
+      padding: 1.2rem;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      text-decoration: none;
+      flex-direction: column;
+      gap: 0.9rem;
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+    .plan.featured {
+      border-color: rgba(127, 92, 255, 0.65);
+      box-shadow: 0 0 0 1px rgba(127, 92, 255, 0.22) inset;
+      position: relative;
     }
 
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    .tag {
+      width: fit-content;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      border-radius: 999px;
+      border: 1px solid rgba(127, 92, 255, 0.4);
+      color: #ccbcff;
+      padding: 0.26rem 0.54rem;
     }
 
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
+    .plan h2 { font-size: 1.25rem; }
+
+    .price {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
     }
 
-    .btn-secondary {
-      background: white;
-      color: #667eea;
-      border: 2px solid #667eea;
+    .price small {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 500;
     }
 
-    .btn-secondary:hover {
-      background: #f8f9fa;
+    ul { list-style: none; display: grid; gap: 0.45rem; }
+
+    li {
+      color: var(--muted);
+      padding-left: 1.2rem;
+      position: relative;
+      line-height: 1.45;
     }
 
-    .info-section {
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      padding: 20px;
-      border-radius: 12px;
-      margin-top: 20px;
-    }
-
-    .info-section h4 {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      opacity: 0.9;
-    }
-
-    .info-section ul {
-      list-style: none;
-    }
-
-    .info-section li {
-      font-size: 13px;
-      margin-bottom: 8px;
-      opacity: 0.8;
-      display: flex;
-      align-items: flex-start;
-    }
-
-    .info-section li::before {
-      content: "•";
-      margin-right: 8px;
-      margin-top: 2px;
-    }
-
-    .legal-links {
-      text-align: center;
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .legal-links a {
-      color: white;
-      text-decoration: none;
-      font-size: 12px;
-      margin: 0 8px;
-      opacity: 0.7;
-      transition: opacity 0.3s ease;
-    }
-
-    .legal-links a:hover {
-      opacity: 1;
-    }
-
-    .loading {
-      display: none;
-      text-align: center;
-    }
-
-    .spinner {
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top: 3px solid white;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 10px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .error-message {
-      background: #fee;
-      color: #c33;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      display: none;
-      border-left: 4px solid #c33;
-    }
-
-    /* QR Code Modal */
-    .qr-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-    }
-
-    .qr-modal-content {
-      background: white;
-      border-radius: 16px;
-      padding: 32px;
-      max-width: 400px;
-      text-align: center;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    }
-
-    .qr-modal-close {
+    li::before {
+      content: "✓";
       position: absolute;
-      top: 16px;
-      right: 16px;
-      background: none;
-      border: none;
-      font-size: 28px;
+      left: 0;
+      color: var(--good);
+      font-weight: 800;
+    }
+
+    .buy {
+      margin-top: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #121a2b;
+      color: var(--text);
+      font-weight: 700;
+      padding: 0.7rem 0.9rem;
       cursor: pointer;
-      color: #666;
     }
 
-    .qr-modal-close:hover {
-      color: #333;
+    .plan.featured .buy {
+      border-color: rgba(127, 92, 255, 0.8);
+      background: linear-gradient(160deg, #7f5cff, #6040da);
     }
 
-    @media (max-width: 480px) {
-      .header h1 {
-        font-size: 28px;
-      }
+    .legal {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--line);
+      padding-top: 1rem;
+    }
 
-      .card {
-        padding: 20px;
-      }
+    .legal a {
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.45rem 0.7rem;
+      font-size: 0.9rem;
+    }
 
-      .card-info h3 {
-        font-size: 20px;
-      }
-
-      .card-price .amount {
-        font-size: 28px;
-      }
-
-      .qr-modal-content {
-        max-width: 90vw;
-        margin: 20px;
-      }
+    .legal a:hover {
+      color: var(--accent-2);
+      border-color: var(--accent-2);
     }
   </style>
-  <script src="/app/bootstrap.js"></script>
 </head>
 <body>
-  <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <button class="logout-btn" id="logoutBtn" style="display: none;">
-        🚪 Logout
-      </button>
-      <h1>Zayvora AI</h1>
-      <p>Credit Store</p>
-      <p class="subtitle">Get instant access to advanced AI capabilities</p>
-    </div>
-
-    <!-- Current Balance -->
-    <div class="balance-info" id="balanceSection" style="display: none;">
-      <p>Your Current Balance</p>
-      <div class="balance" id="currentBalance">0</div>
-      <p style="font-size: 12px; margin-top: 8px;">Credits</p>
-    </div>
-
-    <!-- Error Message -->
-    <div class="error-message" id="errorMessage"></div>
-
-    <!-- Pricing Cards -->
-    <div class="pricing-cards" id="pricingCards"></div>
-
-    <!-- CTA Section -->
-    <div class="cta-section">
-      <button class="btn btn-primary" id="buyBtn" onclick="startPayment(selectedPlan)" disabled>
-        <span>💳</span>
-        <span>Buy Selected Credits</span>
-      </button>
-      <a href="mailto:dharam@viadecide.com?subject=Zayvora Support - Pricing Question" class="btn btn-secondary">
-        📧 Get Support
-      </a>
-    </div>
-
-    <!-- Info Section -->
-    <div class="info-section">
-      <h4>✓ Secure UPI Payment</h4>
-      <ul>
-        <li>Secure UPI Payment</li>
-        <li>Verified on Zayvora Sovereign Node</li>
-        <li>Intent-based verification</li>
-        <li>Mac Mini settlement approval</li>
-        <li>Instant credit delivery</li>
-        <li>All major UPI methods</li>
-        <li>GST included in price</li>
-      </ul>
-    </div>
-
-    <!-- Legal Links -->
-    <div class="legal-links">
-      <a href="/terms.html" target="_blank">Terms</a>
-      <a href="/privacy.html" target="_blank">Privacy</a>
-      <a href="/refunds.html" target="_blank">Refunds</a>
-      <a href="mailto:dharam@viadecide.com?subject=Zayvora Support">Support</a>
-    </div>
-
-    <div class="cta-section" style="margin-top: 12px;">
-      <div id="paymentConfirmHint" style="display: none; color: #fff; text-align: center; font-size: 13px;">
-        Payment sent? Click confirm once payment completed.
+  <main class="wrap">
+    <header class="topbar">
+      <div>
+        <h1>Zayvora Credit Store</h1>
+        <p class="sub">Select the credit envelope for your local-first AI workloads and reasoning depth.</p>
       </div>
-      <button class="btn btn-secondary" id="confirmPaymentBtn" onclick="confirmPayment()" style="display: none;">
-        ✅ Confirm Payment
-      </button>
-    </div>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.5.3/qrcode.min.js"></script>
-  <script>
-    // ============================================================================
-    // ZAYVORA PAYMENT ENGINE - Stateless UPI Payment Integration
-    // ============================================================================
-
-    // Global state
-    let selectedPackage = null;
-    let selectedPlan = null;
-    let userBalance = 0;
-    let currentPaymentIntent = null;
-    let qrModal = null;
-
-    const API_URL = '/api';
-    const FRONTEND_URL = window.location.origin;
-    const NODE_ID = 'macmini-gandhidham-01';
-    const SECRET_KEY = 'zayvora-sovereign-secret-key-2026'; // Fallback secret (ideally from server)
-    const UPI_ID = 'dharam@viadecide';
-    const UPI_NAME = 'Zayvora%20Engine';
-
-    // ============================================================================
-    // SECTION 2: EXPLICIT PACKAGE DEFINITIONS
-    // ============================================================================
-    const PACKAGES = [
-      {
-        id: 'starter',
-        credits: 50,
-        price: 99,
-        description: 'Getting Started'
-      },
-      {
-        id: 'pro',
-        credits: 120,
-        price: 799,
-        description: 'Heavy Users',
-        bonus: '20%'
-      },
-      {
-        id: 'enterprise',
-        credits: 1000,
-        price: 4999,
-        description: 'Enterprise'
-      }
-    ];
-
-    // ============================================================================
-    // SECTION 3-4: CRYPTOGRAPHIC UTILITIES
-    // ============================================================================
-
-    // Helper: Convert string to ArrayBuffer
-    function stringToArrayBuffer(str) {
-      const encoder = new TextEncoder();
-      return encoder.encode(str);
-    }
-
-    // Helper: Convert ArrayBuffer to hex string
-    function arrayBufferToHex(buffer) {
-      const view = new Uint8Array(buffer);
-      let hex = '';
-      for (let i = 0; i < view.length; i++) {
-        hex += ('00' + view[i].toString(16)).slice(-2);
-      }
-      return hex;
-    }
-
-    // HMAC-SHA256 signature
-    async function hmacSHA256(message, key) {
-      try {
-        const keyBuffer = stringToArrayBuffer(key);
-        const messageBuffer = stringToArrayBuffer(message);
-
-        const cryptoKey = await crypto.subtle.importKey(
-          'raw',
-          keyBuffer,
-          { name: 'HMAC', hash: 'SHA-256' },
-          false,
-          ['sign']
-        );
-
-        const signature = await crypto.subtle.sign(
-          'HMAC',
-          cryptoKey,
-          messageBuffer
-        );
-
-        return arrayBufferToHex(signature);
-      } catch (error) {
-        console.error('HMAC-SHA256 error:', error);
-        // Fallback: simple hash (not cryptographically secure, for fallback only)
-        return btoa(message + key).substring(0, 64);
-      }
-    }
-
-    // Base64 encoding
-    function base64Encode(str) {
-      try {
-        return btoa(unescape(encodeURIComponent(str)));
-      } catch (e) {
-        return btoa(str);
-      }
-    }
-
-    // ============================================================================
-    // SECTION 3: BUILD STATELESS PAYMENT INTENT
-    // ============================================================================
-
-    async function createPaymentIntent(packageId) {
-      const pkg = PACKAGES.find(p => p.id === packageId);
-      if (!pkg) {
-        throw new Error('Invalid package');
-      }
-
-      const intentId = crypto.randomUUID();
-
-      const intent = {
-        intent_id: intentId,
-        package_id: pkg.id,
-        credits: pkg.credits,
-        amount: pkg.price,
-        timestamp: Date.now(),
-        node_id: NODE_ID
-      };
-
-      // Encode payload to base64
-      const payloadJson = JSON.stringify(intent);
-      const payloadV1 = base64Encode(payloadJson);
-
-      // Create signature
-      const messageToSign = payloadV1 + intentId;
-      const signature = await hmacSHA256(messageToSign, SECRET_KEY);
-
-      return {
-        intent,
-        payload: payloadV1,
-        signature,
-        signed: true
-      };
-    }
-
-    // ============================================================================
-    // SECTION 5: BUILD SOVEREIGN DEEP LINK
-    // ============================================================================
-
-    function buildSovereignLink(paymentIntent) {
-      const { intent, payload, signature } = paymentIntent;
-      return `sov://${intent.node_id}/REVENUE_SETTLEMENT?payload=${payload}&sig=${signature}&intent=${intent.intent_id}`;
-    }
-
-    // ============================================================================
-    // SECTION 6: CONVERT TO UPI PAYMENT LINK
-    // ============================================================================
-
-    function buildUPILink(paymentIntent) {
-      const { intent } = paymentIntent;
-      const upiLink = `upi://pay?pa=${UPI_ID}&pn=${UPI_NAME}&am=${intent.amount}&cu=INR&tn=ZAYVORA_${intent.intent_id.substring(0, 8)}`;
-      return upiLink;
-    }
-
-    // ============================================================================
-    // SECTION 7: QR CODE GENERATION
-    // ============================================================================
-
-    function generateQRCode(upiLink) {
-      return new Promise((resolve) => {
-        try {
-          const qrCode = new QRCode({
-            text: upiLink,
-            width: 200,
-            height: 200,
-            colorDark: '#000000',
-            colorLight: '#ffffff',
-            correctLevel: QRCode.CorrectLevel.H
-          });
-          const canvas = qrCode._canvas;
-          resolve(canvas.toDataURL('image/png'));
-        } catch (error) {
-          console.error('QR generation error:', error);
-          resolve(null);
-        }
-      });
-    }
-
-    function showQRFallback(paymentIntent, upiLink) {
-      // Create modal for QR code
-      const modal = document.createElement('div');
-      modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-      `;
-
-      const content = document.createElement('div');
-      content.style.cssText = `
-        background: white;
-        border-radius: 16px;
-        padding: 32px;
-        max-width: 400px;
-        text-align: center;
-      `;
-
-      const closeBtn = document.createElement('button');
-      closeBtn.style.cssText = `
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-      `;
-      closeBtn.innerHTML = '×';
-      closeBtn.onclick = () => modal.remove();
-
-      content.appendChild(closeBtn);
-
-      const title = document.createElement('h3');
-      title.textContent = 'Scan to Pay';
-      title.style.cssText = 'margin-bottom: 16px; color: #333;';
-      content.appendChild(title);
-
-      const qrContainer = document.createElement('div');
-      qrContainer.id = 'qr-fallback';
-      qrContainer.style.cssText = 'margin-bottom: 20px;';
-      content.appendChild(qrContainer);
-
-      const fallbackText = document.createElement('p');
-      fallbackText.innerHTML = `<small style="color: #666;">If QR doesn't work, copy this UPI link:</small><br><code style="font-size: 11px; word-break: break-all; background: #f0f0f0; padding: 8px; border-radius: 4px; display: block; margin-top: 10px;">${upiLink}</code>`;
-      content.appendChild(fallbackText);
-
-      const copyBtn = document.createElement('button');
-      copyBtn.textContent = '📋 Copy UPI Link';
-      copyBtn.style.cssText = `
-        background: #667eea;
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        margin-top: 12px;
-        font-weight: 600;
-      `;
-      copyBtn.onclick = () => {
-        navigator.clipboard.writeText(upiLink);
-        copyBtn.textContent = '✓ Copied!';
-        setTimeout(() => { copyBtn.textContent = '📋 Copy UPI Link'; }, 2000);
-      };
-      content.appendChild(copyBtn);
-
-      modal.appendChild(content);
-      document.body.appendChild(modal);
-
-      // Generate QR asynchronously
-      generateQRCode(upiLink).then(qrImage => {
-        if (qrImage) {
-          const img = document.createElement('img');
-          img.src = qrImage;
-          img.style.cssText = 'width: 180px; height: 180px; margin: 0 auto;';
-          qrContainer.appendChild(img);
-        }
-      });
-
-      qrModal = modal;
-    }
-
-    // ============================================================================
-    // SECTION 8: POST PAYMENT CREDIT DELIVERY
-    // ============================================================================
-
-    async function grantCredits(intentId, credits) {
-      try {
-        const response = await fetch(`${API_URL}/credits/grant`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            intent_id: intentId,
-            credits: credits
-          })
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          console.error('Credit grant error:', error);
-          return false;
-        }
-
-        const data = await response.json();
-        return data.success || false;
-      } catch (error) {
-        console.error('Credit grant network error:', error);
-        return false;
-      }
-    }
-
-    // ============================================================================
-    // PAGE INITIALIZATION
-    // ============================================================================
-
-    async function init() {
-      try {
-        // Check zayvora token
-        const token = localStorage.getItem('zayvora_token');
-        if (!token) {
-          // Redirect to login
-          window.location.href = '/zayvora-login';
-          return;
-        }
-
-        // Show logout button
-        document.getElementById('logoutBtn').style.display = 'block';
-        document.getElementById('logoutBtn').onclick = handleLogout;
-
-        // Parse token and display user info
-        try {
-          const tokenData = JSON.parse(token);
-          console.log('User logged in:', tokenData.email);
-        } catch (e) {
-          console.warn('Invalid token format');
-        }
-
-        // Check authentication
-        const user = await checkAuth();
-        if (user) {
-          document.getElementById('balanceSection').style.display = 'block';
-          await loadUserBalance(user.uid);
-        }
-
-        // Render packages
-        renderPackages();
-
-        // Listen for payment completion (from callback)
-        window.addEventListener('message', handlePaymentCallback);
-      } catch (error) {
-        showError('Failed to load page: ' + error.message);
-      }
-    }
-
-    function handleLogout() {
-      // Remove token from localStorage
-      localStorage.removeItem('zayvora_token');
-      // Redirect to login
-      window.location.href = '/zayvora-login';
-    }
-
-    async function checkAuth() {
-      try {
-        if (typeof firebase !== 'undefined' && firebase.auth) {
-          return firebase.auth().currentUser;
-        }
-        return null;
-      } catch (error) {
-        console.error('Auth check error:', error);
-        return null;
-      }
-    }
-
-    async function loadUserBalance(uid) {
-      try {
-        const response = await fetch(`${API_URL}/credits/balance/${uid}`);
-        if (response.ok) {
-          const data = await response.json();
-          userBalance = data.balance || 0;
-          document.getElementById('currentBalance').textContent = userBalance.toLocaleString();
-        }
-      } catch (error) {
-        console.error('Error loading balance:', error);
-      }
-    }
-
-    // ============================================================================
-    // RENDER PACKAGES WITH DYNAMIC PRICING
-    // ============================================================================
-
-    function renderPackages() {
-      const container = document.getElementById('pricingCards');
-      container.innerHTML = '';
-
-      PACKAGES.forEach((pkg) => {
-        const isPopular = pkg.bonus;
-        const card = document.createElement('div');
-        card.className = `card ${isPopular ? 'popular' : ''}`;
-        card.onclick = () => selectPackage(pkg.id, card);
-
-        const bonusText = pkg.bonus ? `
-          <div class="bonus-badge">
-            💰 ${pkg.bonus} Extra Credits
-          </div>
-        ` : '';
-
-        // Calculate per-credit price dynamically
-        const perCredit = (pkg.price / pkg.credits).toFixed(2);
-
-        card.innerHTML = `
-          <div class="card-content">
-            <div class="card-info">
-              <h3>${pkg.credits} Credits</h3>
-              <p>Perfect for ${pkg.description.toLowerCase()}</p>
-            </div>
-            <div class="card-price">
-              <div class="amount">₹${pkg.price}</div>
-              <div class="period">One-time</div>
-            </div>
-          </div>
-          ${bonusText}
-          <div class="features">
-            <p>₹${perCredit} per credit</p>
-            <p>Instant delivery to your account</p>
-            <p>Never expires, use anytime</p>
-          </div>
-        `;
-
-        container.appendChild(card);
-      });
-
-      // Select first package by default
-      if (container.firstChild) {
-        selectPackage(PACKAGES[0].id, container.firstChild);
-      }
-    }
-
-    // ============================================================================
-    // PACKAGE SELECTION & PAYMENT INITIATION
-    // ============================================================================
-
-    function selectPackage(packageId, cardElement) {
-      selectedPackage = packageId;
-      selectedPlan = PACKAGES.find(pkg => pkg.id === packageId) || null;
-      document.querySelectorAll('.card').forEach(card => {
-        card.classList.remove('selected');
-      });
-      cardElement.classList.add('selected');
-      document.getElementById('buyBtn').disabled = false;
-    }
-
-    async function startPayment(plan) {
-      const buyBtn = document.getElementById('buyBtn');
-      const originalText = buyBtn.innerHTML;
-      try {
-        if (!plan) {
-          showError('Please select a credit package');
-          return;
-        }
-
-        const user = await checkAuth();
-        if (!user) {
-          showError('Please log in to purchase credits');
-          // Redirect to login without leaving page
-          return;
-        }
-
-        buyBtn.disabled = true;
-        buyBtn.innerHTML = '<div class="spinner"></div> Generating payment link...';
-
-        // Create payment intent for verification and credit delivery
-        const paymentIntent = await createPaymentIntent(plan.id);
-        currentPaymentIntent = paymentIntent;
-
-        const upiLink = `upi://pay?pa=dharam@upi&pn=Zayvora&am=${plan.price}&cu=INR`;
-        const sovereignLink = buildSovereignLink(paymentIntent);
-
-        console.log('Payment Intent:', paymentIntent);
-        console.log('UPI Link:', upiLink);
-        console.log('Sovereign Link:', sovereignLink);
-
-        // Store intent in session for callback verification
-        sessionStorage.setItem('zayvora_intent_id', paymentIntent.intent.intent_id);
-        sessionStorage.setItem('zayvora_credits', paymentIntent.intent.credits);
-
-        // Launch UPI payment app
-        window.location.href = upiLink;
-        document.getElementById('paymentConfirmHint').style.display = 'block';
-        document.getElementById('confirmPaymentBtn').style.display = 'flex';
-
-        buyBtn.disabled = false;
-        buyBtn.innerHTML = originalText;
-
-      } catch (error) {
-        console.error('Payment error:', error);
-        buyBtn.disabled = false;
-        buyBtn.innerHTML = originalText;
-        showError('Payment error: ' + error.message);
-      }
-    }
-
-    async function confirmPayment() {
-      try {
-        const intentId = sessionStorage.getItem('zayvora_intent_id');
-        if (!intentId) {
-          showError('No payment intent found. Please start payment first.');
-          return;
-        }
-
-        const response = await fetch(`${API_URL}/payment/verify`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            intent_id: intentId
-          })
-        });
-
-        if (!response.ok) {
-          showError('Payment verification pending. Please wait and retry.');
-          return;
-        }
-
-        const data = await response.json();
-        if (data.verified) {
-          const credits = parseInt(sessionStorage.getItem('zayvora_credits') || '0', 10);
-          await grantCredits(intentId, credits);
-          showError('✓ Payment verified and credits delivered.');
-          document.getElementById('confirmPaymentBtn').style.display = 'none';
-          document.getElementById('paymentConfirmHint').style.display = 'none';
-        } else {
-          showError('Payment not verified yet. Please complete payment and retry.');
-        }
-      } catch (error) {
-        console.error('Payment verification error:', error);
-        showError('Unable to verify payment right now. Please retry.');
-      }
-    }
-
-    async function attemptUPIPayment(upiLink, paymentIntent) {
-      try {
-        if (!upiLink || !upiLink.startsWith('upi://')) {
-          return false;
-        }
-
-        // Launch native UPI app intent flow
-        window.location.href = upiLink;
-        return true;
-      } catch (error) {
-        console.error('UPI attempt error:', error);
-        return false;
-      }
-    }
-
-    function handlePaymentCallback(event) {
-      // Listen for postMessage from UPI payment callback
-      if (event.data.type === 'PAYMENT_SUCCESS') {
-        const { intentId, credits } = event.data;
-        if (intentId && credits) {
-          grantCredits(intentId, credits).then(success => {
-            if (success) {
-              showError('✓ Credits added to your account!');
-              renderPackages();
-            }
-          });
-        }
-      }
-    }
-
-    // ============================================================================
-    // UI UTILITIES
-    // ============================================================================
-
-    function showError(message) {
-      const errorEl = document.getElementById('errorMessage');
-      errorEl.textContent = message;
-      errorEl.style.display = 'block';
-      if (!message.includes('✓')) {
-        setTimeout(() => {
-          errorEl.style.display = 'none';
-        }, 5000);
-      }
-    }
-
-    // Initialize on load
-    window.addEventListener('DOMContentLoaded', init);
-  </script>
+      <a class="back-btn" href="/zayvora" aria-label="Back to Zayvora">← Back to Zayvora</a>
+    </header>
+
+    <section class="credit-store" aria-label="Credit store overview">
+      <div>
+        <strong>Compute Credits · Prepaid</strong>
+        <p>Credits are consumed by retrieval depth, sandboxed calculations, revision passes, and long-context memory windows.</p>
+      </div>
+      <p><strong>1 Credit</strong> = 1 standard reasoning cycle</p>
+    </section>
+
+    <section class="plans" aria-label="Zayvora pricing plans">
+      <article class="plan">
+        <h2>Explorer</h2>
+        <p class="price">$19 <small>/ month</small></p>
+        <ul>
+          <li>3,000 credits / month</li>
+          <li>Local model + edge fallback</li>
+          <li>32K context windows</li>
+          <li>Email support</li>
+        </ul>
+        <button class="buy" type="button">Choose Explorer</button>
+      </article>
+
+      <article class="plan featured">
+        <div class="tag">Most Popular</div>
+        <h2>Pro</h2>
+        <p class="price">$79 <small>/ month</small></p>
+        <ul>
+          <li>20,000 credits / month</li>
+          <li>Priority reasoning queues</li>
+          <li>128K context windows</li>
+          <li>Sandboxed Python execution</li>
+          <li>Team workspace controls</li>
+        </ul>
+        <button class="buy" type="button">Choose Pro</button>
+      </article>
+
+      <article class="plan">
+        <h2>Enterprise</h2>
+        <p class="price">Custom <small>annual</small></p>
+        <ul>
+          <li>Unlimited pooled credits</li>
+          <li>On-prem sovereign deployment</li>
+          <li>Dedicated policy and audit rails</li>
+          <li>Private model registry</li>
+          <li>24/7 response SLA</li>
+        </ul>
+        <button class="buy" type="button">Contact Sales</button>
+      </article>
+    </section>
+
+    <nav class="legal" aria-label="Legal links">
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/refunds.html">Refunds</a>
+    </nav>
+  </main>
 </body>
 </html>
