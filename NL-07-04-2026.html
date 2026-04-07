@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I Built My Own AI Brain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --bg2: #131313;
+    --card: #1a1a1a;
+    --amber: #f5a623;
+    --amber-dim: #c47d0e;
+    --cream: #f0e6d3;
+    --muted: #666;
+    --text: #e8e0d5;
+    --accent: #ff6b35;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.9;
+    font-size: 17px;
+    cursor: default;
+  }
+
+  /* PROGRESS BAR */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--amber), var(--accent));
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.1s linear;
+    box-shadow: 0 0 12px var(--amber);
+  }
+
+  /* READING TIME BADGE */
+  #reading-badge {
+    position: fixed;
+    top: 16px; right: 20px;
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.25);
+    color: var(--amber);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    z-index: 999;
+    backdrop-filter: blur(8px);
+    transition: opacity 0.3s;
+  }
+
+  /* CHAPTER NAV */
+  #chapter-nav {
+    position: fixed;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 999;
+  }
+
+  .nav-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .nav-dot:hover, .nav-dot.active {
+    background: var(--amber);
+    transform: scale(1.4);
+    box-shadow: 0 0 8px var(--amber);
+  }
+
+  .nav-dot::after {
+    content: attr(data-label);
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--card);
+    border: 1px solid rgba(245,166,35,0.2);
+    color: var(--cream);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .nav-dot:hover::after { opacity: 1; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 60px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 60%, rgba(245,166,35,0.07) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 80% 20%, rgba(255,107,53,0.05) 0%, transparent 60%);
+  }
+
+  .hero-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--cream);
+    max-width: 860px;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.4s forwards;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--amber);
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 520px;
+    margin-bottom: 48px;
+    font-weight: 300;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.6s forwards;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.8s forwards;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hero-meta span {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .hero-meta .dot { color: var(--amber); }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeUp 1s 1.2s forwards;
+  }
+
+  .scroll-hint span {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .scroll-arrow {
+    width: 20px; height: 20px;
+    border-right: 2px solid var(--amber);
+    border-bottom: 2px solid var(--amber);
+    transform: rotate(45deg);
+    animation: bounce 1.5s infinite;
+  }
+
+  /* ARTICLE WRAPPER */
+  .article {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px 120px;
+  }
+
+  /* SECTIONS */
+  .section {
+    padding: 80px 0 40px;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .section.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .section-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--amber);
+    letter-spacing: 2px;
+    opacity: 0.6;
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(245,166,35,0.3), transparent);
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 4vw, 40px);
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1.2;
+    margin-bottom: 28px;
+  }
+
+  h2 em { color: var(--amber); font-style: italic; }
+
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--cream);
+    margin: 40px 0 16px;
+  }
+
+  p {
+    margin-bottom: 22px;
+    color: #ccc4b8;
+    font-weight: 300;
+  }
+
+  strong { color: var(--cream); font-weight: 500; }
+
+  em { color: var(--amber); font-style: italic; }
+
+  /* PULL QUOTE */
+  .pull-quote {
+    border-left: 3px solid var(--amber);
+    padding: 20px 28px;
+    margin: 48px 0;
+    background: rgba(245,166,35,0.04);
+    border-radius: 0 8px 8px 0;
+    position: relative;
+  }
+
+  .pull-quote::before {
+    content: '"';
+    font-family: 'Playfair Display', serif;
+    font-size: 80px;
+    color: var(--amber);
+    opacity: 0.15;
+    position: absolute;
+    top: -10px; left: 16px;
+    line-height: 1;
+  }
+
+  .pull-quote p {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-style: italic;
+    color: var(--cream);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* CALLOUT BOXES */
+  .callout {
+    background: var(--card);
+    border: 1px solid rgba(245,166,35,0.15);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin: 40px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .callout::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--amber), var(--accent), transparent);
+  }
+
+  .callout-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .callout p { margin: 0; color: var(--text); }
+
+  /* RELATABLE MOMENT */
+  .relatable {
+    background: rgba(255,107,53,0.06);
+    border: 1px solid rgba(255,107,53,0.2);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 40px 0;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .relatable:hover {
+    background: rgba(255,107,53,0.1);
+    transform: translateX(4px);
+  }
+
+  .relatable-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .relatable p { margin: 0; font-size: 16px; }
+
+  .relatable .react-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .react-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .react-btn:hover { background: rgba(245,166,35,0.15); border-color: var(--amber); color: var(--amber); }
+  .react-btn.selected { background: rgba(245,166,35,0.2); border-color: var(--amber); color: var(--amber); }
+
+  /* PROJECT CARDS */
+  .project-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 40px 0;
+  }
+
+  @media (max-width: 580px) { .project-grid { grid-template-columns: 1fr; } }
+
+  .project-card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 24px;
+    transition: all 0.3s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .project-card:hover {
+    border-color: rgba(245,166,35,0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  }
+
+  .project-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--amber);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+
+  .project-card:hover::after { transform: scaleX(1); }
+
+  .project-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--amber);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .project-card h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--cream);
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  .project-card p {
+    font-size: 14px;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* STAT HIGHLIGHT */
+  .stat-row {
+    display: flex;
+    gap: 20px;
+    margin: 40px 0;
+    flex-wrap: wrap;
+  }
+
+  .stat-box {
+    flex: 1;
+    min-width: 140px;
+    background: var(--card);
+    border: 1px solid rgba(245,166,35,0.12);
+    border-radius: 10px;
+    padding: 20px 24px;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--amber);
+    display: block;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* STACK VISUAL */
+  .stack-visual {
+    margin: 40px 0;
+    position: relative;
+  }
+
+  .stack-layer {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 16px 24px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s;
+    cursor: default;
+  }
+
+  .stack-layer:hover {
+    border-color: rgba(245,166,35,0.3);
+    background: rgba(245,166,35,0.04);
+    transform: translateX(6px);
+  }
+
+  .stack-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: rgba(245,166,35,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .stack-info { flex: 1; }
+
+  .stack-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--amber);
+    letter-spacing: 1px;
+  }
+
+  .stack-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .stack-arrow {
+    display: flex;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 18px;
+    margin: 2px 0;
+    opacity: 0.4;
+  }
+
+  /* TIMELINE */
+  .timeline {
+    margin: 40px 0;
+    position: relative;
+    padding-left: 24px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, var(--amber), transparent);
+  }
+
+  .timeline-item {
+    position: relative;
+    padding: 0 0 36px 24px;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.5s;
+  }
+
+  .timeline-item.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -4px; top: 8px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 0 8px var(--amber);
+  }
+
+  .timeline-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--amber);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .timeline-item h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--cream);
+    margin-bottom: 8px;
+  }
+
+  .timeline-item p { margin: 0; font-size: 15px; color: var(--muted); }
+
+  /* CLOSING */
+  .closing {
+    text-align: center;
+    padding: 80px 0 40px;
+  }
+
+  .closing h2 {
+    font-size: clamp(28px, 5vw, 52px);
+    margin-bottom: 24px;
+  }
+
+  .closing p {
+    max-width: 560px;
+    margin: 0 auto 20px;
+    font-size: 18px;
+  }
+
+  .author-card {
+    margin-top: 60px;
+    background: var(--card);
+    border: 1px solid rgba(245,166,35,0.15);
+    border-radius: 16px;
+    padding: 36px 40px;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .author-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 100% 0%, rgba(245,166,35,0.06), transparent);
+  }
+
+  .author-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .author-card p {
+    font-size: 15px;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.7;
+  }
+
+  /* DIVIDER */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 60px 0;
+  }
+
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+  }
+
+  .divider-symbol {
+    color: var(--amber);
+    font-size: 18px;
+    opacity: 0.5;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: rotate(45deg) translateY(0); }
+    50% { transform: rotate(45deg) translateY(5px); }
+  }
+
+  /* HIGHLIGHT TOOLTIP */
+  .hl {
+    background: linear-gradient(180deg, transparent 60%, rgba(245,166,35,0.25) 60%);
+    color: var(--cream);
+    cursor: help;
+    position: relative;
+  }
+
+  /* SPOILER TEXT */
+  .spoiler {
+    background: rgba(255,255,255,0.08);
+    color: transparent;
+    border-radius: 3px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.3s;
+    padding: 0 4px;
+  }
+
+  .spoiler.revealed {
+    background: rgba(245,166,35,0.15);
+    color: var(--amber);
+  }
+
+  @media (max-width: 600px) {
+    #chapter-nav { display: none; }
+    .article { padding: 0 18px 80px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<div id="reading-badge">~12 min read</div>
+
+<nav id="chapter-nav">
+  <div class="nav-dot active" data-label="Start" data-target="hero"></div>
+  <div class="nav-dot" data-label="The Problem" data-target="s1"></div>
+  <div class="nav-dot" data-label="That Night" data-target="s2"></div>
+  <div class="nav-dot" data-label="The Build" data-target="s3"></div>
+  <div class="nav-dot" data-label="The Stack" data-target="s4"></div>
+  <div class="nav-dot" data-label="Alone" data-target="s5"></div>
+  <div class="nav-dot" data-label="The Shift" data-target="s6"></div>
+  <div class="nav-dot" data-label="In Public" data-target="s7"></div>
+  <div class="nav-dot" data-label="The Future" data-target="s8"></div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-label">Founder Story · AI Infrastructure · Solo Building</div>
+  <h1>I Got Tired of Forgetting Everything I Read.<br>So I Built My Own <em>AI Brain.</em></h1>
+  <p class="hero-sub">One person. One Mac Mini. 12,000 books. And a growing conviction that the tools to think at scale shouldn't require a team.</p>
+  <div class="hero-meta">
+    <span>Solo Founder</span>
+    <span class="dot">◆</span>
+    <span>~3,000 words</span>
+    <span class="dot">◆</span>
+    <span>Built in Public</span>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- ARTICLE BODY -->
+<div class="article">
+
+  <!-- S1: THE PROBLEM -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <span class="section-number">01</span>
+      <div class="section-line"></div>
+    </div>
+    <h2>I Have a Problem.</h2>
+
+    <p>I read obsessively. Books on philosophy, systems thinking, cognitive science, history, technology. I take notes. I highlight. I dog-ear pages like it means something.</p>
+
+    <p>And then, three months later — it's <em>gone</em>. Not all of it. But enough. Enough that I'll be mid-conversation and reach for an idea I <em>know</em> I read somewhere, and come up empty. Enough that the hours I spent with a book feel like they half-disappeared into the fog.</p>
+
+    <div class="relatable" id="relatable1">
+      <div class="relatable-label">👋 Relatable?</div>
+      <p>You finish a great book. You feel smarter. Two weeks later you can't remember the author's main argument.</p>
+      <div class="react-row">
+        <button class="react-btn" onclick="selectReact(this, 'relatable1')">Every single time 😭</button>
+        <button class="react-btn" onclick="selectReact(this, 'relatable1')">Rarely, I take great notes</button>
+        <button class="react-btn" onclick="selectReact(this, 'relatable1')">I don't read books lol</button>
+      </div>
+    </div>
+
+    <p>The problem isn't discipline. I'm disciplined. I show up, I read, I annotate. The problem is that human memory isn't designed for the volume and density of information we now consume. Our brains are pattern machines, not archives. We were never meant to be the database. We were meant to do the thinking.</p>
+
+    <p>But we've been forced to play both roles — storage and processor — and we're not very good at the first one.</p>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <span class="stat-number">90%</span>
+        <div class="stat-label">of what we read is forgotten within a week without active review</div>
+      </div>
+      <div class="stat-box">
+        <span class="stat-number">12K+</span>
+        <div class="stat-label">books now in my personal AI corpus</div>
+      </div>
+      <div class="stat-box">
+        <span class="stat-number">1</span>
+        <div class="stat-label">Mac Mini running the whole thing</div>
+      </div>
+    </div>
+
+    <p>That feeling — of knowledge slipping through your fingers, of reading feeling like an expensive hobby rather than a lasting investment — is what started everything you're about to read.</p>
+  </section>
+
+  <div class="divider"><div class="divider-line"></div><span class="divider-symbol">◆</span><div class="divider-line"></div></div>
+
+  <!-- S2: THAT NIGHT -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <span class="section-number">02</span>
+      <div class="section-line"></div>
+    </div>
+    <h2>The Night I Decided to <em>Build Something.</em></h2>
+
+    <p>It was late. Way too late. The kind of late where you should close the laptop and accept that tomorrow is a thing.</p>
+
+    <p>I was trying to cross-reference an idea across four different books. I had the books. I had the notes. I had the rough memory that this was covered somewhere in one of them. Twenty minutes later, I was still hunting. Ctrl+F across four PDFs. Scanning handwritten notes in a notebook I hadn't opened in months. Rereading chapter summaries that somehow said everything except the thing I needed.</p>
+
+    <p>I sat back and had a thought that changed everything: <em>a researcher at a university doesn't work like this.</em></p>
+
+    <div class="pull-quote">
+      <p>Research institutions don't rely on the researcher's memory. They build systems. Infrastructure. Tools that make retrieval feel effortless, so the human can focus on the thinking — not the finding.</p>
+    </div>
+
+    <p>And then the second thought, quieter but more electric: <em>why don't I have that?</em></p>
+
+    <p>Not because I couldn't access it. Not because it required a PhD or a department budget. But because no one had built it yet — for an individual, running on a personal machine, organized around a private library. The tools existed. The stack was available. Someone just had to actually put it together.</p>
+
+    <p>That someone might as well be me.</p>
+
+    <p>I didn't go to bed that night. I started reading about vector embeddings instead.</p>
+  </section>
+
+  <div class="divider"><div class="divider-line"></div><span class="divider-symbol">◆</span><div class="divider-line"></div></div>
+
+  <!-- S3: WHAT I BUILT -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <span class="section-number">03</span>
+      <div class="section-line"></div>
+    </div>
+    <h2>What I've Built <em>(And Why It's Weirder Than It Sounds)</em></h2>
+
+    <p>Here's the thing about building your own AI ecosystem as a solo founder: nobody's roadmap looks like yours. There's no tutorial for "build a personal research institution in your apartment." You're making strange decisions at midnight that somehow, over months, accumulate into architecture.</p>
+
+    <p>Let me walk you through what actually exists now — not as a pitch, but as a genuine attempt to show you how these things compound.</p>
+
+    <div class="project-grid">
+      <div class="project-card">
+        <div class="project-name">CORPUS</div>
+        <h4>The Foundation</h4>
+        <p>12,000+ books processed, chunked, embedded, and stored in a vector database. The bedrock everything else sits on.</p>
+      </div>
+      <div class="project-card">
+        <div class="project-name">NEX</div>
+        <h4>The Research Engine</h4>
+        <p>Semantic search across the corpus. Ask a real question, get real answers drawn from the library — not links, not snippets.</p>
+      </div>
+      <div class="project-card">
+        <div class="project-name">ZAYVORA</div>
+        <h4>The Reasoning Layer</h4>
+        <p>An AI research engine trained on the private corpus. Not just retrieval — genuine reasoning with the material.</p>
+      </div>
+      <div class="project-card">
+        <div class="project-name">STUDYOS</div>
+        <h4>The Learning OS</h4>
+        <p>A structured learning system for competitive exams and deep subject mastery. Where knowledge gets organized, not just found.</p>
+      </div>
+    </div>
+
+    <p>It all starts with the books. I began processing my personal library — not digitizing it in the traditional sense, but <em>ingesting</em> it. Running books through a pipeline I built from scratch: extract the raw text, break it into meaningful semantic chunks, convert those chunks into high-dimensional vector embeddings, load everything into a database built for similarity search.</p>
+
+    <p>Over time, that library grew to more than 12,000 books. Sitting on a Mac Mini. Quietly waiting to be asked something.</p>
+
+    <div class="callout">
+      <div class="callout-label">⚙️ What's actually happening technically</div>
+      <p>When you ask a semantic search system a question, it converts your query into the same kind of numerical vector it used to store the text. Then it finds the chunks whose vectors are "closest" to your query vector. Closest in meaning, not in keywords. It's why you can ask "what makes people irrational under stress" and surface passages from a neuroscience book, a behavioural economics text, and a Stoic philosophy essay — even if none of them used your exact words.</p>
+    </div>
+
+    <p>Nex is the layer that makes that corpus usable for research. You ask real questions, it surfaces real ideas. Not a list of results. Not a pile of links. Synthesized knowledge from a curated private library — the difference between Googling something and asking a well-read colleague who happens to have perfect recall.</p>
+
+    <p>Zayvora goes a level deeper. If Nex is the retrieval layer, Zayvora is the reasoning layer. The one I actually talk to when I'm working through a hard problem. It doesn't just find relevant material — it thinks with it. Connects threads across disciplines. Pushes back. Offers angles I hadn't considered.</p>
+
+    <p>StudyOS is the fourth piece — a more structured system, built specifically for situations where knowledge needs organization, not just retrieval. Competitive exam prep. Deep subject mastery. The kind of learning that benefits from curriculum architecture, not just a smart search bar.</p>
+  </section>
+
+  <div class="divider"><div class="divider-line"></div><span class="divider-symbol">◆</span><div class="divider-line"></div></div>
+
+  <!-- S4: THE STACK -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <span class="section-number">04</span>
+      <div class="section-line"></div>
+    </div>
+    <h2>The Stack <em>(Hover Each Layer)</em></h2>
+
+    <p>Here's the actual architecture — from raw text to reasoning — visualised as simply as I can make it. Hover each layer to understand what it does.</p>
+
+    <div class="stack-visual">
+      <div class="stack-layer">
+        <div class="stack-icon">📚</div>
+        <div class="stack-info">
+          <div class="stack-name">RAW BOOKS</div>
+          <p class="stack-desc">12,000+ texts — PDFs, EPUBs, plain text files</p>
+        </div>
+      </div>
+      <div class="stack-arrow">↓</div>
+      <div class="stack-layer">
+        <div class="stack-icon">✂️</div>
+        <div class="stack-info">
+          <div class="stack-name">TEXT EXTRACTION + CHUNKING</div>
+          <p class="stack-desc">Each book is extracted and broken into meaningful semantic passages</p>
+        </div>
+      </div>
+      <div class="stack-arrow">↓</div>
+      <div class="stack-layer">
+        <div class="stack-icon">🔢</div>
+        <div class="stack-info">
+          <div class="stack-name">VECTOR EMBEDDINGS</div>
+          <p class="stack-desc">Each chunk becomes a high-dimensional numerical fingerprint of its meaning</p>
+        </div>
+      </div>
+      <div class="stack-arrow">↓</div>
+      <div class="stack-layer">
+        <div class="stack-icon">🗄️</div>
+        <div class="stack-info">
+          <div class="stack-name">VECTOR DATABASE</div>
+          <p class="stack-desc">All embeddings stored for ultra-fast similarity search at query time</p>
+        </div>
+      </div>
+      <div class="stack-arrow">↓</div>
+      <div class="stack-layer">
+        <div class="stack-icon">🔍</div>
+        <div class="stack-info">
+          <div class="stack-name">NEX — SEMANTIC RETRIEVAL</div>
+          <p class="stack-desc">Your question is embedded, matched to closest concepts, passages surfaced</p>
+        </div>
+      </div>
+      <div class="stack-arrow">↓</div>
+      <div class="stack-layer">
+        <div class="stack-icon">🧠</div>
+        <div class="stack-info">
+          <div class="stack-name">ZAYVORA — REASONING</div>
+          <p class="stack-desc">AI layer that thinks with retrieved knowledge, not just returns it</p>
+        </div>
+      </div>
+    </div>
+
+    <p>All of it runs locally. On a Mac Mini. Using open models and self-built tooling. No cloud subscriptions quietly draining money in the background. No third-party data dependencies. A private, sovereign knowledge system — mine, entirely, getting smarter the more I use it.</p>
+  </section>
+
+  <div class="divider"><div class="divider-line"></div><span class="divider-symbol">◆</span><div class="divider-line"></div></div>
+
+  <!-- S5: BUILDING ALONE -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <span class="section-number">05</span>
+      <div class="section-line"></div>
+    </div>
+    <h2>The Part Nobody Tells You About <em>Building Alone</em></h2>
+
+    <p>People romanticize solo building. And parts of it genuinely are romantic — the freedom, the speed, the absence of meetings, the quiet pleasure of waking up and just <em>building</em>.</p>
+
+    <p>But there's another part. The part where you're three hours into a problem with no clear solution and no one to ask. The part where you're not sure if you're building something meaningful or constructing an elaborate distraction that feels like work but might be procrastination wearing a technical disguise. The part where the silence of not having a co-founder to sanity-check you goes from peaceful to unnerving somewhere around month three.</p>
+
+    <div class="relatable" id="relatable2">
+      <div class="relatable-label">🪞 Solo builder check-in</div>
+      <p>3am. Something is broken. You've been debugging for two hours. You still haven't found the issue. What do you do?</p>
+      <div class="react-row">
+        <button class="react-btn" onclick="selectReact(this, 'relatable2')">Keep going. Sleep is optional.</button>
+        <button class="react-btn" onclick="selectReact(this, 'relatable2')">Sleep. Fresh eyes tomorrow.</button>
+        <button class="react-btn" onclick="selectReact(this, 'relatable2')">Ask the AI. Obviously.</button>
+      </div>
+    </div>
+
+    <p>What kept me going was something deceptively simple: <em>this was working for me.</em></p>
+
+    <p>Not in a theoretical, "I believe this will eventually pay off" way. In a concrete, measurable, week-over-week way. My ability to research a topic went from an hour of scattered Googling to fifteen minutes of precise querying. My recall improved — not because my memory got better, but because I stopped relying on it. The system remembered. I could focus on thinking.</p>
+
+    <p>That feedback loop — the feeling of genuinely thinking faster, of problems getting easier, of connections coming quicker — was more motivating than any external validation could have been. It created a kind of compounding confidence. Each improvement to the system made me better at my work, which motivated me to improve the system further.</p>
+
+    <div class="pull-quote">
+      <p>When you build tools for yourself, you are the most honest user you'll ever have. You can't fake usefulness when you're the one trying to use it.</p>
+    </div>
+
+    <p>That's the underrated advantage of the indie builder: radical honesty. You don't have to convince a customer it's useful. You're the customer. You know immediately, viscerally, whether the thing you built actually works — or whether you've been fooling yourself.</p>
+
+    <p>This system worked. I knew it because I could feel it.</p>
+
+    <div class="timeline" id="timeline">
+      <div class="timeline-item" style="transition-delay: 0.1s">
+        <div class="timeline-label">MONTH 1</div>
+        <h4>The corpus pipeline</h4>
+        <p>Built the text extraction and chunking infrastructure. First 500 books ingested. System feels raw but functional.</p>
+      </div>
+      <div class="timeline-item" style="transition-delay: 0.25s">
+        <div class="timeline-label">MONTH 3</div>
+        <h4>Nex goes live</h4>
+        <p>First successful semantic query across 2,000 books. Retrieved a passage I'd forgotten I'd even read. The thing actually works.</p>
+      </div>
+      <div class="timeline-item" style="transition-delay: 0.4s">
+        <div class="timeline-label">MONTH 5</div>
+        <h4>12,000 books in corpus</h4>
+        <p>The scale changes the quality. Queries started surfacing unexpected connections across disciplines. This is when it gets interesting.</p>
+      </div>
+      <div class="timeline-item" style="transition-delay: 0.55s">
+        <div class="timeline-label">ONGOING</div>
+        <h4>Zayvora + StudyOS</h4>
+        <p>Reasoning and learning layers built on top. The ecosystem starts to feel like a genuine research infrastructure.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"><div class="divider-line"></div><span class="divider-symbol">◆</span><div class="divider-line"></div></div>
+
+  <!-- S6: THE SHIFT -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <span class="section-number">06</span>
+      <div class="section-line"></div>
+    </div>
+    <h2>The Shift That Most People <em>Haven't Noticed Yet</em></h2>
+
+    <p>I want to say something that might sound dramatic, but I believe it more the longer I work in this space:</p>
+
+    <p>We are in the middle of a genuinely historic shift in what one person can build — and most people are still treating it like a novelty.</p>
+
+    <p>For most of history, the gap between an individual and an institution wasn't just a question of money or status. It was a question of <em>infrastructure</em>. Research teams had indexing systems. Libraries had catalogues built over decades. Organizations had processes — formal and informal — for capturing, storing, cross-referencing, and retrieving knowledge at scale.</p>
+
+    <p>Individuals had notebooks and willpower. And we struggled.</p>
+
+    <div class="callout">
+      <div class="callout-label">💡 The shift in plain language</div>
+      <p>Five years ago, what I'm building would have required a team of ML engineers, a six-figure cloud infrastructure budget, and probably a Series A to fund it. Today, a solo founder with enough curiosity, stubbornness, and a decent laptop can build the same stack in their spare room. The tools that used to live behind institutional walls are now sitting in open-source repositories, waiting to be assembled.</p>
+    </div>
+
+    <p>Open-source models have matured at a pace that still surprises me. Embedding models are cheap, fast, and capable. Vector databases are well-documented and accessible. The knowledge to build sophisticated retrieval systems — the same kind that powers enterprise AI products — is freely available to anyone willing to learn it.</p>
+
+    <p>This is not a small thing. We're watching the democratization of cognitive infrastructure happen in real time. The tools that multiply thinking are no longer locked behind institutional gates.</p>
+
+    <p>The people who understand this — who sit down and actually build personal knowledge infrastructure instead of waiting for a polished SaaS product to do it for them — are going to operate at a level that looks almost unfair from the outside. Not because they have the most resources. Because they got there first and built exactly what they needed.</p>
+
+    <div class="pull-quote">
+      <p>Give a single person the power of a research team. That's not a marketing slogan. It's the actual goal. The tools exist. The gap is closing. The only question is who's paying attention.</p>
+    </div>
+
+    <p>Solo builders who understand this moment are going to build some of the most interesting tools of the next decade. The best of them won't start with a business plan. They'll start with a problem they personally can't solve — and they'll refuse to accept that the solution requires a team.</p>
+  </section>
+
+  <div class="divider"><div class="divider-line"></div><span class="divider-symbol">◆</span><div class="divider-line"></div></div>
+
+  <!-- S7: BUILDING IN PUBLIC -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <span class="section-number">07</span>
+      <div class="section-line"></div>
+    </div>
+    <h2>Why I'm Building All of This <em>In Public</em></h2>
+
+    <p>I almost didn't share any of this. It felt too unfinished. Too personal. Too difficult to explain without sounding like I was either bragging about a side project or deep in a delusion.</p>
+
+    <p>Here's the honest truth about why things look polished when you read about them online: you only see the part after the person decided it was worth sharing. You don't see the six failed prototypes. The three weeks where nothing worked. The days where the pipeline broke for reasons that turned out to be embarrassingly simple. The moments where you genuinely wonder if you've wasted months on something no one will care about.</p>
+
+    <div class="relatable" id="relatable3">
+      <div class="relatable-label">🧪 Experiment</div>
+      <p>What's your honest reaction when someone says they're "building in public"?</p>
+      <div class="react-row">
+        <button class="react-btn" onclick="selectReact(this, 'relatable3')">Respect. It takes guts.</button>
+        <button class="react-btn" onclick="selectReact(this, 'relatable3')">Marketing tactic, mostly.</button>
+        <button class="react-btn" onclick="selectReact(this, 'relatable3')">Depends what they're building.</button>
+        <button class="react-btn" onclick="selectReact(this, 'relatable3')">I do it myself.</button>
+      </div>
+    </div>
+
+    <p>I kept seeing people describe the same frustration I started with — drowning in information, starving for insight. Reading constantly, retaining barely. Working hard to learn things, and feeling like the knowledge dissolved before it could compound. And I thought: someone should be talking about this differently. Not as a polished product launch. Not as a think-piece about the future of AI. As a live experiment, in progress, with the rough edges showing.</p>
+
+    <p>There's a practical argument for building in public too. It creates accountability. It forces you to communicate clearly — and clarity of communication almost always produces clarity of thinking. When you have to explain what you built to someone who wasn't there for the decisions, you understand it better yourself. You find the holes. You spot the assumptions you'd stopped questioning.</p>
+
+    <p>But there's a deeper reason, one I find harder to articulate without sounding self-important. We are in the early phase of something genuinely transformative, and the people shaping that phase shouldn't only be large companies working behind closed doors with carefully managed press releases. The experiments happening in apartments and home offices — on personal Mac Minis, with open models and self-built pipelines — matter. They're a form of R&D the ecosystem desperately needs, even if nobody's officially funding it.</p>
+
+    <p>If one person reads this and gets the nudge to start building their own version of this — their own personal knowledge engine, their own reasoning infrastructure — then the time spent writing it was worth it. The idea compounds when it spreads.</p>
+  </section>
+
+  <div class="divider"><div class="divider-line"></div><span class="divider-symbol">◆</span><div class="divider-line"></div></div>
+
+  <!-- S8: THE FUTURE -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <span class="section-number">08</span>
+      <div class="section-line"></div>
+    </div>
+    <h2>What <em>AI-Augmented Learning</em> Actually Looks Like</h2>
+
+    <p>People talk about AI in education like it's either a threat (cheating, shortcuts, the death of real learning) or a gimmick (a chatbot that explains things you could have just Googled). Both framings miss something important.</p>
+
+    <p>The real opportunity isn't to make learning easier in the sense of reducing effort. It's to make learning more <em>effective</em> — to close the gap between time invested and knowledge retained, between reading and understanding, between information consumed and insight generated.</p>
+
+    <p>Imagine a student preparing for a high-stakes exam who can query a curated corpus of the world's best thinking on their subject — not just retrieve passages, but reason through the material with a system trained on the same corpus. Not an AI that writes the essay for them. An AI that helps them understand why the arguments matter, how they connect, where the tensions lie.</p>
+
+    <p>Imagine a researcher who never loses a connection between ideas — because their entire knowledge base is semantically indexed, always searchable, always available. Not a replacement for their expertise. An amplifier of it.</p>
+
+    <div class="callout">
+      <div class="callout-label">🔭 The word that matters: amplification</div>
+      <p>Automation replaces. Amplification extends. I'm not building tools that think for people. I'm building infrastructure that helps people think better — faster retrieval, deeper connections, less forgetting, more synthesis. The goal is always to make the human more capable, not more dependent.</p>
+    </div>
+
+    <p>That's what I mean when I say the era of the augmented individual is beginning. Not the automated individual. Not the replaced individual. The augmented one — a person with institutional-grade tools, running on personal hardware, organized around their specific knowledge and goals.</p>
+
+    <p>I don't know exactly what this ecosystem becomes. Maybe it stays personal — a set of tools that makes one person meaningfully smarter and faster, and that's genuinely enough. Maybe pieces of it become products other people use. Maybe the architecture becomes a template that others fork, adapt, and build on top of. I'm not trying to predict the outcome. I'm trying to stay curious and keep building.</p>
+
+    <p>What I'm certain of is this: the tools are real. The moment is real. And the window to build in it — before it becomes crowded, before the obvious paths get saturated — is open right now, for anyone willing to take the problem seriously.</p>
+  </section>
+
+  <div class="divider"><div class="divider-line"></div><span class="divider-symbol">◆</span><div class="divider-line"></div></div>
+
+  <!-- CLOSING -->
+  <section class="closing section" id="closing">
+    <h2>The Only Thing Left Is to Actually <em>Build.</em></h2>
+
+    <p>I started because I was frustrated about forgetting things I'd read. A small, personal problem that turned out to have a surprisingly deep solution.</p>
+
+    <p>Somewhere along the way, it became something bigger. A conviction about what individuals can build now. A belief that personal knowledge infrastructure is going to matter enormously in the next decade. A genuine excitement about what this ecosystem becomes as the tools improve and the patterns get clearer.</p>
+
+    <p>But mostly, it's still just the thing I needed. A system that remembers so I can think. Infrastructure that works so I can focus. A research team of one — the one that's been here all along, just finally properly equipped.</p>
+
+    <p>The tools exist. The moment is here.<br>The only thing left is to actually build.</p>
+
+    <div class="author-card">
+      <div class="author-tag">About the author</div>
+      <p>Solo founder building <strong>Zayvora</strong>, <strong>Nex</strong>, <strong>StudyOS</strong>, and a 12,000-book AI corpus — locally, in public, one late night at a time. This is an experiment in what one person can build when the tools finally catch up to the ambition. Follow along for more on personal AI infrastructure, knowledge systems, and the future of how we learn and think.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // PROGRESS BAR
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docH = document.body.scrollHeight - window.innerHeight;
+    const pct = (scrollTop / docH) * 100;
+    document.getElementById('progress-bar').style.width = pct + '%';
+
+    // update reading badge
+    const remaining = Math.max(0, Math.round((1 - pct/100) * 12));
+    document.getElementById('reading-badge').textContent = remaining < 1 ? '✓ Done!' : `~${remaining} min left`;
+
+    // nav dots
+    const sections = ['hero','s1','s2','s3','s4','s5','s6','s7','s8'];
+    const dots = document.querySelectorAll('.nav-dot');
+    sections.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+        dots.forEach(d => d.classList.remove('active'));
+        if (dots[i]) dots[i].classList.add('active');
+      }
+    });
+  });
+
+  // NAV DOTS CLICK
+  document.querySelectorAll('.nav-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      const id = dot.getAttribute('data-target');
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // SCROLL-TRIGGERED SECTIONS
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        // trigger timeline items inside
+        entry.target.querySelectorAll('.timeline-item').forEach(item => {
+          setTimeout(() => item.classList.add('visible'), 100);
+        });
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.section').forEach(s => observer.observe(s));
+
+  // REACT BUTTONS
+  function selectReact(btn, groupId) {
+    const group = document.getElementById(groupId);
+    group.querySelectorAll('.react-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    btn.textContent = btn.textContent + ' ✓';
+  }
+</script>
+</body>
+</html>
