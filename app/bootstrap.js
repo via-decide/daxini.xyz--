@@ -7,8 +7,10 @@
 
   function initUI() {
     const fallback = document.getElementById('daxini-fallback');
-    if (fallback && fallback.hidden !== true) {
-      fallback.textContent = 'Loading Daxini Engine...';
+    // Hide the loader after page loads - it's no longer needed
+    if (fallback) {
+      fallback.hidden = true;
+      fallback.remove();
     }
   }
 

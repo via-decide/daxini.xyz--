@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#030508">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Zayvora Engine — India's Sovereign AI Engineering Agent</title>
+    <title>Daxini — Technology Holding Company from India</title>
 
     <!-- Core SEO Meta Tags -->
-    <meta name="description" content="Zayvora Engine is India's Sovereign AI Engineering Agent. Automate your repository, orchestrate DevOps, and build sovereign technology locally via Ollama." />
+    <meta name="description" content="Daxini is India's technology holding company. Home of Zayvora Engine (Sovereign AI), LogicHub (App Builder), ViaDecide (Research Lab), and Daxini.Space." />
     <meta name="keywords" content="Zayvora Engine, India AI, Sovereign AI, Local LLM, Engineering Agent, Ollama, DevOps Automation, Daxini Labs" />
     <meta name="author" content="Daxini Labs" />
     <meta name="robots" content="index, follow" />
@@ -279,6 +279,26 @@
             transform: none;
         }
 
+        .try-zayvora-btn.secondary {
+            background: rgba(13, 17, 23, 0.7) !important;
+            border: 1px solid var(--border-bright) !important;
+            color: var(--text-muted) !important;
+            box-shadow: none !important;
+        }
+
+        .try-zayvora-btn.secondary:hover {
+            color: var(--text-primary) !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+            background: rgba(13, 17, 23, 0.9) !important;
+        }
+
+        section[id] {
+            width: 100%;
+            max-width: 1100px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+        }
+
         .card.zayvora:hover, .card.zayvora:focus {
             border-color: #7c4dff;
             background: rgba(124, 77, 255, 0.05);
@@ -414,27 +434,20 @@
             .system-status-mini { display: none; } /* Hide on small mobile to save space */
         }
         
-        /* Autonomous Prime Styles */
+        /* System status is now hidden - kept for reference only */
         .system-status-mini {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: rgba(0, 255, 140, 0.05);
-          padding: 4px 10px;
-          border-radius: 12px;
-          border: 1px solid rgba(0, 255, 140, 0.2);
-        }
-        .system-status-mini .status-text {
-          font-size: 0.55rem;
-          color: #00ff8c;
-          letter-spacing: 0.1rem;
+          display: none;
         }
         #daxini-fallback {
-            font-family: var(--font-mono);
-            color: var(--text-muted);
-            text-align: center;
-            padding: 2rem 1rem;
-            letter-spacing: 0.05em;
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
         }
 
         #app[hidden],
@@ -457,78 +470,67 @@
 
     <nav>
         <a href="/" class="nav-logo">DAXINI</a>
-        <div class="system-status-mini">
-          <span class="status-dot pulsing"></span>
-          <span class="status-text">MISSION: UNSHACKLED_RESEARCH</span>
-        </div>
         <ul class="nav-links">
             <li><a href="https://logichub.app">LogicHub</a></li>
             <li><a href="https://viadecide.com">Via</a></li>
-            <li><a href="./zayvora.html" class="nav-zayvora">Zayvora</a></li>
-            <li><a href="/studyos.html">StudyOS</a></li>
-            <li><a href="/NL-07-04-2026.html">Newsletter – 07 Apr 2026</a></li>
+            <li><a href="/zayvora" class="nav-zayvora">Zayvora</a></li>
+            <li><a href="https://github.com/via-decide" target="_blank" rel="noopener">GitHub</a></li>
         </ul>
     </nav>
 
     <main class="hero">
-        <div class="badge">Daxini Holding Co.</div>
+        <div class="badge">India's Technology Holding Co.</div>
 
-        <h1>Daxini</h1>
-        <h2 style="font-size: 2rem; margin-bottom: 2rem; color: #00e5ff; font-weight: 600;">Technology Holding Company</h2>
+        <h1>Building Sovereign Technology</h1>
 
         <p class="tagline">
-            Building sovereign technology from India. Home of Zayvora Engine, LogicHub, ViaDecide, and Daxini.Space.
+            Daxini operates a portfolio of AI, development, and research products.
+            Our flagship: Zayvora Engine, India's Sovereign AI Engineering Agent.
         </p>
 
-        <p style="margin-bottom: 3rem; color: #888899; font-size: 1.1rem; line-height: 1.6;">
-            Daxini builds and operates a portfolio of technology products focused on AI engineering, app development, and research.
-            Our flagship product, Zayvora Engine, is India's Sovereign AI Engineering Agent.
-        </p>
-
-        <div class="launch-actions" style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 3rem;">
-            <button type="button" id="try-zayvora" class="try-zayvora-btn" onclick="window.location.href='./zayvora.html'" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);">Try Zayvora →</button>
-            <button type="button" id="dev-workbench" class="try-zayvora-btn secondary" onclick="window.location.href='./zayvora.html'" style="background: rgba(13, 17, 23, 0.7); border: 1px solid #00e5ff; color: #00e5ff;">Open Workspace →</button>
+        <div class="launch-actions" style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 4rem; justify-content: center;">
+            <a href="/zayvora" class="try-zayvora-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3); text-decoration: none;">Explore Zayvora →</a>
+            <a href="#ecosystem" class="try-zayvora-btn secondary" style="background: rgba(13, 17, 23, 0.7); border: 1px solid #00e5ff; color: #00e5ff; text-decoration: none;">View Ecosystem →</a>
+            <a href="https://github.com/via-decide" class="try-zayvora-btn secondary" style="background: rgba(13, 17, 23, 0.7); border: 1px solid #888899; color: #888899; text-decoration: none;">GitHub Org →</a>
         </div>
 
-        <div class="grid">
-            <!-- PORTAL 1: DAXINI.SPACE (THE HUB) -->
-            <a href="https://daxini.space" class="card featured" tabindex="0">
-                <div class="card-icon">🌌</div>
-                <div class="card-title">Daxini.Space</div>
-                <div class="card-desc">The Spatial Marketplace. Our ultimate store for verified apps, games, and neural tools.</div>
-            </a>
-
-            <!-- PORTAL 2: LOGICHUB.APP (THE CREATOR) -->
-            <a href="https://logichub.app" class="card" tabindex="0">
-                <div class="card-icon">⚡</div>
-                <div class="card-title">LogicHub</div>
-                <div class="card-desc">The GN8T [Ignite] Engine. Visually architect, synthesize, and export production-ready native apps.</div>
-            </a>
-
-            <!-- PORTAL 3: VIADECIDE (THE HUB) -->
-            <a href="https://viadecide.com" class="card" tabindex="0">
-                <div class="card-icon">⬢</div>
-                <div class="card-title">ViaDecide</div>
-                <div class="card-desc">The Legacy Research Lab. Where we prototype the future of human-computer interaction.</div>
-            </a>
-
-            <!-- PORTAL 4: ZAYVORA (AI INFRASTRUCTURE) -->
-            <a href="./zayvora.html" class="card zayvora" tabindex="0">
-                <div class="card-icon">◈</div>
-                <div class="card-title">Zayvora</div>
-                <div class="card-desc">The AI Infrastructure Layer. Local LLMs, infrastructure intelligence, sensor networks, and protocol experimentation.</div>
-            </a>
-        </div>
-
-        <section class="zayvora-showcase" aria-label="Zayvora showcase">
-            <h2>Zayvora Showcase</h2>
+        <!-- FLAGSHIP: Zayvora Section -->
+        <section class="zayvora-showcase" id="zayvora-section" aria-label="Zayvora flagship product">
+            <h2>Zayvora Engine — Flagship Product</h2>
             <p>
-                Explore the live Zayvora ecosystem page, research structure, and current credits/pricing gateway from the Daxini homepage.
+                India's Sovereign AI Engineering Agent. Automate code generation, repository analysis, and DevOps workflows with local LLMs and zero cloud dependency.
             </p>
             <div class="zayvora-actions">
-                <a href="/zayvora">Open Zayvora Ecosystem</a>
-                <a href="/zayvora-pricing">Open Zayvora Pricing</a>
-                <a href="https://github.com/zayvora" target="_blank" rel="noopener">View GitHub Organization</a>
+                <a href="/zayvora">Open Zayvora Ecosystem →</a>
+                <a href="/zayvora-pricing">View Pricing →</a>
+                <a href="https://github.com/zayvora" target="_blank" rel="noopener">GitHub →</a>
+            </div>
+        </section>
+
+        <!-- ECOSYSTEM: Product Portfolio Grid -->
+        <section id="ecosystem" aria-label="Product ecosystem">
+            <h2 style="font-family: var(--font-display); font-size: clamp(1.5rem, 4vw, 2.4rem); color: var(--text-primary); margin-bottom: 2rem; text-align: center; width: 100%;">Our Ecosystem</h2>
+            <div class="grid">
+                <!-- LogicHub: Visual App Builder -->
+                <a href="https://logichub.app" class="card" tabindex="0">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">LogicHub</div>
+                    <div class="card-desc">Visual app builder. Architect, synthesize, and export production-ready native applications.</div>
+                </a>
+
+                <!-- ViaDecide: Research Lab -->
+                <a href="https://viadecide.com" class="card" tabindex="0">
+                    <div class="card-icon">⬢</div>
+                    <div class="card-title">ViaDecide</div>
+                    <div class="card-desc">Research laboratory prototyping the future of human-computer interaction and decision systems.</div>
+                </a>
+
+                <!-- Daxini.Space: Marketplace -->
+                <a href="https://daxini.space" class="card" tabindex="0">
+                    <div class="card-icon">🌌</div>
+                    <div class="card-title">Daxini.Space</div>
+                    <div class="card-desc">Spatial marketplace for verified apps, tools, and neural instruments from our ecosystem.</div>
+                </a>
             </div>
         </section>
     </main>
