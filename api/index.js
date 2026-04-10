@@ -1,7 +1,9 @@
-/* 
-  daxini.xyz/api/check.js (Vercel Serverless Function)
-  MISSION: AUTONOMOUS BUG ASSASSIN - PHASE 2
+/*
+  daxini.xyz/api/index.js (Vercel Serverless Function)
+  MISSION: AUTONOMOUS BUG ASSASSIN - PHASE 2 + STUDENT VERIFICATION
 */
+
+import studentVerifyHandler from './student-verify.js';
 
 export default async function handler(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
@@ -16,6 +18,11 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
+    // --- STUDENT VERIFICATION (delegate to module) ---
+    if (path.startsWith('/api/student/')) {
+      return studentVerifyHandler(req, res);
+    }
+
     // --- HEALTH / MISSION ---
     if (path === '/api/check' || path === '/api') {
       return res.status(200).json({ status: 'HEALTHY', mission: 'UNSHACKLED', version: '2.04' });

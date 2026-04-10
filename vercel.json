@@ -17,6 +17,8 @@
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/student-verify", "destination": "/student-verify.html" },
+    { "source": "/admin/review", "destination": "/admin/review.html" },
     { "source": "/early-access", "destination": "/zayvora-onboarding/index.html" },
     { "source": "/((?!api/|.*\\.).*)", "destination": "/index.html" }
   ]
