@@ -249,3 +249,47 @@ BEGIN
     AND verified_at IS NULL;
 END$$
 DELIMITER ;
+
+-- ============================================================================
+-- TABLE 7: student_verifications
+-- ============================================================================
+-- Tracks student identity verification submissions (email + ID OCR)
+
+CREATE TABLE IF NOT EXISTS student_verifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  email_domain TEXT NOT NULL,
+  email_domain_tier INT NOT NULL,
+  email_verified BOOLEAN DEFAULT FALSE,
+  id_ocr_confidence FLOAT,
+  institution_name TEXT,
+  institution_type TEXT,
+  course TEXT,
+  academic_year TEXT,
+  enrollment_hash TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  review_required BOOLEAN DEFAULT FALSE,
+  ocr_extracted_text LONGTEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  verified_at TIMESTAMP,
+
+  INDEX idx_user_id (user_id),
+  INDEX idx_status (status),
+  INDEX idx_review_required (review_required)
+);
+
+-- ============================================================================
+-- TABLE 8: access_tier_assignments
+-- ============================================================================
+-- Maps user_id to their current access tier (basic, student, student_elevated, etc)
+
+CREATE TABLE IF NOT EXISTS access_tier_assignments (
+  user_id TEXT PRIMARY KEY,
+  access_tier TEXT NOT NULL DEFAULT 'basic',
+  student_verified BOOLEAN DEFAULT FALSE,
+  verified_at TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  INDEX idx_access_tier (access_tier),
+  INDEX idx_student_verified (student_verified)
+);

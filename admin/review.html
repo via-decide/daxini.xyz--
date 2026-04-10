@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Verification Review — Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #00ff41;
+        }
+        .password-prompt {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .password-prompt.hidden {
+            display: none;
+        }
+        .password-box {
+            background: #1a1a1a;
+            border: 1px solid #00ff41;
+            padding: 30px;
+            border-radius: 4px;
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+        }
+        .password-box h2 {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #00ff41;
+        }
+        .password-box input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+        }
+        .password-box input:focus {
+            outline: none;
+            border-color: #00ff41;
+        }
+        .password-box button {
+            width: 100%;
+            padding: 10px;
+            background: #00ff41;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+        .password-box button:hover {
+            background: #00cc33;
+        }
+        .password-error {
+            color: #ff4444;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th {
+            background: #1a1a1a;
+            color: #00ff41;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #00ff41;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            font-size: 13px;
+        }
+        tr:hover {
+            background: rgba(0, 255, 65, 0.05);
+        }
+        .ocr-text {
+            max-width: 300px;
+            max-height: 100px;
+            overflow-y: auto;
+            background: #0a0a0a;
+            padding: 8px;
+            border-radius: 2px;
+            font-size: 11px;
+            color: #aaa;
+            border: 1px solid #333;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            padding: 6px 12px;
+            font-size: 11px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            font-weight: bold;
+            border-radius: 2px;
+        }
+        .btn-approve {
+            background: #00ff41;
+            color: #000;
+        }
+        .btn-approve:hover {
+            background: #00cc33;
+        }
+        .btn-reject {
+            background: #ff4444;
+            color: #fff;
+        }
+        .btn-reject:hover {
+            background: #dd3333;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 2px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-pending {
+            background: #ffaa00;
+            color: #000;
+        }
+        .status-review {
+            background: #ff6600;
+            color: #fff;
+        }
+        .empty {
+            padding: 40px;
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="password-prompt" id="passwordPrompt">
+        <div class="password-box">
+            <h2>ADMIN ACCESS</h2>
+            <div class="password-error" id="passwordError"></div>
+            <input type="password" id="passwordInput" placeholder="Password" autofocus>
+            <button onclick="checkPassword()">Unlock</button>
+        </div>
+    </div>
+
+    <div class="container" style="display: none;" id="mainContent">
+        <h1>Student Verification Review Queue</h1>
+        <p style="color: #666; margin-bottom: 20px;">Pending submissions awaiting manual approval</p>
+
+        <table id="reviewTable">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Institution</th>
+                    <th>Course</th>
+                    <th>Year</th>
+                    <th>Submitted</th>
+                    <th>OCR Confidence</th>
+                    <th>Extracted Text</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tbody">
+            </tbody>
+        </table>
+
+        <div id="emptyState" class="empty" style="display: none;">
+            No submissions pending review.
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let ADMIN_PASSWORD = null;
+        let authenticated = false;
+
+        document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkPassword();
+        });
+
+        async function checkPassword() {
+            const pwd = document.getElementById('passwordInput').value;
+            const errorDiv = document.getElementById('passwordError');
+
+            try {
+                const response = await fetch('/api/student/review/check-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pwd })
+                });
+
+                const data = await response.json();
+                if (data.authenticated) {
+                    authenticated = true;
+                    document.getElementById('passwordPrompt').classList.add('hidden');
+                    document.getElementById('mainContent').style.display = 'block';
+                    loadReviewQueue();
+                } else {
+                    errorDiv.textContent = 'Invalid password';
+                    document.getElementById('passwordInput').value = '';
+                }
+            } catch (e) {
+                errorDiv.textContent = 'Error: ' + e.message;
+            }
+        }
+
+        async function loadReviewQueue() {
+            try {
+                const response = await fetch('/api/student/review/list');
+                const data = await response.json();
+
+                if (!data.submissions || data.submissions.length === 0) {
+                    document.getElementById('emptyState').style.display = 'block';
+                    document.getElementById('reviewTable').style.display = 'none';
+                } else {
+                    renderSubmissions(data.submissions);
+                }
+            } catch (e) {
+                console.error('Failed to load review queue:', e);
+            }
+        }
+
+        function renderSubmissions(submissions) {
+            const tbody = document.getElementById('tbody');
+            tbody.innerHTML = submissions.map(sub => `
+                <tr>
+                    <td><code>${sub.user_id}</code></td>
+                    <td>${sub.institution_name}</td>
+                    <td>${sub.course || '—'}</td>
+                    <td>${sub.academic_year || '—'}</td>
+                    <td>${new Date(sub.created_at).toLocaleDateString()}</td>
+                    <td>${Math.round(sub.id_ocr_confidence * 100)}%</td>
+                    <td><div class="ocr-text">${sub.ocr_extracted_text || 'N/A'}</div></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-approve" onclick="approveSubmission(${sub.id})">Approve</button>
+                            <button class="btn btn-reject" onclick="rejectSubmission(${sub.id})">Reject</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function approveSubmission(id) {
+            if (!confirm('Approve this submission?')) return;
+
+            try {
+                const response = await fetch('/api/student/review/approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    loadReviewQueue();
+                    alert('Approved. Email sent to student.');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (e) {
+                alert('Failed: ' + e.message);
+            }
+        }
+
+        async function rejectSubmission(id) {
+            if (!confirm('Reject this submission?')) return;
+
+            try {
+                const response = await fetch('/api/student/review/reject', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    loadReviewQueue();
+                    alert('Rejected. Email sent to student.');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (e) {
+                alert('Failed: ' + e.message);
+            }
+        }
+    </script>
+</body>
+</html>

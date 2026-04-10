@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zayvora — Student Verification</title>
+    <link rel="stylesheet" href="./zayvora-login/styles.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+            color: #f3f6ff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .verify-shell {
+            width: 100%;
+            max-width: 500px;
+        }
+        .verify-card {
+            background: rgba(18, 26, 50, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .verify-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .verify-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #5ea7ff, #7b61ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .verify-subtitle {
+            font-size: 14px;
+            color: #9fb0d3;
+            line-height: 1.6;
+        }
+        .step {
+            margin-bottom: 32px;
+            padding: 24px;
+            background: rgba(93, 167, 255, 0.05);
+            border-left: 3px solid #5ea7ff;
+            border-radius: 8px;
+            display: none;
+        }
+        .step.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .step-num {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: #5ea7ff;
+            color: #121a32;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .step-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #f3f6ff;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #9fb0d3;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .form-control,
+        .file-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #f3f6ff;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .form-control:focus,
+        .file-input:focus {
+            outline: none;
+            border-color: #5ea7ff;
+            background: rgba(94, 167, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(94, 167, 255, 0.1);
+        }
+        .file-input {
+            cursor: pointer;
+            padding: 40px 12px;
+            text-align: center;
+            border: 2px dashed rgba(94, 167, 255, 0.3);
+            transition: all 0.2s;
+        }
+        .file-input:hover {
+            border-color: #5ea7ff;
+            background: rgba(94, 167, 255, 0.05);
+        }
+        .file-input-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #5ea7ff;
+            margin-bottom: 6px;
+        }
+        .file-input-hint {
+            font-size: 12px;
+            color: #9fb0d3;
+        }
+        .email-domain-info {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(72, 213, 155, 0.1);
+            border-left: 3px solid #48d59b;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .email-domain-info.show {
+            display: block;
+        }
+        .email-domain-name {
+            font-weight: 600;
+            color: #48d59b;
+        }
+        .email-domain-tier {
+            font-size: 12px;
+            color: #9fb0d3;
+            margin-top: 4px;
+        }
+        .email-verified-check {
+            display: none;
+            color: #48d59b;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .email-verified-check.show {
+            display: block;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #5ea7ff, #7b61ff);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            text-align: center;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(94, 167, 255, 0.3);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .alert.show {
+            display: block;
+        }
+        .alert-success {
+            background: rgba(72, 213, 155, 0.1);
+            border: 1px solid rgba(72, 213, 155, 0.3);
+            color: #48d59b;
+        }
+        .alert-error {
+            background: rgba(255, 125, 125, 0.1);
+            border: 1px solid rgba(255, 125, 125, 0.3);
+            color: #ff7d7d;
+        }
+        .alert-info {
+            background: rgba(94, 167, 255, 0.1);
+            border: 1px solid rgba(94, 167, 255, 0.3);
+            color: #5ea7ff;
+        }
+        .privacy-notice {
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            font-size: 12px;
+            color: #9fb0d3;
+            line-height: 1.6;
+            border-left: 3px solid rgba(255, 255, 255, 0.1);
+        }
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #5ea7ff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner.show {
+            display: inline-block;
+        }
+        .step-progress {
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        .progress-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+            color: #9fb0d3;
+            transition: all 0.2s;
+        }
+        .progress-dot.active {
+            background: linear-gradient(135deg, #5ea7ff, #7b61ff);
+            color: white;
+        }
+        .progress-dot.done {
+            background: #48d59b;
+            color: #121a32;
+        }
+        .progress-line {
+            flex: 1;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .rate-limit-info {
+            font-size: 12px;
+            color: #9fb0d3;
+            margin-top: 8px;
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #5ea7ff;
+            margin-top: 12px;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(94, 167, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="verify-shell">
+        <div class="verify-card">
+            <div class="verify-header">
+                <div class="verify-title">Zayvora</div>
+                <div class="verify-subtitle">
+                    Student Verification<br>
+                    <span style="font-size: 12px; color: #7b61ff;">Built for engineers who are still becoming</span>
+                </div>
+            </div>
+
+            <div class="step-progress">
+                <div class="progress-dot active" id="prog1">1</div>
+                <div class="progress-line"></div>
+                <div class="progress-dot" id="prog2">2</div>
+            </div>
+
+            <!-- STEP 1: Email -->
+            <div class="step active" id="step1">
+                <div class="step-num">1</div>
+                <div class="step-title">Institutional Email</div>
+
+                <div id="emailAlert" class="alert"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Your Institution Email</label>
+                    <input type="email" id="emailInput" class="form-control" placeholder="you@college.ac.in" autocomplete="email">
+                    <div id="emailDomainInfo" class="email-domain-info">
+                        <div class="email-domain-name" id="emailDomainName"></div>
+                        <div class="email-domain-tier" id="emailDomainTier"></div>
+                    </div>
+                </div>
+
+                <button id="emailCheckBtn" class="btn" onclick="checkEmail()">
+                    Check Email Domain
+                </button>
+
+                <button id="emailSendBtn" class="btn" style="display: none; margin-top: 12px;" onclick="sendVerificationEmail()">
+                    Send Verification Email
+                </button>
+
+                <div id="emailVerifiedCheck" class="email-verified-check">
+                    ✓ Email verified
+                </div>
+
+                <div class="privacy-notice">
+                    We send a verification link to your email. Click it to confirm your institution affiliation. We never store your full email address — only the domain.
+                </div>
+            </div>
+
+            <!-- STEP 2: Student ID -->
+            <div class="step" id="step2">
+                <div class="step-num">2</div>
+                <div class="step-title">Student ID Upload</div>
+
+                <div id="uploadAlert" class="alert"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Upload Student ID or Bonafide Certificate</label>
+                    <input type="file" id="idFileInput" class="file-input" accept=".jpg,.jpeg,.png,.pdf" capture="environment" onchange="validateFile()">
+                    <label for="idFileInput" class="file-input-label">📎 Click or drag to upload</label>
+                    <div class="file-input-hint">JPG, PNG, or PDF • Max 5MB</div>
+                </div>
+
+                <div class="rate-limit-info">
+                    Attempts remaining: <span id="attemptsLeft">3</span>/3
+                </div>
+
+                <button id="uploadBtn" class="btn" style="margin-top: 16px;" onclick="uploadStudentID()">
+                    Verify Student Identity
+                </button>
+
+                <div class="privacy-notice">
+                    Your student ID is processed by our server to extract your institution and enrollment year. The document is permanently deleted within 24 hours. We never store your ID image, photo, or Aadhaar number. What we keep: your institution name, course year, and a hash of your enrollment number. Nothing is sold. Nothing is shared. This data exists only to verify you are a student and to give you the access you deserve.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const INSTITUTIONS = {};
+        let emailVerified = false;
+        let uploadAttempts = 0;
+        const MAX_ATTEMPTS = 3;
+        const TOKEN_KEY = 'zayvora_token';
+        const STUDENT_TOKEN_KEY = 'student_verification_token';
+
+        // Load institutions on page load
+        fetch('/auth/institutions.json')
+            .then(r => r.json())
+            .then(data => {
+                Object.assign(INSTITUTIONS, data);
+                console.log('Institutions loaded:', Object.keys(INSTITUTIONS));
+            })
+            .catch(e => showAlert('Failed to load institution database', 'error', 'emailAlert'));
+
+        // Auth guard: redirect if not logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem(TOKEN_KEY);
+            if (!token) {
+                window.location.href = '/zayvora-login';
+            }
+        });
+
+        function showAlert(message, type, elementId) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = `alert show alert-${type}`;
+            setTimeout(() => {
+                el.classList.remove('show');
+            }, 5000);
+        }
+
+        function checkEmail() {
+            const email = document.getElementById('emailInput').value.trim().toLowerCase();
+            if (!email || !email.includes('@')) {
+                showAlert('Please enter a valid email', 'error', 'emailAlert');
+                return;
+            }
+
+            const domain = email.split('@')[1];
+            let tier = 0;
+            let institution = null;
+            let known = false;
+
+            // Check tier1
+            if (INSTITUTIONS.tier1 && INSTITUTIONS.tier1.includes(domain)) {
+                tier = 1;
+                known = true;
+                institution = INSTITUTIONS.named_institutions[domain] || domain;
+            }
+            // Check tier2
+            else if (INSTITUTIONS.tier2 && INSTITUTIONS.tier2.includes(domain)) {
+                tier = 2;
+                known = true;
+                institution = INSTITUTIONS.named_institutions[domain] || domain;
+            }
+            // Check tier3 patterns
+            else if (INSTITUTIONS.tier3_patterns) {
+                for (const pattern of INSTITUTIONS.tier3_patterns) {
+                    const patternRegex = new RegExp('^' + pattern.replace('*', '.*') + '$');
+                    if (patternRegex.test(domain)) {
+                        tier = 3;
+                        known = true;
+                        break;
+                    }
+                }
+            }
+
+            // If still no match, it's tier 3 (generic email) with not known
+            if (tier === 0) {
+                tier = 3;
+                known = false;
+                institution = domain;
+            }
+
+            // Store email info temporarily
+            sessionStorage.setItem('student_email', email);
+            sessionStorage.setItem('student_domain', domain);
+            sessionStorage.setItem('student_tier', tier);
+            sessionStorage.setItem('student_institution', institution);
+
+            // Display info
+            const info = document.getElementById('emailDomainInfo');
+            document.getElementById('emailDomainName').textContent = institution;
+            const tierText = tier === 1 ? '(Strongly Verified)' : tier === 2 ? '(Recognized)' : '(Will require ID upload)';
+            document.getElementById('emailDomainTier').textContent = `Tier ${tier} ${tierText}`;
+            info.classList.add('show');
+
+            // Show send button
+            document.getElementById('emailCheckBtn').style.display = 'none';
+            document.getElementById('emailSendBtn').style.display = 'block';
+            showAlert('Domain verified. Click below to send verification email.', 'success', 'emailAlert');
+        }
+
+        function sendVerificationEmail() {
+            const email = sessionStorage.getItem('student_email');
+            const btn = document.getElementById('emailSendBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner show"></span>Sending...';
+
+            fetch('/api/student/email/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    emailVerified = true;
+                    document.getElementById('emailVerifiedCheck').classList.add('show');
+                    document.getElementById('emailSendBtn').style.display = 'none';
+                    showAlert('✓ Verification email sent. Check your inbox for the link.', 'success', 'emailAlert');
+
+                    // Auto-advance to step 2
+                    setTimeout(() => {
+                        moveToStep2();
+                    }, 2000);
+                } else {
+                    showAlert(data.error || 'Failed to send email', 'error', 'emailAlert');
+                }
+            })
+            .catch(e => {
+                showAlert('Network error: ' + e.message, 'error', 'emailAlert');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = 'Send Verification Email';
+            });
+        }
+
+        function moveToStep2() {
+            if (!emailVerified) {
+                showAlert('Please verify your email first', 'error', 'emailAlert');
+                return;
+            }
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('prog1').classList.add('done');
+            document.getElementById('prog2').classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function validateFile() {
+            const file = document.getElementById('idFileInput').files[0];
+            if (!file) return;
+
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+
+            if (!validTypes.includes(file.type)) {
+                showAlert('Only JPG, PNG, and PDF files are accepted', 'error', 'uploadAlert');
+                document.getElementById('idFileInput').value = '';
+                return;
+            }
+            if (file.size > maxSize) {
+                showAlert('File size exceeds 5MB limit', 'error', 'uploadAlert');
+                document.getElementById('idFileInput').value = '';
+                return;
+            }
+        }
+
+        function uploadStudentID() {
+            if (!emailVerified) {
+                showAlert('Please verify your email first', 'error', 'uploadAlert');
+                return;
+            }
+            if (uploadAttempts >= MAX_ATTEMPTS) {
+                showAlert('Upload attempts exceeded. Please try again later.', 'error', 'uploadAlert');
+                return;
+            }
+
+            const file = document.getElementById('idFileInput').files[0];
+            if (!file) {
+                showAlert('Please select a file', 'error', 'uploadAlert');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('email', sessionStorage.getItem('student_email'));
+            formData.append('institution', sessionStorage.getItem('student_institution'));
+
+            const btn = document.getElementById('uploadBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner show"></span>Processing...';
+            uploadAttempts++;
+            document.getElementById('attemptsLeft').textContent = MAX_ATTEMPTS - uploadAttempts;
+
+            fetch('/api/student/id/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.auto_approved) {
+                    // Auto-approved
+                    const token = JSON.parse(localStorage.getItem(TOKEN_KEY));
+                    token.access_tier = 'student';
+                    token.student_verification = data.verification;
+                    localStorage.setItem(TOKEN_KEY, JSON.stringify(token));
+
+                    showAlert('✓ Student verified! Redirecting to Zayvora...', 'success', 'uploadAlert');
+                    setTimeout(() => {
+                        window.location.href = '/zayvora-onboarding?step=1';
+                    }, 1500);
+                } else if (data.review_required) {
+                    // Under manual review
+                    showAlert('Under manual review — you\'ll hear from us within 48 hours.', 'info', 'uploadAlert');
+                    btn.style.display = 'none';
+                    document.getElementById('idFileInput').disabled = true;
+                } else {
+                    showAlert(data.error || 'Verification failed', 'error', 'uploadAlert');
+                }
+            })
+            .catch(e => {
+                showAlert('Network error: ' + e.message, 'error', 'uploadAlert');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = 'Verify Student Identity';
+            });
+        }
+    </script>
+</body>
+</html>

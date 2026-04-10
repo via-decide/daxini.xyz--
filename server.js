@@ -33,6 +33,8 @@ const REWRITES = {
   '/login': '/zayvora-login/index.html',
   '/pricing': '/zayvora-pricing.html',
   '/workspace': '/ui/workspace/mission-control.html',
+  '/student-verify': '/student-verify.html',
+  '/admin/review': '/admin/review.html',
 };
 
 function serveFile(filePath, res) {
