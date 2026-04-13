@@ -1,0 +1,207 @@
+/*
+  assets/css/workspace.css — Daxini Systems Workstation
+  Uses theme tokens from base.css
+*/
+
+.workspace-body {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    color: var(--tx);
+}
+
+.workspace-nav {
+    flex-shrink: 0;
+    height: 60px;
+    background: var(--bg1);
+    border-bottom: 1px solid var(--bd);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    position: relative;
+    z-index: 100;
+}
+
+.nav-brand {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.workspace-controls {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+#status-indicator {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: 0.5px;
+}
+
+.status-pulse {
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--green);
+    animation: pulse 2s infinite;
+}
+
+.exit-btn {
+    font-size: 0.7rem;
+    border: 1px solid var(--bd2);
+    padding: 6px 14px;
+    border-radius: var(--r-sm);
+    transition: all 0.2s var(--ease);
+}
+
+.exit-btn:hover {
+    background: var(--bd2);
+    border-color: var(--tx3);
+}
+
+/* --- GRID LAYOUT --- */
+
+.workspace-layout {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 280px 1fr 340px;
+    grid-template-rows: 1fr 180px;
+    gap: 1px;
+    background: var(--bd);
+    overflow: hidden;
+}
+
+.panel {
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.p-header {
+    height: 32px;
+    background: var(--bg1);
+    border-bottom: 1px solid var(--bd);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--tx2);
+}
+
+.p-content {
+    flex: 1;
+    padding: 1.25rem;
+    overflow-y: auto;
+}
+
+#p-reasoning { grid-row: 1 / 3; }
+#p-trace { grid-column: 2 / 3; }
+#p-console { grid-column: 2 / 3; }
+#p-knowledge { grid-row: 1 / 2; }
+#p-metrics { grid-row: 2 / 3; grid-column: 3 / 4; border-top: 1px solid var(--bd); }
+
+/* --- CONSOLE COMPONENTS --- */
+
+.workspace-input {
+    padding: 1rem;
+    background: var(--bg1);
+    border-top: 1px solid var(--bd);
+    display: flex;
+    gap: 0.75rem;
+}
+
+.workspace-input input {
+    flex: 1;
+    background: var(--bg2);
+    border: 1px solid var(--bd2);
+    padding: 0.75rem 1rem;
+    color: var(--tx);
+    border-radius: var(--r-sm);
+}
+
+.workspace-input button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 0 1.5rem;
+    border-radius: var(--r-sm);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.log-entry {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--bd3);
+}
+
+.log-entry.system { color: var(--tx2); }
+.log-entry.user { color: var(--accent); border-left-color: var(--accent); }
+.log-entry.zayvora { color: #fff; border-left-color: var(--violet); }
+
+/* --- REASONING STAGES --- */
+
+.stage-node {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--bd);
+    opacity: 0.4;
+    transition: opacity 0.3s var(--ease);
+}
+
+.stage-node.active {
+    opacity: 1;
+    background: var(--accent-g);
+    color: var(--accent2);
+}
+
+.stage-idx { font-family: var(--font-mono); font-size: 0.7rem; color: var(--tx3); }
+.stage-txt { font-weight: 600; font-size: 0.85rem; }
+
+/* --- ANIMATIONS --- */
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-shadow {
+    0% { box-shadow: 0 0 0 0 rgba(91, 140, 255, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(91, 140, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(91, 140, 255, 0); }
+}
+
+/* --- MOBILE ADAPTIVE --- */
+
+@media (max-width: 1000px) {
+    .workspace-layout {
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    .panel { min-height: 350px; flex-shrink: 0; }
+    #p-metrics { min-height: 150px; }
+}
