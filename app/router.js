@@ -5,50 +5,6 @@
     '/': {
       title: 'Daxini — Home',
       render: () => ''
-    },
-    '/zayvora': {
-      title: 'Daxini — Zayvora',
-      render: () => `
-        <main class="hero">
-          <div class="badge">Zayvora UI</div>
-          <h1>Zayvora</h1>
-          <p class="tagline">India's sovereign AI engineering and infrastructure stack.</p>
-          <div class="grid">
-            <a class="card featured" href="https://github.com/zayvora" target="_blank" rel="noopener"><div class="card-title">GitHub</div><div class="card-desc">Open-source repos and releases.</div></a>
-            <a class="card" href="/pricing" data-route="/pricing"><div class="card-title">Pricing</div><div class="card-desc">Credits, plans, and onboarding details.</div></a>
-            <a class="card" href="/login" data-route="/login"><div class="card-title">Login</div><div class="card-desc">Access your workspace account.</div></a>
-          </div>
-        </main>
-      `
-    },
-    '/pricing': {
-      title: 'Daxini — Pricing',
-      render: () => `
-        <main class="hero">
-          <div class="badge">Pricing</div>
-          <h1>Plans</h1>
-          <p class="tagline">Choose a Zayvora credit pack that matches your usage.</p>
-          <div class="grid">
-            <a class="card" href="/login" data-route="/login"><div class="card-title">Starter</div><div class="card-desc">For evaluation and demos.</div></a>
-            <a class="card featured" href="/login" data-route="/login"><div class="card-title">Growth</div><div class="card-desc">For frequent workspace use.</div></a>
-            <a class="card" href="/login" data-route="/login"><div class="card-title">Enterprise</div><div class="card-desc">Custom deployment and support.</div></a>
-          </div>
-        </main>
-      `
-    },
-    '/login': {
-      title: 'Daxini — Login',
-      render: () => `
-        <main class="hero">
-          <div class="badge">Login</div>
-          <h1>Sign In</h1>
-          <p class="tagline">Use your existing account to access Zayvora services.</p>
-          <div class="launch-actions" style="display:flex; gap: 12px; flex-wrap: wrap;">
-            <a class="card featured" href="/zayvora-login/index.html"><div class="card-title">Open Secure Login</div><div class="card-desc">Continue to authenticated sign-in flow.</div></a>
-            <a class="card" href="/" data-route="/"><div class="card-title">Back Home</div><div class="card-desc">Return to Daxini portal.</div></a>
-          </div>
-        </main>
-      `
     }
   };
 

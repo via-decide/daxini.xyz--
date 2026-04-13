@@ -35,6 +35,7 @@ const REWRITES = {
   '/workspace': '/ui/workspace/mission-control.html',
   '/student-verify': '/student-verify.html',
   '/admin/review': '/admin/review.html',
+  '/zayvora': '/zayvora.html'
 };
 
 function serveFile(filePath, res) {

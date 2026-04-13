@@ -20,6 +20,9 @@
     { "source": "/student-verify", "destination": "/student-verify.html" },
     { "source": "/admin/review", "destination": "/admin/review.html" },
     { "source": "/early-access", "destination": "/zayvora-onboarding/index.html" },
+    { "source": "/zayvora", "destination": "/zayvora.html" },
+    { "source": "/pricing", "destination": "/zayvora-pricing.html" },
+    { "source": "/login", "destination": "/login/index.html" },
     { "source": "/((?!api/|.*\\.).*)", "destination": "/index.html" }
   ]
 }

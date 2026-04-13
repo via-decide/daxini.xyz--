@@ -383,6 +383,8 @@
         .nav-links {
             display: flex;
             align-items: center;
+            justify-content: flex-end;
+            flex-wrap: wrap;
             gap: 0.25rem;
             list-style: none;
         }
@@ -432,6 +434,14 @@
             .nav-links a { font-size: 0.65rem; padding: 0.35rem 0.5rem; letter-spacing: 0.5px; }
             .zayvora-showcase { padding: 1.4rem; }
             .system-status-mini { display: none; } /* Hide on small mobile to save space */
+        }
+
+        @media (max-width: 380px) {
+            .nav-links a {
+                padding: 0.35rem 0.25rem !important;
+                font-size: 0.58rem !important;
+                letter-spacing: 0px !important;
+            }
         }
         
         /* System status is now hidden - kept for reference only */
