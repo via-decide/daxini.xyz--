@@ -5,6 +5,9 @@
 import { generateClientFingerprint } from '../security/browserFingerprint.js';
 import { detectAutomatedSignals } from '../security/botDetection.js';
 import { analyzeBehavior } from '../security/behaviorEngine.js';
+import { analyzeTrafficAnomaly, logAnomalyError } from '../security/anomalyDetector.js';
+import { analyzeActorRelationships } from '../security/networkGraphAnalyzer.js';
+import { updateReputation, isBlacklisted } from '../security/reputationEngine.js';
 import { logThreatEvent } from '../security/threatTelemetry.js';
 import { serveMirroredResponse, routeToHoneypot } from '../security/mirrorRouter.js';
 import db from '../security/initDB.js';
@@ -15,20 +18,33 @@ export default async function handler(req, res) {
   const ua = req.headers['user-agent'] || 'unknown';
   const ip = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || '0.0.0.0';
 
-  // 1. Cloudflare Shielding Enforcement
+  // 1. Critical Reputation & Shielding
   if (!req.headers['cf-ray']) {
-    return res.status(403).json({ error: 'Direct access denied. Daxini infra is shielded by Cloudflare.' });
+    return res.status(403).json({ error: 'Shielding bypass detected.' });
   }
 
-  // 2. v2 Security Intelligence
   const fingerprint = generateClientFingerprint(req);
+  if (isBlacklisted(ip) || isBlacklisted(fingerprint)) {
+    return res.status(403).json({ error: 'Access revoked due to high-risk reputation.' });
+  }
+
+  // 2. v3 Intelligence Aggregation
   const botSignals = detectAutomatedSignals(req);
   const passportToken = req.headers['authorization'] || null;
   const behavior = analyzeBehavior(req, fingerprint, passportToken);
+  const anomaly = analyzeTrafficAnomaly(ip, path);
+  const graph = analyzeActorRelationships(ip, fingerprint);
   
-  const totalThreatScore = Math.min(1.0, botSignals.risk_score + behavior.behavior_score);
+  // Weights: Bot(0.4) + Behavior(0.3) + Anomaly(0.3) + GraphPenalty
+  let totalThreatScore = botSignals.risk_score + behavior.behavior_score + anomaly.anomaly_score;
+  totalThreatScore += graph.cluster_density * 0.2; // Coordination penalty
+  totalThreatScore = Math.min(1.0, totalThreatScore);
 
-  // 3. Telemetry Logging
+  // 3. Persistent Reputation Update
+  updateReputation(ip, 'ip', (totalThreatScore > 0.4 ? 0.05 : -0.01), 'GA_SCORE');
+  updateReputation(fingerprint, 'fp', (totalThreatScore > 0.4 ? 0.05 : -0.01), 'GA_SCORE');
+
+  // 4. Telemetry Logging
   if (totalThreatScore > 0.1) {
     logThreatEvent({
         ip,
@@ -40,20 +56,16 @@ export default async function handler(req, res) {
     });
   }
 
-  // 4. Adaptive Diversity Routing
-  // Malicious Tier (0.7+) -> Honeypot
+  // 5. Adaptive Diversity Routing
   if (totalThreatScore >= 0.7) {
-    console.warn(`[V2 MALICIOUS] ${ip} -> ${path} (Score: ${totalThreatScore})`);
     return routeToHoneypot(req, res);
   }
 
-  // Suspicious Tier (0.4 - 0.7) -> Mirror
   if (totalThreatScore >= 0.4) {
-    console.log(`[V2 SUSPICIOUS] ${ip} -> ${path} (Score: ${totalThreatScore})`);
     return serveMirroredResponse(res);
   }
 
-  // 5. Standard Logic (Normal Tier < 0.4)
+  // 6. Standard Logic
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -104,10 +116,25 @@ export default async function handler(req, res) {
       }
     }
 
-    // Capture endpoint scanning (404s) as suspicious activity
-    suspicionTracker.increment(ip, 5, `ENDPOINT_SCANNING: ${path}`);
-    logSecurityEvent(ip, path, '404_SCAN', ua, 5);
-    return res.status(404).json({ error: 'Endpoint not found', path });
+    if (path === '/api/security/stats') {
+      // Direct Authorization check for security telemetry
+      if (req.headers['authorization'] !== `Bearer ${process.env.SECURITY_SECRET}`) {
+        return res.status(403).json({ error: 'Unauthorized telemetry access' });
+      }
+
+      const stats = db.prepare('SELECT COUNT(*) as count FROM security_events').get();
+      const reputations = db.prepare('SELECT * FROM reputation_scores ORDER BY score DESC LIMIT 10').all();
+      const clusters = db.prepare('SELECT source_id, target_id, relation_type FROM threat_edges LIMIT 50').all();
+      
+      return res.status(200).json({
+        eventCount: stats.count,
+        topRisks: reputations,
+        threatGraph: clusters,
+        mutationCycle: Math.floor(Date.now() / (6 * 60 * 60 * 1000))
+      });
+    }
+
+    // Capture endpoint scanning (404s)
   } catch (error) {
     return res.status(500).json({ error: 'Internal System Error', details: error.message });
   }
