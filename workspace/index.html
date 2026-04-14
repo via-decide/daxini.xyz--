@@ -1,96 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zayvora Workspace — Reasoning Console</title>
-  
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Core Styles -->
-  <link rel="stylesheet" href="../assets/css/base.css">
-  <link rel="stylesheet" href="../assets/css/layout.css">
-  <link rel="stylesheet" href="../assets/css/workspace.css">
-</head>
-<body>
-
-  <!-- Site Nav (Reused) -->
-  <nav class="site-nav">
-    <a href="../index.html" class="nav-brand">
-      <div class="nav-pulse"></div>
-      DAXINI
-    </a>
-    <div class="nav-links">
-      <span class="mono" style="font-size: 11px; color: var(--tx3);">WORKSPACE // SESSION_01</span>
-    </div>
-    <div style="margin-left: auto;">
-      <button id="dev-mode-toggle" class="mono" style="background: none; border: 1px solid var(--bd); color: var(--tx2); padding: 4px 12px; border-radius: 4px; font-size: 10px; cursor: pointer;">
-        DEV_MODE: OFF
-      </button>
-    </div>
-  </nav>
-
-  <!-- Workspace Grid -->
-  <main class="workspace-root" id="workspace-manager">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZAYVORA // Reasoning Workstation</title>
     
-    <!-- TOP: Prompt Console -->
-    <section class="ws-panel area-top" id="panel-prompt">
-      <div class="prompt-container">
-        <textarea id="prompt-input" class="prompt-input" placeholder="Enter reasoning objective..."></textarea>
-        <button id="run-btn" class="btn-run">RUN EXECUTION</button>
-      </div>
-    </section>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/assets/icon-192.png">
+    <meta name="theme-color" content="#0b0c0f">
 
-    <!-- LEFT: Reasoning Loop -->
-    <aside class="ws-panel area-left" id="panel-loop">
-      <div class="ws-panel-header">
-        <div class="ws-panel-title">Reasoning Loop</div>
-      </div>
-      <div class="ws-panel-body" id="loop-container">
-        <!-- Stages injected by JS -->
-      </div>
-    </aside>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@600;800&display=swap" rel="stylesheet">
 
-    <!-- CENTER: Execution Trace -->
-    <section class="ws-panel area-center" id="panel-trace">
-      <div class="ws-panel-header">
-        <div class="ws-panel-title">Execution Trace</div>
-        <button class="mono" id="clear-trace" style="background: none; border: none; color: var(--tx3); font-size: 10px; cursor: pointer;">CLEAR</button>
-      </div>
-      <div class="ws-panel-body" id="trace-container">
-        <div class="trace-log" id="trace-log"></div>
-      </div>
-    </section>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="./assets/css/base.css">
+    <link rel="stylesheet" href="./assets/css/workspace.css">
+    <link rel="stylesheet" href="./assets/css/console-layout.css">
+    
+    <!-- Dependencies -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script type="module" src="./assets/js/identity-hud.js"></script>
+</head>
+<body class="workspace-body">
+    <!-- Noise texture -->
+    <div class="noise" aria-hidden="true"></div>
 
-    <!-- RIGHT: Knowledge Graph -->
-    <aside class="ws-panel area-right" id="panel-graph">
-      <div class="ws-panel-header">
-        <div class="ws-panel-title">Knowledge Graph</div>
-      </div>
-      <div class="ws-panel-body" id="graph-container" style="padding: 0; position: relative;">
-        <canvas id="ws-graph-canvas"></canvas>
-      </div>
-    </aside>
+    <div id="identity-hud"></div>
 
-    <!-- BOTTOM: System Metrics -->
-    <footer class="ws-panel area-bottom" id="panel-metrics">
-      <div class="ws-panel-header">
-        <div class="ws-panel-title">System Telemetry</div>
-      </div>
-      <div class="ws-panel-body">
-        <div class="metrics-grid" id="metrics-container">
-          <!-- Metrics injected by JS -->
+    <nav class="workspace-nav">
+        <a href="/" class="nav-brand">DAXINI // ZAYVORA</a>
+        
+        <div class="workspace-controls">
+            <div id="status-indicator">
+                <span class="status-pulse"></span>
+                REASONING HARNESS ACTIVE
+            </div>
+            
+            <label class="toggle-dev">
+                DEV_MODE
+                <input type="checkbox" id="dev-toggle-input">
+            </label>
+            
+            <a href="/" class="exit-btn">CLOSE PORTAL</a>
         </div>
-      </div>
-    </footer>
+    </nav>
 
-  </main>
+    <main class="workspace-layout">
+        <!-- Panel 1: Reasoning Architecture -->
+        <aside class="panel" id="p-reasoning">
+            <header class="p-header">Reasoning Architecture</header>
+            <div class="p-content" id="mount-reasoning-loop"></div>
+        </aside>
 
-  <!-- Scripts -->
-  <script src="../assets/js/graph.js"></script> <!-- Reusing core graph logic if possible -->
-  <script type="module" src="./workspaceManager.js"></script>
+        <!-- Panel 2: Execution Trace -->
+        <section class="panel" id="p-trace">
+            <header class="p-header">
+                Execution Trace
+                <span class="p-meta" id="trace-meta">0 steps</span>
+            </header>
+            <div class="p-content" id="mount-execution-trace"></div>
+        </section>
+
+        <!-- Panel 3: Console -->
+        <section class="panel" id="p-console">
+            <header class="p-header">Sovereign Interface</header>
+            <div class="p-content" id="mount-console-log">
+                <div class="log-entry system">[SYSTEM] Bridge established. Zayvora-Nex gateway ready.</div>
+            </div>
+            <div class="workspace-input">
+                <input type="text" id="main-prompt" placeholder="Input engineering constraints or research target..." autocomplete="off">
+                <button id="send-prompt">EXECUTE ⤖</button>
+            </div>
+        </section>
+
+        <!-- Panel 4: Knowledge Map -->
+        <aside class="panel" id="p-knowledge">
+            <header class="p-header">Knowledge Map</header>
+            <div class="p-content" id="mount-knowledge-graph" style="padding:0;"></div>
+        </aside>
+
+        <!-- Panel 5: Performance HUD -->
+        <footer class="panel" id="p-metrics">
+            <header class="p-header">System Telemetry</header>
+            <div class="p-content" id="mount-metrics"></div>
+        </footer>
+    </main>
+
+    <!-- Orchestration Logic -->
+    <script type="module" src="./assets/js/workspaceApp.js"></script>
 </body>
 </html>
