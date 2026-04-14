@@ -65,21 +65,38 @@ export default async function handler(req, res) {
       const { prompt } = req.body;
       if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
 
-      return res.status(200).json({
-        final_answer: `Analysis complete. The requested architectural segment requires a high-tenacity fiber composite to maintain integrity under the simulated thermal stress of 450K.`,
-        reasoning_trace: [
-          { stage: 'DECOMPOSE', message: 'Analyzing thermal stress vectors on fiber composite.' },
-          { stage: 'RETRIEVE', message: 'Pulling material properties from Daxini Research Knowledge Graph.' },
-          { stage: 'CALCULATE', message: 'Computing tensile strength thresholds at 450K.' },
-          { stage: 'VERIFY', message: 'Validating against safety factors for space-grade housing.' },
-          { stage: 'REVISE', message: 'Synthesizing final specification.' }
-        ],
-        tool_calls: [
-          { tool: 'VECTOR_SEARCH', params: { query: 'fiber composite thermal limits' }, status: 'SUCCESS' },
-          { tool: 'CALCULATOR', params: { formula: 'stress = F/A' }, status: 'SUCCESS' }
-        ],
-        telemetry: { tokens: 384, latency_ms: 1820, steps: 5 }
-      });
+      try {
+        // Proxy to the core Zayvora server (port 3000)
+        const response = await fetch('http://localhost:3000/api/zayvora/execute', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': req.headers['authorization'] || ''
+          },
+          body: JSON.stringify({ prompt })
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            return res.status(response.status).json(errData);
+        }
+
+        // Set headers for SSE passthrough
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        
+        // Pipe the stream
+        const reader = response.body.getReader();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          res.write(value);
+        }
+        return res.end();
+      } catch (err) {
+        return res.status(502).json({ error: 'Upstream reasoning engine unavailable', details: err.message });
+      }
     }
 
     // Capture endpoint scanning (404s) as suspicious activity

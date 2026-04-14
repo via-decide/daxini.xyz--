@@ -1,36 +1,61 @@
 /*
   assets/js/components/executionTrace.js
+  Real-time technical log of the reasoning steps.
 */
 
 export class ExecutionTrace {
     constructor(mountId) {
         this.mount = document.getElementById(mountId);
-        this.stepMeta = document.getElementById('trace-meta');
-        this.steps = [];
+        this.render();
     }
 
-    add(tag, message) {
-        const entry = document.createElement('div');
-        entry.className = 'log-entry';
-        entry.style.fontSize = '0.75rem';
-        entry.style.opacity = '0.8';
-        entry.innerHTML = `<span style="color:var(--tx3); font-size:0.6rem; margin-right:0.5rem;">[${new Date().toLocaleTimeString('en-GB')}]</span> <span style="color:var(--amber);">[${tag}]</span> ${message}`;
-        this.mount.appendChild(entry);
-        this.mount.scrollTop = this.mount.scrollHeight;
-        
-        this.steps.push({tag, message});
-        if (this.stepMeta) this.stepMeta.textContent = `${this.steps.length} steps`;
+    render() {
+        this.mount.innerHTML = `
+            <div id="trace-log" class="trace-log">
+                <div class="trace-entry system">[SYSTEM] Awaiting pulse...</div>
+            </div>
+        `;
+        this.log = this.mount.querySelector('#trace-log');
     }
 
     onEvent(event, data) {
-        if (event === 'STAGE_CHANGE') this.add('STAGE', `Switching to ${data.stage} logic...`);
-        if (event === 'TOOL_START') this.add('TOOL', `Initializing ${data.tool} harness...`);
-        if (event === 'TOOL_SUCCESS') this.add('OK', `${data.tool} returned success signal.`);
+        if (event === 'stage') {
+            this.add(data.stage, data.detail);
+        }
+        if (event === 'completed') {
+            this.add('SYSTEM', 'Execution pulse finalized.', 'success');
+        }
+        if (event === 'error') {
+            this.add('ERROR', data.error, 'failed');
+        }
+    }
+
+    add(stage, detail, type = 'info') {
+        const entry = document.createElement('div');
+        entry.className = `trace-entry ${type}`;
+        
+        const timestamp = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        entry.innerHTML = `
+            <span class="trace-time">[${timestamp}]</span>
+            <span class="trace-stage">[${stage}]</span>
+            <span class="trace-detail">${detail}</span>
+        `;
+        
+        this.log.appendChild(entry);
+        this.log.scrollTop = this.log.scrollHeight;
+
+        // Update meta counter
+        const meta = document.getElementById('trace-meta');
+        if (meta) {
+            const count = this.log.querySelectorAll('.trace-entry').length;
+            meta.innerText = `${count} steps`;
+        }
     }
 
     clear() {
-        this.mount.innerHTML = '';
-        this.steps = [];
-        this.stepMeta.textContent = '0 steps';
+        this.log.innerHTML = '';
+        const meta = document.getElementById('trace-meta');
+        if (meta) meta.innerText = `0 steps`;
     }
 }

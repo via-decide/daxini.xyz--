@@ -401,11 +401,43 @@
 .stage-node.active {
     opacity: 1;
     background: var(--accent-g);
-    color: var(--accent2);
+    color: var(--accent);
+    box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.stage-node.complete {
+    opacity: 0.8;
+    color: var(--green);
+}
+
+.stage-node.failed {
+    opacity: 1;
+    color: var(--red);
 }
 
 .stage-idx { font-family: var(--font-mono); font-size: 0.7rem; color: var(--tx3); }
 .stage-txt { font-weight: 600; font-size: 0.85rem; }
+
+/* --- TRACE STYLING --- */
+
+.trace-log {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+.trace-entry {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.trace-time { color: var(--tx3); margin-right: 0.5rem; }
+.trace-stage { color: var(--accent); font-weight: bold; margin-right: 0.5rem; }
+.trace-detail { color: var(--tx2); }
+
+.trace-entry.success .trace-detail { color: var(--green); }
+.trace-entry.failed .trace-detail { color: var(--red); }
 
 /* --- ANIMATIONS --- */
 

@@ -1,73 +1,104 @@
 /*
   assets/js/components/knowledgeGraph.js
-  D3.js force-directed graph optimized for the Research OS theme.
+  D3.js Force-Directed Graph for RAG visualization.
 */
 
 export class KnowledgeGraph {
     constructor(mountId) {
-        this.mount = document.getElementById(mountId);
-        this.data = { nodes: [{ id: 'CORE', label: 'ZAYVORA' }], links: [] };
+        this.mountId = mountId;
+        this.nodes = [];
+        this.links = [];
         this.init();
     }
 
     init() {
-        const width = this.mount.clientWidth || 340;
-        const height = this.mount.clientHeight || 400;
+        const mount = document.getElementById(this.mountId);
+        mount.innerHTML = `<svg id="kg-svg" style="width:100%; height:100%; min-height:300px;"></svg>`;
+        this.svg = d3.select("#kg-svg");
+    }
 
-        this.svg = d3.select(this.mount).append('svg')
-            .attr('width', '100%').attr('height', '100%')
-            .attr('viewBox', `0 0 ${width} ${height}`);
+    onEvent(event, data) {
+        if (event === 'stage' && data.stage === 'RETRIEVE' && data.hits) {
+            this.updateFromHits(data.hits);
+        }
+    }
 
-        this.sim = d3.forceSimulation(this.data.nodes)
-            .force('link', d3.forceLink(this.data.links).id(d => d.id).distance(70))
-            .force('charge', d3.forceManyBody().strength(-100))
-            .force('center', d3.forceCenter(width / 2, height / 2));
+    updateFromHits(hits) {
+        if (this.nodes.length === 0) {
+            this.nodes.push({ id: 'Zayvora', type: 'query', group: 1 });
+        }
+
+        // Add mock visual nodes for the hits
+        for (let i = 0; i < Math.min(hits, 10); i++) {
+            const nodeId = `Hit-${Date.now()}-${i}`;
+            this.nodes.push({ id: nodeId, type: 'document', group: 2 });
+            this.links.push({ source: 'Zayvora', target: nodeId });
+        }
 
         this.render();
     }
 
     render() {
-        this.svg.selectAll('*').remove();
+        const width = document.getElementById('kg-svg').clientWidth || 400;
+        const height = document.getElementById('kg-svg').clientHeight || 300;
 
-        const link = this.svg.append('g').attr('stroke', 'var(--bd)').selectAll('line')
-            .data(this.data.links).join('line');
+        this.svg.selectAll("*").remove();
 
-        const node = this.svg.append('g').selectAll('circle')
-            .data(this.data.nodes).join('circle')
-            .attr('r', d => d.id === 'CORE' ? 7 : 4)
-            .attr('fill', d => d.id === 'CORE' ? 'var(--accent)' : 'var(--tx3)')
-            .attr('stroke', 'var(--bd)')
-            .call(d3.drag().on('start', (e, d) => {
-                if (!e.active) this.sim.alphaTarget(0.3).restart();
-                d.fx = d.x; d.fy = d.y;
-            }).on('drag', (e, d) => {
-                d.fx = e.x; d.fy = e.y;
-            }).on('end', (e, d) => {
-                if (!e.active) this.sim.alphaTarget(0);
-                d.fx = null; d.fy = null;
-            }));
+        const simulation = d3.forceSimulation(this.nodes)
+            .force("link", d3.forceLink(this.links).id(d => d.id).distance(80))
+            .force("charge", d3.forceManyBody().strength(-150))
+            .force("center", d3.forceCenter(width / 2, height / 2));
 
-        this.sim.on('tick', () => {
-            link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-                .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
-            node.attr('cx', d => d.x).attr('cy', d => d.y);
+        const link = this.svg.append("g")
+            .selectAll("line")
+            .data(this.links)
+            .enter().append("line")
+            .attr("stroke", "rgba(255,255,255,0.1)")
+            .attr("stroke-width", 1);
+
+        const node = this.svg.append("g")
+            .selectAll("circle")
+            .data(this.nodes)
+            .enter().append("circle")
+            .attr("r", d => d.type === 'query' ? 8 : 4)
+            .attr("fill", d => d.type === 'query' ? "#5b8cff" : "#a78bfa")
+            .attr("filter", "drop-shadow(0 0 5px rgba(91,140,255,0.4))")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        simulation.on("tick", () => {
+            link.attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node.attr("cx", d => d.x)
+                .attr("cy", d => d.y);
         });
-    }
 
-    add(id, label) {
-        if (!this.data.nodes.find(n => n.id === id)) {
-            this.data.nodes.push({ id, label });
-            this.data.links.push({ source: 'CORE', target: id });
-            this.sim.nodes(this.data.nodes);
-            this.sim.force('link').links(this.data.links);
-            this.sim.alpha(1).restart();
-            this.render();
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event) {
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
+        }
+
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
         }
     }
 
-    onEvent(event, data) {
-        if (event === 'TOOL_SUCCESS' && data.tool === 'VECTOR_SEARCH') {
-            this.add(`N_${Date.now()}`, 'Knowledge Segment');
-        }
+    clear() {
+        this.nodes = [];
+        this.links = [];
+        this.render();
     }
 }
