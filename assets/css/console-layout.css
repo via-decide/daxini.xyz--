@@ -1,0 +1,89 @@
+/* console-layout.css — Dark Glassmorphic Aesthetic for Zayvora Reasoning Console */
+
+:root {
+    --bg-dark: #0a0a0c;
+    --accent-primary: #00f2ff;
+    --accent-secondary: #7000ff;
+    --glass-bg: rgba(20, 20, 25, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #e0e0e0;
+    --text-dim: #a0a0a0;
+}
+
+/* Identity Bar */
+.identity-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: rgba(0, 242, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05rem;
+    color: var(--accent-primary);
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.identity-bar b {
+    color: #fff;
+    text-shadow: 0 0 8px var(--accent-primary);
+}
+
+/* REASONING STAGES */
+.reasoning-loop {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.stage-item {
+    display: flex;
+    align-items: center;
+    opacity: 0.3;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stage-item.active {
+    opacity: 1;
+    color: var(--accent-primary);
+    transform: translateX(10px);
+}
+
+.stage-item.complete {
+    opacity: 0.8;
+    color: #fff;
+}
+
+.stage-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-primary);
+    margin-right: 15px;
+    position: relative;
+}
+
+.stage-item.active .stage-indicator {
+    background: var(--accent-primary);
+    box-shadow: 0 0 15px var(--accent-primary);
+}
+
+.stage-label {
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.1rem;
+    text-transform: uppercase;
+}
+
+/* GLASS PANEL ENHANCEMENTS */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
