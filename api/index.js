@@ -2,53 +2,58 @@
   api/index.js — Daxini Systems API Gateway (Hardened)
 */
 
-import { globalLimiter } from '../security/rateLimiter.js';
-import { suspicionTracker } from '../security/suspicionScore.js';
-import { detectBot } from '../security/botFingerprint.js';
-import { routeSuspect } from '../security/mirrorRouter.js';
+import { generateClientFingerprint } from '../security/browserFingerprint.js';
+import { detectAutomatedSignals } from '../security/botDetection.js';
+import { analyzeBehavior } from '../security/behaviorEngine.js';
+import { logThreatEvent } from '../security/threatTelemetry.js';
+import { serveMirroredResponse, routeToHoneypot } from '../security/mirrorRouter.js';
 import db from '../security/initDB.js';
-
-/**
- * Log a security event to the telemetry database.
- */
-function logSecurityEvent(ip, endpoint, pattern, ua, delta = 0) {
-  try {
-    const stmt = db.prepare(`
-      INSERT INTO security_events (ip_hash, endpoint, behavior_pattern, user_agent, suspicion_delta)
-      VALUES (?, ?, ?, ?, ?)
-    `);
-    stmt.run(ip, endpoint, pattern, ua, delta);
-  } catch (err) {
-    console.error('[SECURITY] Logging failure:', err.message);
-  }
-}
 
 export default async function handler(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const path = url.pathname.replace(/\/$/, "");
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   const ua = req.headers['user-agent'] || 'unknown';
+  const ip = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || '0.0.0.0';
 
-  // 1. Rate Limiting (50 req / 15 min)
-  if (!globalLimiter.check(ip)) {
-    suspicionTracker.increment(ip, 20, 'RATE_LIMIT_EXCEEDED');
-    logSecurityEvent(ip, path, 'RATE_LIMIT_EXCEEDED', ua, 20);
-    return res.status(429).json({ error: 'Too many requests' });
+  // 1. Cloudflare Shielding Enforcement
+  if (!req.headers['cf-ray']) {
+    return res.status(403).json({ error: 'Direct access denied. Daxini infra is shielded by Cloudflare.' });
   }
 
-  // 2. Bot Detection
-  const botSignals = detectBot(req);
-  if (botSignals.length > 0) {
-    suspicionTracker.increment(ip, 10 * botSignals.length, `BOT_SIGNALS: ${botSignals.join(',')}`);
-    logSecurityEvent(ip, path, `BOT_SIGNALS: ${botSignals.join(',')}`, ua, 10 * botSignals.length);
+  // 2. v2 Security Intelligence
+  const fingerprint = generateClientFingerprint(req);
+  const botSignals = detectAutomatedSignals(req);
+  const passportToken = req.headers['authorization'] || null;
+  const behavior = analyzeBehavior(req, fingerprint, passportToken);
+  
+  const totalThreatScore = Math.min(1.0, botSignals.risk_score + behavior.behavior_score);
+
+  // 3. Telemetry Logging
+  if (totalThreatScore > 0.1) {
+    logThreatEvent({
+        ip,
+        fingerprint_id: fingerprint,
+        threat_score: totalThreatScore,
+        classification: behavior.classification,
+        path_accessed: path,
+        agent: ua
+    });
   }
 
-  // 3. Deception Routing (Suspicion Score >= 100)
-  if (suspicionTracker.isCompromised(ip)) {
-    return routeSuspect(req, res, () => {});
+  // 4. Adaptive Diversity Routing
+  // Malicious Tier (0.7+) -> Honeypot
+  if (totalThreatScore >= 0.7) {
+    console.warn(`[V2 MALICIOUS] ${ip} -> ${path} (Score: ${totalThreatScore})`);
+    return routeToHoneypot(req, res);
   }
 
-  // --- Standard Logic ---
+  // Suspicious Tier (0.4 - 0.7) -> Mirror
+  if (totalThreatScore >= 0.4) {
+    console.log(`[V2 SUSPICIOUS] ${ip} -> ${path} (Score: ${totalThreatScore})`);
+    return serveMirroredResponse(res);
+  }
+
+  // 5. Standard Logic (Normal Tier < 0.4)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');

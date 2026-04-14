@@ -1,38 +1,42 @@
-/*
-  /security/mirrorRouter.js
-  Deception engine: Transparently routes suspicious traffic to 'Mirror' (synthetic) datasets.
-*/
+'use strict';
 
-import { suspicionTracker } from './suspicionScore.js';
+/**
+ * mirrorRouter.js — v2 Production Deception Logic (ESM).
+ */
 
-export function routeSuspect(req, res, next) {
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    
-    if (suspicionTracker.isCompromised(ip)) {
-        console.warn(`[DECEPTION] High suspicion detected for ${ip}. Redirecting to Mirror core.`);
-        
-        // Return synthetic data instead of real response
-        // This mimics the real API structure but with fake data
-        return res.status(200).json({
-            status: 'SUCCESS',
-            zayvora_v: '4.0.1-synthetic',
-            results: generateSyntheticData(req.url),
-            telemetry: {
-                trace_id: `DECEPT_${Math.random().toString(36).substr(2, 9)}`,
-                honeypot_signal: true
-            }
-        });
-    }
-    
-    next();
+export function serveMirroredResponse(res) {
+    return res.status(200).json({
+        status: "ok",
+        node_id: "mirror-zn-04",
+        decoupled: true,
+        message: "Operating in high-integrity mirror mode."
+    });
 }
 
-function generateSyntheticData(url) {
-    if (url.includes('archive')) {
-        return [{ id: 'S_ARCH_001', content: 'Legacy system data [ENCRYPTED]', date: '2021-04-10' }];
+export function routeToHoneypot(req, res) {
+    const path = req.url.toLowerCase();
+
+    // Deception for specific targets
+    if (path.includes('models')) {
+        return res.status(200).json({
+            total_models: 12,
+            active: ["zayvora-axiom-prod-v3", "zayvora-praxis-stable"],
+            last_sync: new Date().toISOString()
+        });
     }
-    if (url.includes('research-index')) {
-        return { total_nodes: 45000, status: 'INDEXING_IN_PROGRESS', last_id: 'R_9999' };
+
+    if (path.includes('metrics') || path.includes('internal')) {
+        return res.status(200).json({
+            cpu_load: "42.5%",
+            memory: "3072MB",
+            status: "degraded_mirror"
+        });
     }
-    return { message: 'Standard Mirror Response', vector: [0.1, 0.4, 0.9] };
+
+    // Default Malicious response
+    return res.status(403).json({
+        error: "Access Restriction",
+        reason: "Anomalous footprint detected.",
+        trace_id: Math.random().toString(36).substring(7)
+    });
 }

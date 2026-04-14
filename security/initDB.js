@@ -19,10 +19,12 @@ db.prepare(`
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
         ip_hash TEXT,
+        fingerprint_id TEXT,
         endpoint TEXT,
         behavior_pattern TEXT,
         user_agent TEXT,
-        suspicion_delta INTEGER
+        suspicion_delta INTEGER,
+        threat_score REAL
     )
 `).run();
 
