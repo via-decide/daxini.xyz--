@@ -36,3 +36,17 @@ export function isBlacklisted(targetId) {
     const rep = getReputation(targetId);
     return rep.score >= 0.95;
 }
+
+export function scoreIpByBehavior(ip, behavior) {
+    let delta = 0;
+    if (!behavior) return getReputation(ip).score;
+
+    if (behavior.classification === 'malicious') delta += 0.08;
+    else if (behavior.classification === 'suspicious') delta += 0.04;
+    else delta -= 0.01;
+
+    if (behavior.behavior_score >= 0.8) delta += 0.04;
+    if (behavior.behavior_score <= 0.1) delta -= 0.01;
+
+    return updateReputation(ip, 'ip', delta, 'BEHAVIOR_SCORE');
+}
