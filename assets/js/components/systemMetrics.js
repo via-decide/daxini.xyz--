@@ -1,6 +1,6 @@
 /*
   assets/js/components/systemMetrics.js
-  Telemetry HUD for the reasoning engine.
+  Inference metrics HUD for the reasoning engine.
 */
 
 export class SystemMetrics {
