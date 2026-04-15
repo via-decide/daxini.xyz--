@@ -42,7 +42,7 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const pathname = url.pathname.replace(/\/$/, '') || '/';
 
-  if (pathname.startsWith('/api')) {
+  if (pathname.startsWith('/api') || pathname.startsWith('/passport')) {
     res.status = (code) => { res.statusCode = code; return res; };
     res.json = (data) => {
       res.setHeader('Content-Type', 'application/json');

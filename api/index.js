@@ -7,10 +7,26 @@ import { detectAutomatedSignals } from '../security/botDetection.js';
 import { analyzeBehavior } from '../security/behaviorEngine.js';
 import { analyzeTrafficAnomaly, logAnomalyError } from '../security/anomalyDetector.js';
 import { analyzeActorRelationships } from '../security/networkGraphAnalyzer.js';
-import { updateReputation, isBlacklisted } from '../security/reputationEngine.js';
+import { updateReputation, isBlacklisted, scoreIpByBehavior } from '../security/reputationEngine.js';
 import { logThreatEvent } from '../security/threatTelemetry.js';
 import { serveMirroredResponse, routeToHoneypot } from '../security/mirrorRouter.js';
+import { evaluateMirrorThreat } from '../security/honeypotRouter.js';
 import db from '../security/initDB.js';
+
+const passportRegistry = new Map([
+  ['UID-0001', { passport_id: 'PPT-AXIOM-0001', serial: 'ZX-93A7', owner: 'Sovereign Node Alpha', status: 'active' }],
+  ['UID-0002', { passport_id: 'PPT-AXIOM-0002', serial: 'ZX-93A8', owner: 'Sovereign Node Beta', status: 'active' }],
+  ['UID-0003', { passport_id: 'PPT-AXIOM-0003', serial: 'ZX-93A9', owner: 'Sovereign Node Gamma', status: 'suspended' }]
+]);
+
+const activePassportSession = {
+  session_id: 'sess-zayvora-prime',
+  uid: 'UID-0001',
+  owner: 'Sovereign Node Alpha',
+  issued_at: '2026-04-15T00:00:00.000Z',
+  expires_at: '2026-04-15T08:00:00.000Z',
+  status: 'active'
+};
 
 export default async function handler(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
@@ -43,6 +59,7 @@ export default async function handler(req, res) {
   // 3. Persistent Reputation Update
   updateReputation(ip, 'ip', (totalThreatScore > 0.4 ? 0.05 : -0.01), 'GA_SCORE');
   updateReputation(fingerprint, 'fp', (totalThreatScore > 0.4 ? 0.05 : -0.01), 'GA_SCORE');
+  scoreIpByBehavior(ip, behavior);
 
   // 4. Telemetry Logging
   if (totalThreatScore > 0.1) {
@@ -56,16 +73,7 @@ export default async function handler(req, res) {
     });
   }
 
-  // 5. Adaptive Diversity Routing
-  if (totalThreatScore >= 0.7) {
-    return routeToHoneypot(req, res);
-  }
-
-  if (totalThreatScore >= 0.4) {
-    return serveMirroredResponse(res);
-  }
-
-  // 6. Standard Logic
+  // 5. Standard Logic
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -73,6 +81,20 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
+    if (path === '/passport/verify') {
+      if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+      const uid = url.searchParams.get('uid');
+      if (!uid || !passportRegistry.has(uid)) {
+        return res.status(403).json({ error: 'UID not registered' });
+      }
+      return res.status(200).json(passportRegistry.get(uid));
+    }
+
+    if (path === '/passport/session') {
+      if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+      return res.status(200).json(activePassportSession);
+    }
+
     if (path === '/api/check' || path === '/api') {
       return res.status(200).json({ status: 'HEALTHY', mission: 'RESEARCH_OS', version: '3.1' });
     }
@@ -134,7 +156,22 @@ export default async function handler(req, res) {
       });
     }
 
+    const mirrorDecision = evaluateMirrorThreat({
+      ip,
+      path,
+      botSignals,
+      behavior,
+      threatScore: totalThreatScore
+    });
+    if (mirrorDecision.action === 'redirect_honeypot') {
+      return routeToHoneypot(req, res);
+    }
+    if (mirrorDecision.action === 'mirror_response') {
+      return serveMirroredResponse(res);
+    }
+
     // Capture endpoint scanning (404s)
+    return res.status(404).json({ error: 'Not found' });
   } catch (error) {
     return res.status(500).json({ error: 'Internal System Error', details: error.message });
   }
