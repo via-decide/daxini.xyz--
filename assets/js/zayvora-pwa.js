@@ -1,6 +1,5 @@
 /* ══════════════════════════════════════════════════════════
    ZAYVORA-PWA.JS — PWA connection monitor + install support
-   - Registers the service worker
    - Probes the configured inference endpoint (default localhost:11434)
    - Updates a pill + banner in the dashboard nav
    - Exposes an install button when beforeinstallprompt fires
@@ -179,13 +178,6 @@
     });
   }
 
-  function registerSW() {
-    if (!('serviceWorker' in navigator)) return;
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-    });
-  }
-
   const Zpwa = {
     start, stop, checkConnection,
     getEndpoint, setEndpoint,
@@ -195,13 +187,6 @@
   document.addEventListener('DOMContentLoaded', () => {
     bindEvents();
     updateInstallButton();
-    registerSW();
-
-    if (window.Zauth && typeof window.Zauth.onAuthenticated === 'function') {
-      window.Zauth.onAuthenticated(start);
-      window.Zauth.onLogout(stop);
-    } else {
-      start();
-    }
+    start();
   });
 })();

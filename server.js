@@ -12,7 +12,6 @@ import { spawn } from 'child_process';
 import os from 'os';
 import handler from './api/index.js';
 import './scripts/monitor.js'; // Start monitoring
-import db from './security/initDB.js'; // Initialize DB on boot
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;

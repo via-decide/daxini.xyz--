@@ -12,7 +12,6 @@ const SHELL = [
   '/assets/css/components.css',
   '/assets/css/zayvora.css',
   '/assets/js/zayvora-app.js',
-  '/assets/js/zayvora-auth.js',
   '/assets/js/zayvora-pwa.js'
 ];
 

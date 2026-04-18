@@ -5,7 +5,6 @@
 
 import crypto from 'crypto';
 import { generateCodeStream } from './llm/sovereign_engine.js';
-import { issueSessionToken } from '../security/sessionToken.js';
 
 const passportRegistry = new Map([
   ['UID-0001', { passport_id: 'PPT-AXIOM-0001', serial: 'ZX-93A7', owner: 'Sovereign Node Alpha', status: 'active' }],
@@ -22,6 +21,12 @@ const activePassportSession = {
   status: 'active'
 };
 
+function issueSessionToken(payload) {
+  const sessionId = `sess-${crypto.randomBytes(8).toString('hex')}`;
+  const token = `legacy_${Buffer.from(JSON.stringify(payload)).toString('base64url')}`;
+  return { sessionId, jwt: token, issuedAt: Date.now() };
+}
+
 /**
  * Lazy Security Loader
  * Dynamically imports v3 intelligence modules to isolate native driver crashes.
@@ -35,8 +40,7 @@ async function loadSecurityKit() {
             { analyzeTrafficAnomaly },
             { analyzeActorRelationships },
             { updateReputation, isBlacklisted, scoreIpByBehavior },
-            { logThreatEvent },
-            dbModule
+            { logThreatEvent }
         ] = await Promise.all([
             import('../security/browserFingerprint.js'),
             import('../security/botDetection.js'),
@@ -44,12 +48,9 @@ async function loadSecurityKit() {
             import('../security/anomalyDetector.js'),
             import('../security/networkGraphAnalyzer.js'),
             import('../security/reputationEngine.js'),
-            import('../security/threatTelemetry.js'),
-            import('../security/initDB.js')
+            import('../security/threatTelemetry.js')
         ]);
 
-        const db = await (dbModule.getDB ? dbModule.getDB() : dbModule.default);
-        
         return {
             generateClientFingerprint,
             detectAutomatedSignals,
@@ -60,7 +61,6 @@ async function loadSecurityKit() {
             isBlacklisted,
             scoreIpByBehavior,
             logThreatEvent,
-            db,
             active: true
         };
     } catch (err) {
