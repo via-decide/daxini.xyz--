@@ -2,6 +2,8 @@
 // Offline-first caching strategy
 
 const CACHE_NAME = 'zayvora-v1.4';
+const CACHE_NAME = 'zayvora-v1.3';
+const CACHE_NAME = 'zayvora-v1.2';
 const ZAYVORA_API_CACHE = 'zayvora-api-v1';
 const ASSETS = [
   './index.html',
