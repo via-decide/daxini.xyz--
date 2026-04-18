@@ -187,6 +187,7 @@ export default async function handler(req, res) {
         }
 
         const prompt = req.body ? req.body.prompt : null;
+        const githubToken = req.body ? req.body.github_token : null;
         if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
 
         res.setHeader('Content-Type', 'text/event-stream');
@@ -197,7 +198,8 @@ export default async function handler(req, res) {
             prompt,
             (chunk) => res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`),
             (err) => { res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`); res.end(); },
-            () => { res.write(`data: [DONE]\n\n`); res.end(); }
+            () => { res.write(`data: [DONE]\n\n`); res.end(); },
+            githubToken
         );
         return;
     }
