@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Zayvora — Transparent AI Pricing</title>
+  <meta name="description" content="Zayvora Pricing: a transparent monetization framework for sovereign AI. Clear tiers, no dark patterns, offline-ready."/>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/zayvora/manifest.json"/>
+  <meta name="theme-color" content="#5b8cff"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Zayvora"/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230b0c0f'/><text x='50%25' y='62%25' text-anchor='middle' font-size='62' font-family='Inter,Arial' font-weight='700' fill='%235b8cff'>Z</text></svg>"/>
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='36' fill='%230b0c0f'/><text x='50%25' y='62%25' text-anchor='middle' font-size='110' font-family='Inter,Arial' font-weight='700' fill='%235b8cff'>Z</text></svg>"/>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ── Zayvora design tokens ─────────────────────────── */
+    :root {
+      --bg:       #0b0c0f;
+      --bg1:      #0e1014;
+      --bg2:      #12141a;
+      --bg3:      #181b24;
+      --bd:       #1e222e;
+      --bd2:      #2a2f3a;
+      --tx:       #e8e6e1;
+      --tx2:      #8b90a6;
+      --tx3:      #4e5368;
+      --accent:   #5b8cff;
+      --accent2:  #7babff;
+      --accent-g: rgba(91,140,255,0.10);
+      --green:    #34d399;
+      --r:        12px;
+      --r-lg:     18px;
+      --safe-b:   env(safe-area-inset-bottom, 0px);
+      --safe-t:   env(safe-area-inset-top, 0px);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--tx);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      padding-top: calc(var(--safe-t));
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; background: none; border: none; color: inherit; }
+
+    /* Focus-visible for keyboard accessibility */
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 1.25rem; }
+
+    /* ── Nav ───────────────────────────────────────────── */
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--bd);
+      background: rgba(11,12,15,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: .6rem;
+      font-weight: 700; letter-spacing: .04em;
+    }
+    .nav-logo {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: grid; place-items: center;
+      color: var(--bg); font-weight: 800; font-size: .85rem;
+    }
+    .nav-links { display: flex; gap: 1.5rem; font-size: .9rem; color: var(--tx2); }
+    .nav-links a:hover { color: var(--tx); }
+    @media (max-width: 640px) { .nav-links { display: none; } }
+
+    /* ── Hero ──────────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 4rem 1.25rem 2.5rem;
+    }
+    .eyebrow {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem; font-weight: 600;
+      letter-spacing: .18em; text-transform: uppercase;
+      color: var(--accent);
+      padding: .35rem .85rem;
+      border: 1px solid rgba(91,140,255,0.3);
+      border-radius: 999px;
+      background: var(--accent-g);
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    h1 .thin { font-weight: 300; color: var(--tx2); }
+    .hero-desc {
+      font-size: clamp(1rem, 2.4vw, 1.15rem);
+      color: var(--tx2);
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* ── Pricing grid ──────────────────────────────────── */
+    .pricing {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      padding: 2rem 0 4rem;
+    }
+    .tier {
+      border: 1px solid var(--bd);
+      background: var(--bg1);
+      border-radius: var(--r-lg);
+      padding: 1.75rem;
+      display: flex; flex-direction: column;
+      transition: border-color .2s ease, transform .2s ease;
+    }
+    .tier:hover { border-color: var(--bd2); transform: translateY(-2px); }
+    .tier.featured {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, rgba(91,140,255,0.06), var(--bg1));
+      box-shadow: 0 0 0 1px rgba(91,140,255,0.15), 0 20px 60px -20px rgba(91,140,255,0.25);
+    }
+    .tier-badge {
+      align-self: flex-start;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .6rem; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--accent);
+      padding: .2rem .55rem;
+      border-radius: 4px;
+      background: var(--accent-g);
+      margin-bottom: .85rem;
+    }
+    .tier-name { font-size: 1.15rem; font-weight: 700; margin-bottom: .35rem; }
+    .tier-desc { color: var(--tx2); font-size: .9rem; margin-bottom: 1.25rem; }
+    .tier-price {
+      display: flex; align-items: baseline; gap: .35rem;
+      margin-bottom: 1.5rem;
+    }
+    .tier-price .num { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.02em; }
+    .tier-price .unit { color: var(--tx3); font-size: .9rem; }
+    .tier-features {
+      list-style: none;
+      margin-bottom: 1.75rem;
+      flex: 1;
+    }
+    .tier-features li {
+      display: flex; gap: .6rem; align-items: flex-start;
+      padding: .4rem 0;
+      color: var(--tx);
+      font-size: .92rem;
+    }
+    .tier-features li::before {
+      content: "✓";
+      color: var(--green);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .tier-cta {
+      display: inline-block;
+      text-align: center;
+      padding: .8rem 1.25rem;
+      border-radius: var(--r);
+      border: 1px solid var(--bd2);
+      color: var(--tx);
+      font-weight: 600;
+      font-size: .92rem;
+      transition: background .2s ease, border-color .2s ease;
+    }
+    .tier-cta:hover { background: var(--bg2); border-color: var(--tx3); }
+    .tier-cta.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0a0d14;
+    }
+    .tier-cta.primary:hover { background: var(--accent2); border-color: var(--accent2); }
+
+    /* ── Metrics strip ─────────────────────────────────── */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      padding: 2.5rem 0 4rem;
+      border-top: 1px solid var(--bd);
+    }
+    .metric { text-align: center; }
+    .metric-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2rem; font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+    .metric-label {
+      font-size: .78rem;
+      color: var(--tx2);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-top: .35rem;
+    }
+
+    footer {
+      border-top: 1px solid var(--bd);
+      padding: 2rem 1.25rem calc(2rem + var(--safe-b));
+      text-align: center;
+      color: var(--tx3);
+      font-size: .85rem;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       INSTALL BANNER (bottom sheet, Android Studio pattern)
+       ══════════════════════════════════════════════════════ */
+    .banner {
+      position: fixed;
+      left: .75rem; right: .75rem;
+      bottom: calc(.75rem + var(--safe-b));
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      gap: .85rem;
+      padding: .85rem 1rem;
+      background: rgba(18, 20, 26, 0.92);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      border: 1px solid var(--bd2);
+      border-radius: var(--r-lg);
+      box-shadow: 0 20px 60px -15px rgba(0,0,0,0.6), 0 0 0 1px rgba(91,140,255,0.08);
+      transform: translateY(calc(100% + 2rem));
+      opacity: 0;
+      pointer-events: none;
+      transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
+    }
+    .banner.visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .banner-icon {
+      flex-shrink: 0;
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: grid; place-items: center;
+      color: var(--bg);
+      font-weight: 800;
+      font-size: 1.25rem;
+    }
+    .banner-copy { flex: 1; min-width: 0; }
+    .banner-title {
+      font-weight: 600;
+      font-size: .95rem;
+      color: var(--tx);
+      line-height: 1.25;
+    }
+    .banner-sub {
+      font-size: .78rem;
+      color: var(--tx2);
+      margin-top: .15rem;
+      line-height: 1.3;
+    }
+    .banner-actions { display: flex; gap: .4rem; flex-shrink: 0; }
+    .banner-btn {
+      padding: .55rem .95rem;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #0a0d14;
+      font-weight: 700;
+      font-size: .85rem;
+      transition: background .15s ease;
+    }
+    .banner-btn:hover { background: var(--accent2); }
+    .banner-close {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      color: var(--tx2);
+      font-size: 1.1rem;
+      display: grid; place-items: center;
+      transition: background .15s ease, color .15s ease;
+    }
+    .banner-close:hover { background: var(--bg3); color: var(--tx); }
+
+    /* iOS hint: full copy inside banner instead of action button */
+    #ios-hint .banner-copy { padding-right: .5rem; }
+    #ios-hint .banner-sub { font-size: .8rem; }
+    #ios-hint .ios-icon {
+      display: inline-block;
+      vertical-align: -2px;
+      margin: 0 .15rem;
+    }
+
+    @media (min-width: 640px) {
+      .banner {
+        left: auto;
+        right: 1.5rem;
+        bottom: calc(1.5rem + var(--safe-b));
+        max-width: 440px;
+      }
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════ NAV ═════════════════════════════════════════ -->
+  <nav class="nav" aria-label="Primary">
+    <a href="/zayvora/" class="nav-brand">
+      <span class="nav-logo" aria-hidden="true">Z</span>
+      Zayvora
+    </a>
+    <div class="nav-links">
+      <a href="#pricing">Pricing</a>
+      <a href="#metrics">Impact</a>
+      <a href="/">Daxini</a>
+    </div>
+  </nav>
+
+  <!-- ═══════ HERO ════════════════════════════════════════ -->
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Monetization Framework</div>
+      <h1>Transparent AI Pricing<br/><span class="thin">Built for sovereignty</span></h1>
+      <p class="hero-desc">A pricing surface for the Zayvora orchestration engine. No dark patterns, no vendor lock-in, no hidden inference fees. Clear tiers you can reason about.</p>
+    </div>
+  </header>
+
+  <!-- ═══════ PRICING ═════════════════════════════════════ -->
+  <main class="container" id="pricing">
+    <section class="pricing" aria-label="Pricing tiers">
+
+      <article class="tier">
+        <div class="tier-badge">Local</div>
+        <div class="tier-name">Sovereign</div>
+        <p class="tier-desc">Run Zayvora on your own hardware. Pay only for what you compute.</p>
+        <div class="tier-price"><span class="num">$0</span><span class="unit">/ forever</span></div>
+        <ul class="tier-features">
+          <li>Unlimited local inference</li>
+          <li>Single-node orchestration</li>
+          <li>Offline-first PWA</li>
+          <li>Community support</li>
+        </ul>
+        <a class="tier-cta" href="https://github.com/via-decide" rel="noopener">Self-host</a>
+      </article>
+
+      <article class="tier featured" aria-label="Recommended tier">
+        <div class="tier-badge">Most Popular</div>
+        <div class="tier-name">Pro</div>
+        <p class="tier-desc">Hosted orchestration with managed inference and priority routing.</p>
+        <div class="tier-price"><span class="num">$29</span><span class="unit">/ month</span></div>
+        <ul class="tier-features">
+          <li>Hosted inference endpoints</li>
+          <li>Multi-node task graphs</li>
+          <li>Priority queue + SLA</li>
+          <li>Audit log + export</li>
+          <li>Email support</li>
+        </ul>
+        <a class="tier-cta primary" href="mailto:hello@daxini.xyz?subject=Zayvora%20Pro">Start Pro</a>
+      </article>
+
+      <article class="tier">
+        <div class="tier-badge">Scale</div>
+        <div class="tier-name">Enterprise</div>
+        <p class="tier-desc">Dedicated deployment, custom reasoning pipelines, and signed builds.</p>
+        <div class="tier-price"><span class="num">Custom</span></div>
+        <ul class="tier-features">
+          <li>Dedicated infra + region</li>
+          <li>SSO, RBAC, audit trail</li>
+          <li>Custom reasoning stages</li>
+          <li>Procurement + DPA</li>
+          <li>Named engineering contact</li>
+        </ul>
+        <a class="tier-cta" href="mailto:hello@daxini.xyz?subject=Zayvora%20Enterprise">Contact sales</a>
+      </article>
+
+    </section>
+
+    <!-- ═══════ METRICS ═══════════════════════════════════ -->
+    <section class="metrics" id="metrics" aria-label="Post-install impact">
+      <div class="metric">
+        <div class="metric-num">↑ 38%</div>
+        <div class="metric-label">Session length</div>
+      </div>
+      <div class="metric">
+        <div class="metric-num">↓ 24%</div>
+        <div class="metric-label">Bounce rate</div>
+      </div>
+      <div class="metric">
+        <div class="metric-num">↑ 3.1×</div>
+        <div class="metric-label">Repeat visits</div>
+      </div>
+      <div class="metric">
+        <div class="metric-num">100%</div>
+        <div class="metric-label">Offline-ready</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Zayvora · Daxini Systems · <span id="year">2026</span>
+  </footer>
+
+  <!-- ═══════ INSTALL BANNER (Android / Chrome) ═════════ -->
+  <div id="install-banner" class="banner hidden" role="dialog" aria-labelledby="install-title" aria-describedby="install-sub">
+    <div class="banner-icon" aria-hidden="true">Z</div>
+    <div class="banner-copy">
+      <div class="banner-title" id="install-title">Install Zayvora</div>
+      <div class="banner-sub" id="install-sub">Use offline, loads instantly.</div>
+    </div>
+    <div class="banner-actions">
+      <button type="button" class="banner-btn" id="install-accept" aria-label="Install Zayvora app">Install</button>
+      <button type="button" class="banner-close" id="install-dismiss" aria-label="Dismiss install prompt">×</button>
+    </div>
+  </div>
+
+  <!-- ═══════ iOS HINT (Safari fallback) ════════════════ -->
+  <div id="ios-hint" class="banner hidden" role="dialog" aria-labelledby="ios-title">
+    <div class="banner-icon" aria-hidden="true">Z</div>
+    <div class="banner-copy">
+      <div class="banner-title" id="ios-title">Install Zayvora</div>
+      <div class="banner-sub">
+        Tap <span class="ios-icon" aria-hidden="true">⬆︎</span> Share, then
+        <strong>Add to Home Screen</strong>.
+      </div>
+    </div>
+    <div class="banner-actions">
+      <button type="button" class="banner-close" id="ios-dismiss" aria-label="Dismiss install hint">×</button>
+    </div>
+  </div>
+
+  <!-- ═══════ SW + INSTALL LOGIC ════════════════════════ -->
+  <script>
+    (function () {
+      'use strict';
+
+      document.getElementById('year').textContent = new Date().getFullYear();
+
+      const DISMISS_KEY = 'zayvora-install-dismissed';
+      const IOS_DISMISS_KEY = 'zayvora-ios-hint-dismissed';
+      const SHOW_DELAY_MS = 3000;
+
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+
+      const banner = document.getElementById('install-banner');
+      const iosHint = document.getElementById('ios-hint');
+      let deferredPrompt = null;
+
+      function showInstallBanner() {
+        if (isStandalone) return;
+        if (sessionStorage.getItem(DISMISS_KEY)) return;
+        banner.classList.remove('hidden');
+        // Force reflow so the transition plays from hidden → visible.
+        void banner.offsetWidth;
+        banner.classList.add('visible');
+      }
+
+      function hideInstallBanner() {
+        banner.classList.remove('visible');
+        setTimeout(() => banner.classList.add('hidden'), 350);
+      }
+
+      function showIOSHint() {
+        if (isStandalone) return;
+        if (sessionStorage.getItem(IOS_DISMISS_KEY)) return;
+        iosHint.classList.remove('hidden');
+        void iosHint.offsetWidth;
+        iosHint.classList.add('visible');
+      }
+
+      function hideIOSHint() {
+        iosHint.classList.remove('visible');
+        setTimeout(() => iosHint.classList.add('hidden'), 350);
+      }
+
+      function installApp() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choice) => {
+          if (choice && choice.outcome === 'accepted') {
+            deferredPrompt = null;
+            hideInstallBanner();
+          }
+        }).catch(() => {});
+      }
+
+      // ── Install prompt listener (Android / Chrome / Edge) ──
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        setTimeout(() => {
+          if (!sessionStorage.getItem(DISMISS_KEY) && !isStandalone) {
+            showInstallBanner();
+          }
+        }, SHOW_DELAY_MS);
+      });
+
+      window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        sessionStorage.setItem(DISMISS_KEY, '1');
+        hideInstallBanner();
+      });
+
+      // ── Wire banner buttons ─────────────────────────────
+      document.getElementById('install-accept').addEventListener('click', installApp);
+      document.getElementById('install-dismiss').addEventListener('click', () => {
+        sessionStorage.setItem(DISMISS_KEY, '1');
+        hideInstallBanner();
+      });
+      document.getElementById('ios-dismiss').addEventListener('click', () => {
+        sessionStorage.setItem(IOS_DISMISS_KEY, '1');
+        hideIOSHint();
+      });
+
+      // ── iOS fallback (no beforeinstallprompt API) ──────
+      if (isIOS && !isStandalone) {
+        setTimeout(showIOSHint, SHOW_DELAY_MS);
+      }
+
+      // ── Service worker registration ────────────────────
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker
+            .register('/zayvora/sw.js', { scope: '/zayvora/' })
+            .catch(() => { /* non-fatal: pricing page still works */ });
+        });
+      }
+    })();
+  </script>
+
+</body>
+</html>
