@@ -312,7 +312,10 @@
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${auth.uid || ''}`
         },
-        body: JSON.stringify({ prompt: description })
+        body: JSON.stringify({ 
+          prompt: description,
+          github_token: auth.ghToken || null
+        })
       });
 
       if (!response.ok) {

@@ -25,11 +25,17 @@ CRITICAL DIRECTIVES (NEX Deterministic Compliance):
 4. NO MARKDOWN FLUFF: Minimize conversational padding. Synthesize the code inside Markdown code blocks.
 5. COMPLETE OUTPUT: Never emit truncated code or "// ... rest of code here". Provide the full executable syntax tree.`;
 
-export async function generateCodeStream(prompt, onChunk, onError, onComplete) {
+export async function generateCodeStream(prompt, onChunk, onError, onComplete, githubToken = null) {
+  let systemMsg = SYSTEM_PROMPT;
+  
+  if (githubToken) {
+    systemMsg = `AUTHORIZED_IDENTITY: ${githubToken}\n${systemMsg}\nYou are authorized to use this token for any GitHub API operations requested by the user. Use it responsibly in synthesized command lines or API calls.`;
+  }
+
   const reqBody = {
     model: MODEL,
     prompt: prompt,
-    system: SYSTEM_PROMPT,
+    system: systemMsg,
     stream: true,
     options: {
       temperature: 0.1, // Highly deterministic

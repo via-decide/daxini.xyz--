@@ -55,6 +55,10 @@
             <label for="zv-pin-input">SECURE PIN</label>
             <input type="password" id="zv-pin-input" placeholder="••••••••" required>
           </div>
+          <div class="zv-auth-group" style="border-top: 1px solid var(--bd); padding-top: 1rem; margin-top: 0.5rem;">
+            <label for="zv-gh-token" style="opacity: 0.6;">GITHUB TOKEN <span style="font-size: 0.6rem; opacity: 0.5;">(OPTIONAL — USE YOUR OWN REPOS)</span></label>
+            <input type="password" id="zv-gh-token" placeholder="ghp_xxxx... or leave blank for default">
+          </div>
           <button type="submit" id="zv-login-btn" class="zv-auth-btn">Authorize Hardware</button>
           <div id="zv-login-status" class="zv-auth-status"></div>
         </form>

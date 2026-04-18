@@ -66,14 +66,16 @@
                 const payloadBase64 = data.jwt.split('.')[1];
                 const decodedPayload = JSON.parse(atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/')));
                 
+                const ghToken = ($('#zv-gh-token') || {}).value || '';
                 localStorage.setItem('zv_passport', JSON.stringify({ 
                     uid: data.uid, 
                     owner: data.owner, 
                     passport_id: data.passport_id,
                     jwt: data.jwt,
-                    expiresAt: decodedPayload.exp
+                    expiresAt: decodedPayload.exp,
+                    ghToken: ghToken.trim()
                 }));
-                unlockDashboard({ uid: data.uid, owner: data.owner, jwt: data.jwt });
+                unlockDashboard({ uid: data.uid, owner: data.owner, jwt: data.jwt, ghToken: ghToken.trim() });
             } else {
                 throw new Error(data.error || 'Identity Rejected');
             }
@@ -119,6 +121,17 @@
                 const pin = $('#zv-pin-input').value.trim();
                 if (nfcId && pin) verifyPassport(nfcId, pin);
             });
+
+            // Show token status indicator after login
+            const ghField = $('#zv-gh-token');
+            if (ghField) {
+                ghField.addEventListener('input', () => {
+                    const status = $('#zv-login-status');
+                    if (ghField.value.trim().startsWith('ghp_') || ghField.value.trim().startsWith('github_pat_')) {
+                        if (status) { status.textContent = '✓ External GitHub identity detected'; status.className = 'zv-auth-status info'; }
+                    }
+                });
+            }
         }
 
         const logoutBtn = $('#zv-logout-btn');
