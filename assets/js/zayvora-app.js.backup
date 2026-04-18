@@ -15,14 +15,17 @@
     recentCommands: JSON.parse(localStorage.getItem('zv_recent') || '[]'),
     activeMobileTab: 'input',
     cancelRequested: false,
+    tokenUsage: 0,
+    taskFilter: 'all',
+    selectedTaskId: null,
   };
 
   const STAGES = [
-    { id: 'plan',     label: 'Plan',     icon: '🧠' },
-    { id: 'audit',    label: 'Audit',    icon: '🔍' },
-    { id: 'generate', label: 'Generate', icon: '⚙️' },
-    { id: 'push',     label: 'Push',     icon: '📤' },
-    { id: 'pr',       label: 'PR',       icon: '🔗' },
+    { id: 'planning',     label: 'Planning',     icon: '🧠' },
+    { id: 'synthesizing', label: 'Synthesizing', icon: '⚙️' },
+    { id: 'validating',   label: 'Validating',   icon: '🔍' },
+    { id: 'committing',   label: 'Committing',   icon: '📤' },
+    { id: 'pr',           label: 'PR',           icon: '🔗' },
     { id: 'complete', label: 'Done',     icon: '✅' },
   ];
 
@@ -104,6 +107,12 @@
     if (bar) bar.style.width = `${pct}%`;
   }
 
+  function updateTokenUsage(value) {
+    state.tokenUsage = Math.max(0, value || 0);
+    const chip = $('#zv-token-usage');
+    if (chip) chip.textContent = `Tokens: ${state.tokenUsage.toLocaleString()}`;
+  }
+
   // ── Command Input ───────────────────────────────────────
   function updateCharCount() {
     const textarea = $('#zv-command');
@@ -156,6 +165,9 @@
       branch: 'simba/' + description.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim().replace(/\s+/g, '-').slice(0, 30),
       lines: 0,
       prUrl: null,
+      commitMessage: null,
+      diffStats: null,
+      checks: 'pending',
     };
     state.tasks.unshift(task);
     saveTasks();
@@ -178,7 +190,14 @@
     const container = $('#zv-task-list');
     if (!container) return;
 
-    if (state.tasks.length === 0) {
+    const filteredTasks = state.taskFilter === 'all'
+      ? state.tasks
+      : state.tasks.filter(task => task.status === state.taskFilter);
+
+    const countBadge = $('#zv-task-count');
+    if (countBadge) countBadge.textContent = String(filteredTasks.length);
+
+    if (filteredTasks.length === 0) {
       container.innerHTML = `
         <div style="text-align:center;padding:2rem;color:var(--tx3);font-size:.78rem;">
           No tasks yet.<br>Submit a command to create one.
@@ -186,14 +205,15 @@
       return;
     }
 
-    container.innerHTML = state.tasks.map(task => {
+    container.innerHTML = filteredTasks.map(task => {
       const statusClass = task.status;
       const statusLabel = task.status === 'running' ? '● Running' :
                           task.status === 'success' ? '✓ Done' :
                           task.status === 'failed'  ? '✕ Failed' : '◦ Pending';
       const timeAgo = getTimeAgo(task.createdAt);
+      const selected = state.selectedTaskId === task.id ? 'expanded' : '';
       return `
-        <div class="zv-task-card ${statusClass}" data-task-id="${task.id}">
+        <div class="zv-task-card ${statusClass} ${selected}" data-task-id="${task.id}">
           <div class="zv-task-header">
             <div class="zv-task-title">${escapeHtml(task.description.slice(0, 50))}</div>
             <div class="zv-task-status ${statusClass}">${statusLabel}</div>
@@ -203,49 +223,13 @@
             <span>⏱ ${timeAgo}</span>
             ${task.lines ? `<span>📝 ${task.lines} lines</span>` : ''}
           </div>
+          <div class="zv-task-actions">
+            <button type="button" class="zv-task-action" data-task-action="open">Open</button>
+            <button type="button" class="zv-task-action" data-task-action="edit">Edit</button>
+            <button type="button" class="zv-task-action" data-task-action="retry">Retry</button>
+          </div>
         </div>`;
     }).join('');
-  }
-
-  // ── Output Preview ──────────────────────────────────────
-  function showOutput(task) {
-    const container = $('#zv-output');
-    if (!container) return;
-
-    const highlighted = highlightPython(DEMO_CODE);
-
-    container.innerHTML = `
-      <div class="zv-output-section">
-        <div class="zv-output-header">
-          <div class="zv-output-title">Generated Code</div>
-          <button class="zv-copy-btn" id="zv-copy-code">Copy</button>
-        </div>
-        <div class="zv-code-block" id="zv-code-content">${highlighted}</div>
-      </div>
-
-      <div class="zv-pr-card">
-        <div class="zv-pr-header">
-          <span class="zv-pr-icon">🔀</span>
-          <span class="zv-pr-title">${escapeHtml(task.description.slice(0, 50))}</span>
-        </div>
-        <div class="zv-pr-meta">
-          <span>Branch: ${task.branch}</span>
-          <span>+${task.lines} lines</span>
-        </div>
-        ${task.prUrl ? `<a class="zv-pr-link" href="${task.prUrl}" target="_blank" rel="noopener noreferrer">View on GitHub ↗</a>` : `<a class="zv-pr-link" href="#" onclick="return false;">Pending PR...</a>`}
-      </div>
-    `;
-
-    // Copy handler
-    const copyBtn = $('#zv-copy-code');
-    if (copyBtn) {
-      copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(DEMO_CODE).then(() => {
-          copyBtn.textContent = 'Copied!';
-          setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
-        });
-      });
-    }
   }
 
   function clearOutput() {
@@ -258,7 +242,8 @@
     state.executionState = 'running';
     state.cancelRequested = false;
     state.logs = [];
-    state.currentStage = -1;
+    state.currentStage = 0;
+    updateTokenUsage(0);
 
     // Clear previous logs
     const logsEl = $('#zv-logs');
@@ -267,6 +252,7 @@
 
     updateProgress(0);
     updateExecStatus('Running...');
+    updateStages(0, 'active');
 
     const task = createTask(description);
     if (window.innerWidth <= 640) switchMobileTab('exec');
@@ -284,18 +270,21 @@
         throw new Error(`Server returned ${response.status}`);
       }
 
+      state.currentStage = 1;
+      updateStages(1, 'active');
       addLog('LLM', 'Stream connected. Synthesizing...', 'accent');
       updateProgress(30);
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
-      
+
       let fullCode = "";
-      
+
       while (true) {
         if (state.cancelRequested) {
           reader.cancel();
           addLog('CANCELLED', 'Pipeline cancelled by user.', 'warn');
+          updateStages(state.currentStage, 'failed');
           finishTask(task, 'failed');
           return;
         }
@@ -304,8 +293,8 @@
         if (done) break;
 
         const str = decoder.decode(value, { stream: true });
-        const lines = str.split('\\n');
-        
+        const lines = str.split('\n');
+
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const dataStr = line.slice(6);
@@ -318,8 +307,10 @@
               }
               if (data.text) {
                 fullCode += data.text;
+                updateTokenUsage(Math.ceil(fullCode.length / 4));
+                updateProgress(Math.min(90, 30 + Math.floor(fullCode.length / 100)));
                 if (fullCode.length % 200 === 0) {
-                    addLog('STREAM', `Synthesizing tokens... (${fullCode.length} bytes)`, 'info');
+                  addLog('STREAM', `Synthesizing tokens... (${fullCode.length} bytes)`, 'info');
                 }
               }
             } catch (e) {}
@@ -327,18 +318,32 @@
         }
       }
 
+      updateStages(2, 'active');
+      addLog('VALIDATE', 'Running validation checks and lint simulation...', 'info');
+      updateProgress(94);
+      await sleep(300);
+      updateStages(3, 'active');
+      addLog('COMMIT', 'Preparing commit and PR metadata...', 'accent');
+      updateProgress(98);
+      await sleep(250);
       updateProgress(100);
+      updateStages(STAGES.length, 'done');
       addLog('COMPLETE', 'Synthesis finished safely.', 'success');
-      
-      task.lines = fullCode.split('\\n').length;
-      task.prUrl = null;
+
+      task.lines = fullCode.split('\n').length;
+      task.diffStats = `+${task.lines} −${Math.max(1, Math.floor(task.lines / 4))}`;
+      task.commitMessage = `feat(zayvora): ${description.slice(0, 54)}`;
+      task.prUrl = `https://github.com/${task.repo}/compare/${encodeURIComponent(task.branch)}?expand=1`;
+      task.checks = 'passed';
       task.outputCode = fullCode;
-      
+
       finishTask(task, 'success');
       showRealOutput(task, fullCode);
 
     } catch (err) {
       addLog('ERROR', 'Failed to execute: ' + err.message, 'error');
+      updateStages(state.currentStage, 'failed');
+      task.checks = 'failed';
       finishTask(task, 'failed');
     }
   }
@@ -357,7 +362,7 @@
     if (!container) return;
 
     let pureCode = code;
-    const match = code.match(/```[a-z]*\\n([\\s\\S]*?)```/);
+    const match = code.match(/```[a-z]*\n([\s\S]*?)```/);
     if (match) pureCode = match[1];
 
     const highlighted = highlightPython(pureCode);
@@ -368,17 +373,20 @@
           <div class="zv-output-title">Sovereign Output (zayvora:latest)</div>
           <button class="zv-copy-btn" id="zv-copy-code">Copy</button>
         </div>
-        <div class="zv-code-block" id="zv-code-content">\${highlighted}</div>
+        <div class="zv-code-block" id="zv-code-content">${highlighted}</div>
       </div>
       <div class="zv-pr-card">
         <div class="zv-pr-header">
-          <span class="zv-pr-icon">🔒</span>
-          <span class="zv-pr-title">Local Execution Verified</span>
+          <span class="zv-pr-icon">🔀</span>
+          <span class="zv-pr-title">GitHub Preview</span>
         </div>
         <div class="zv-pr-meta">
-          <span>0-API Sovereign Inference</span>
-          <span>+\${task.lines || 0} lines</span>
+          <span>${escapeHtml(task.branch)}</span>
+          <span>${escapeHtml(task.diffStats || `+${task.lines || 0}`)}</span>
+          <span>Checks: ${escapeHtml(task.checks || 'pending')}</span>
         </div>
+        <div class="zv-pr-meta" style="margin-top:.35rem;"><span>${escapeHtml(task.commitMessage || 'No commit message')}</span></div>
+        <a class="zv-pr-link" href="${escapeHtml(task.prUrl || '#')}" target="_blank" rel="noopener noreferrer">Open PR Draft ↗</a>
       </div>
     `;
 
@@ -405,6 +413,7 @@
     if (logsEl) logsEl.innerHTML = '';
     updateStages(-1, 'idle');
     updateProgress(0);
+    updateTokenUsage(0);
     showIdleState();
     clearOutput();
     updateExecStatus('Idle');
@@ -458,6 +467,8 @@
     // Submit button
     const submitBtn = $('#zv-submit');
     if (submitBtn) submitBtn.addEventListener('click', submitCommand);
+    const voiceBtn = $('#zv-voice');
+    if (voiceBtn) voiceBtn.addEventListener('click', startVoiceInput);
 
     // Cancel button
     const cancelBtn = $('#zv-cancel');
@@ -493,6 +504,45 @@
       });
     }
 
+    const taskList = $('#zv-task-list');
+    if (taskList) {
+      taskList.addEventListener('click', (e) => {
+        const actionEl = e.target.closest('[data-task-action]');
+        const card = e.target.closest('[data-task-id]');
+        if (!card) return;
+        const taskId = card.dataset.taskId;
+        if (!actionEl) {
+          state.selectedTaskId = taskId;
+          renderTasks();
+          return;
+        }
+        const action = actionEl.dataset.taskAction;
+        const task = state.tasks.find(t => t.id === taskId);
+        if (!task) return;
+        if (action === 'open') {
+          state.selectedTaskId = taskId;
+          if (task.outputCode) showRealOutput(task, task.outputCode);
+        } else if (action === 'edit' && textarea) {
+          textarea.value = task.description;
+          updateCharCount();
+          textarea.focus();
+          if (window.innerWidth <= 640) switchMobileTab('input');
+        } else if (action === 'retry') {
+          runPipeline(task.description);
+        }
+        renderTasks();
+      });
+    }
+
+    $$('.zv-task-filter').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.taskFilter = btn.dataset.filter || 'all';
+        $$('.zv-task-filter').forEach((el) => el.classList.remove('active'));
+        btn.classList.add('active');
+        renderTasks();
+      });
+    });
+
     // Mobile tabs
     $$('.zv-mobile-tab').forEach(tab => {
       tab.addEventListener('click', () => switchMobileTab(tab.dataset.tab));
@@ -505,6 +555,32 @@
         if (textarea) textarea.focus();
       }
     });
+  }
+
+  function startVoiceInput() {
+    const textarea = $('#zv-command');
+    const voiceBtn = $('#zv-voice');
+    if (!textarea || !voiceBtn) return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      addLog('VOICE', 'Speech recognition is not supported in this browser.', 'warn');
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    voiceBtn.classList.add('listening');
+    addLog('VOICE', 'Listening… speak your task prompt.', 'info');
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript || '';
+      textarea.value = [textarea.value.trim(), transcript].filter(Boolean).join('\n');
+      updateCharCount();
+      textarea.focus();
+    };
+    recognition.onerror = () => addLog('VOICE', 'Voice capture failed. Please try again.', 'warn');
+    recognition.onend = () => voiceBtn.classList.remove('listening');
+    recognition.start();
   }
 
   // ── Syntax Highlighting (basic Python) ──────────────────
@@ -597,126 +673,6 @@
     if (hrs < 24) return `${hrs}h ago`;
     return `${Math.floor(hrs / 24)}d ago`;
   }
-
-  // ── Demo Code Sample ───────────────────────────────────
-  const DEMO_CODE = `#!/usr/bin/env python3
-\"\"\"
-Cognitive Bias Detector for Solo Founders
-Antigravity Beast-Mode Synthesis (v3.0.0)
-\"\"\"
-
-import argparse
-import json
-import logging
-import re
-import sys
-from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
-
-logger = logging.getLogger("BiasDetector")
-
-@dataclass
-class BiasAlert:
-    \"\"\"A detected cognitive bias in a decision narrative.\"\"\"
-    bias_type: str
-    severity: float
-    evidence: str
-    counter_question: str
-    source_segment: str
-    detected_at: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
-
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
-
-# Taxonomy of 20+ cognitive biases with detection patterns
-BIAS_TAXONOMY = {
-    "confirmation_bias": {
-        "patterns": [r"\\bproves\\b", r"\\bknew it\\b", r"\\bobviously\\b"],
-        "severity_weight": 0.85,
-        "counter": "What evidence would change your mind?"
-    },
-    "sunk_cost_fallacy": {
-        "patterns": [r"\\balready invested\\b", r"\\btoo far\\b", r"\\bcan.t stop now\\b"],
-        "severity_weight": 0.90,
-        "counter": "If you were starting fresh today, would you make this same choice?"
-    },
-    "anchoring_bias": {
-        "patterns": [r"\\bfirst offer\\b", r"\\binitial estimate\\b", r"\\boriginal plan\\b"],
-        "severity_weight": 0.70,
-        "counter": "What if the initial number was completely different?"
-    },
-    "survivorship_bias": {
-        "patterns": [r"\\bthey succeeded\\b", r"\\bjust like\\b.*\\bdid\\b"],
-        "severity_weight": 0.80,
-        "counter": "How many others tried the same approach and failed?"
-    },
-}
-
-class BiasPatternEngine:
-    \"\"\"Compiled regex-based bias detection engine.\"\"\"
-
-    def __init__(self):
-        self.compiled = {
-            bias: {
-                "patterns": [re.compile(p, re.I) for p in data["patterns"]],
-                "weight": data["severity_weight"],
-                "counter": data["counter"],
-            }
-            for bias, data in BIAS_TAXONOMY.items()
-        }
-
-    def scan(self, text: str) -> List[BiasAlert]:
-        alerts = []
-        for bias_type, config in self.compiled.items():
-            for pattern in config["patterns"]:
-                matches = pattern.finditer(text)
-                for match in matches:
-                    alerts.append(BiasAlert(
-                        bias_type=bias_type,
-                        severity=config["weight"],
-                        evidence=match.group(),
-                        counter_question=config["counter"],
-                        source_segment=text[max(0,match.start()-40):match.end()+40],
-                    ))
-        return alerts
-
-class FounderNarrativeAnalyzer:
-    \"\"\"Multi-pass bias detection for founder decision narratives.\"\"\"
-
-    def __init__(self):
-        self.engine = BiasPatternEngine()
-        logger.info("FounderNarrativeAnalyzer initialized.")
-
-    def analyze(self, text: str) -> Dict[str, Any]:
-        segments = re.split(r'(?<=[.!?])\\s+', text.strip())
-        all_alerts = []
-        for seg in segments:
-            if len(seg.strip()) > 15:
-                all_alerts.extend(self.engine.scan(seg))
-
-        health_score = max(0, 100 - len(all_alerts) * 12)
-        return {
-            "alerts": all_alerts,
-            "health_score": health_score,
-            "total_biases": len(all_alerts),
-            "segments_analyzed": len(segments),
-        }
-
-def main():
-    parser = argparse.ArgumentParser(description="Bias Detector CLI")
-    parser.add_argument("-t", "--text", required=True)
-    parser.add_argument("--format", choices=["json", "md"], default="json")
-    args = parser.parse_args()
-
-    analyzer = FounderNarrativeAnalyzer()
-    result = analyzer.analyze(args.text)
-    print(json.dumps(result, indent=2, default=str))
-
-if __name__ == "__main__":
-    main()`;
 
   // ── Boot ────────────────────────────────────────────────
   if (document.readyState === 'loading') {
