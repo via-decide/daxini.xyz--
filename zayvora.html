@@ -4,8 +4,14 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="theme-color" content="#0b0c0f"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <title>Zayvora — Sovereign Orchestration Dashboard</title>
   <meta name="description" content="Zayvora Orchestration Dashboard. Real-time code synthesis, GitHub integration, and task management powered by the Antigravity Beast-Mode engine."/>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json"/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>⚡</text></svg>"/>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -18,10 +24,91 @@
   <link rel="stylesheet" href="./assets/css/components.css"/>
   <link rel="stylesheet" href="./assets/css/zayvora.css"/>
 </head>
-<body>
+<body class="unauthorized">
 
 <!-- Noise texture -->
 <div class="noise" aria-hidden="true"></div>
+
+<!-- ═══════ AUTH OVERLAY ═══════════════════════════════════ -->
+<div id="zv-auth-root" class="zv-auth-root" role="dialog" aria-modal="true" aria-labelledby="zv-auth-title">
+
+  <!-- Login -->
+  <section id="zv-view-login" class="zv-auth-view active">
+    <div class="zv-auth-card">
+      <div class="zv-auth-brand">
+        <h1 id="zv-auth-title">Zayvora</h1>
+        <p>Sovereign Orchestration Dashboard</p>
+      </div>
+      <form id="zv-login-form" class="zv-auth-form" autocomplete="off">
+        <label for="zv-login-email">Email</label>
+        <input id="zv-login-email" type="email" placeholder="you@example.com" required autocomplete="email"/>
+        <label for="zv-login-password">Password</label>
+        <input id="zv-login-password" type="password" placeholder="Password" required autocomplete="current-password"/>
+        <div class="zv-auth-error" id="zv-login-error" role="alert"></div>
+        <button id="zv-login-btn" type="submit" class="zv-auth-btn">Sign In</button>
+      </form>
+      <div class="zv-auth-footer">
+        <a id="zv-goto-signup" href="#">Create account</a>
+        <span aria-hidden="true">·</span>
+        <a id="zv-goto-recovery" href="#">Recover account</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Signup -->
+  <section id="zv-view-signup" class="zv-auth-view">
+    <div class="zv-auth-card">
+      <div class="zv-auth-brand">
+        <h1>Zayvora</h1>
+        <p>Create a local account</p>
+      </div>
+      <form id="zv-signup-form" class="zv-auth-form" autocomplete="off">
+        <label for="zv-signup-name">Name</label>
+        <input id="zv-signup-name" type="text" placeholder="Your name" required autocomplete="name"/>
+        <label for="zv-signup-email">Email</label>
+        <input id="zv-signup-email" type="email" placeholder="you@example.com" required autocomplete="email"/>
+        <label for="zv-signup-password">Password</label>
+        <input id="zv-signup-password" type="password" placeholder="Min 8 characters" minlength="8" required autocomplete="new-password"/>
+        <label for="zv-signup-confirm">Confirm Password</label>
+        <input id="zv-signup-confirm" type="password" placeholder="Confirm password" minlength="8" required autocomplete="new-password"/>
+        <div class="zv-auth-error" id="zv-signup-error" role="alert"></div>
+        <div class="zv-auth-success hidden" id="zv-signup-success">
+          <p>Account created. Save your recovery code:</p>
+          <div class="zv-recovery-code" id="zv-signup-code"></div>
+          <p class="zv-auth-note">Write it down. It cannot be shown again.</p>
+        </div>
+        <button id="zv-signup-btn" type="submit" class="zv-auth-btn">Create Account</button>
+      </form>
+      <div class="zv-auth-footer">
+        Already have an account? <a href="#" class="zv-goto-login">Sign in</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recovery -->
+  <section id="zv-view-recovery" class="zv-auth-view">
+    <div class="zv-auth-card">
+      <div class="zv-auth-brand">
+        <h1>Zayvora</h1>
+        <p>Recover your account</p>
+      </div>
+      <form id="zv-recovery-form" class="zv-auth-form" autocomplete="off">
+        <label for="zv-recovery-email">Email</label>
+        <input id="zv-recovery-email" type="email" placeholder="you@example.com" required/>
+        <label for="zv-recovery-code">Recovery Code</label>
+        <input id="zv-recovery-code" type="text" placeholder="Your recovery code" required/>
+        <label for="zv-recovery-newpass">New Password</label>
+        <input id="zv-recovery-newpass" type="password" placeholder="New password (min 8)" minlength="8" required/>
+        <div class="zv-auth-error" id="zv-recovery-error" role="alert"></div>
+        <button type="submit" class="zv-auth-btn">Reset Password</button>
+      </form>
+      <div class="zv-auth-footer">
+        <a href="#" class="zv-goto-login">Back to sign in</a>
+      </div>
+    </div>
+  </section>
+
+</div>
 
 <!-- ═══════ NAV ═══════════════════════════════════════════ -->
 <nav class="site-nav" role="navigation" aria-label="Main navigation">
@@ -35,7 +122,31 @@
     <a href="/zayvora" style="color:var(--accent);">Zayvora</a>
     <a href="https://github.com/via-decide" target="_blank" rel="noopener noreferrer">GitHub</a>
   </div>
+  <div class="zv-nav-pwa">
+    <div id="zv-connection-pill" class="zv-connection-pill connecting" role="status" aria-live="polite" title="Inference endpoint status">
+      <span class="zv-connection-dot" aria-hidden="true"></span>
+      <span id="zv-connection-text">Checking…</span>
+    </div>
+    <button id="zv-install-btn" class="zv-nav-btn" type="button" hidden>Install</button>
+    <span class="zv-user-chip" id="zv-user-email" aria-live="polite"></span>
+    <button id="zv-logout-btn" class="zv-nav-btn" type="button" aria-label="Sign out">Sign out</button>
+  </div>
 </nav>
+
+<!-- ═══════ CONNECTION BANNER ══════════════════════════════ -->
+<div id="zv-connection-banner" class="zv-connection-banner hidden" role="status" aria-live="polite">
+  <div class="zv-connection-banner-inner">
+    <div class="zv-connection-banner-title">⚠ Local inference endpoint unavailable</div>
+    <ul>
+      <li>Is Zayvora running on <span id="zv-connection-endpoint">localhost:11434</span>?</li>
+      <li id="zv-retry-countdown">Retrying automatically…</li>
+    </ul>
+    <div class="zv-connection-banner-actions">
+      <button id="zv-connection-retry" type="button" class="zv-nav-btn">Retry now</button>
+      <button id="zv-connection-help" type="button" class="zv-nav-btn">How to start</button>
+    </div>
+  </div>
+</div>
 
 <!-- ═══════ DASHBOARD ════════════════════════════════════ -->
 <div class="zv-page">
@@ -69,6 +180,13 @@
       <div class="zv-panel-body">
         <div class="zv-recent-header">Recent Commands</div>
         <div class="zv-recent-list" id="zv-recent-list"></div>
+
+        <!-- Inference endpoint setting -->
+        <div class="zv-recent-header" style="margin-top:1.5rem;">Inference</div>
+        <div class="zv-endpoint-row">
+          <label for="zv-endpoint-input">Endpoint</label>
+          <input id="zv-endpoint-input" type="text" placeholder="http://localhost:11434" spellcheck="false"/>
+        </div>
 
         <!-- Quick task templates -->
         <div class="zv-recent-header" style="margin-top:1.5rem;">Quick Tasks</div>
@@ -155,6 +273,8 @@
 </nav>
 
 <!-- ═══════ SCRIPTS ═══════════════════════════════════════ -->
+<script src="./assets/js/zayvora-auth.js"></script>
+<script src="./assets/js/zayvora-pwa.js"></script>
 <script src="./assets/js/zayvora-app.js"></script>
 
 </body>

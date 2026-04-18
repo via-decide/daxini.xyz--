@@ -1101,24 +1101,18 @@ html, body {
         </div>
       </div>
       <div class="connection-banner hidden" id="connection-banner" aria-live="polite">
-        <div class="connection-banner-title">⚠️ Connection unavailable</div>
-        <ul>
-          <li>We can’t reach your local AI service right now.</li>
         <div class="connection-banner-title">⚠️ Zayvora backend unavailable</div>
         <ul>
-          <li>Is your local Zayvora service running?</li>
           <li>Is Zayvora running? (<span id="connection-endpoint-label">localhost:11434</span>)</li>
-          <li>Your message will be queued and sent when connection restores</li>
+          <li>Your message will be queued and sent when connection restores.</li>
           <li id="retry-next-attempt">Retrying... (Next attempt in 5s)</li>
         </ul>
         <div class="connection-banner-actions">
-          <button id="btn-connection-retry" type="button">Connect Now</button>
           <button id="btn-connection-retry" type="button">Retry Now</button>
           <button id="btn-manual-instructions" type="button">Connection Help</button>
         </div>
         <div class="connection-help-note hidden" id="connection-help-note">
           Open <strong>Settings → Inference</strong> to verify your endpoint and model. Messages remain queued until reconnection.
-          <button id="btn-manual-instructions" type="button">Manual Instructions</button>
         </div>
       </div>
       <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
@@ -2388,9 +2382,6 @@ if (retryBtn) {
     checkConnection();
   });
 }
-$('#btn-connection-retry').addEventListener('click', () => {
-  checkConnection();
-});
 
 $('#btn-manual-instructions').addEventListener('click', () => {
   $('#connection-help-note').classList.toggle('hidden');
