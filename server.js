@@ -26,7 +26,7 @@ const MIME = {
 
 const REWRITES = {
   '/workspace': '/workspace.html',
-  '/zayvora': '/workspace.html'
+  '/zayvora': '/zayvora.html'
 };
 
 function serveFile(filePath, res) {
