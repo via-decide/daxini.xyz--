@@ -345,6 +345,63 @@ html, body {
   flex-shrink: 0;
 }
 
+.chat-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.connection-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--error);
+}
+
+.connection-pill.connected .connection-dot { background: var(--success); }
+.connection-pill.connecting .connection-dot {
+  background: var(--warning);
+  animation: pulse-glow 1.4s infinite;
+}
+
+.connection-banner {
+  margin: 10px 20px 0;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.08);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 0.82rem;
+}
+
+.connection-banner.hidden { display: none; }
+.connection-banner-title { font-weight: 600; margin-bottom: 6px; color: var(--warning); }
+.connection-banner ul { margin-left: 16px; color: var(--text-muted); }
+.connection-banner li { margin: 4px 0; }
+.connection-banner-actions { margin-top: 8px; display: flex; gap: 8px; }
+.connection-banner-actions button {
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: var(--radius-xs);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.connection-banner-actions button:hover { border-color: var(--primary); }
+
 .chat-header-title {
   font-size: 0.9rem;
   font-weight: 500;
@@ -841,12 +898,30 @@ html, body {
   .chat-view { flex-direction: column; }
 
   .chat-messages { padding: 16px; }
+  .connection-banner { margin: 8px 12px 0; font-size: 0.78rem; }
+  .connection-pill { padding: 4px 8px; font-size: 0.7rem; }
+  .chat-header { padding: 0 12px; }
+  .chat-header-title {
+    max-width: 36vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   .chat-input-area { padding: 10px 12px 10px; }
 
   .message { max-width: 100%; }
 
   .settings-body { max-width: 100%; }
+  .settings-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .settings-row select, .settings-row input[type="text"], .settings-row .btn-danger, .settings-row span {
+    width: 100%;
+    text-align: left;
+  }
 }
 
 /* ═══════════════════════════════════════════
@@ -1010,7 +1085,23 @@ html, body {
       <div class="chat-header">
         <button class="btn-hamburger" id="btn-hamburger" aria-label="Open sidebar">&#9776;</button>
         <span class="chat-header-title" id="chat-header-title">New Conversation</span>
-        <div></div>
+        <div class="chat-header-right">
+          <div class="connection-pill disconnected" id="connection-pill" role="status" aria-live="polite">
+            <span class="connection-dot" aria-hidden="true"></span>
+            <span id="connection-pill-text">Disconnected</span>
+          </div>
+        </div>
+      </div>
+      <div class="connection-banner hidden" id="connection-banner" aria-live="polite">
+        <div class="connection-banner-title">⚠️ Connection unavailable</div>
+        <ul>
+          <li>We can’t reach your local AI service right now.</li>
+          <li>Your message will be queued and sent when connection restores</li>
+          <li id="retry-next-attempt">Retrying... (Next attempt in 5s)</li>
+        </ul>
+        <div class="connection-banner-actions">
+          <button id="btn-connection-retry" type="button">Connect Now</button>
+        </div>
       </div>
       <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
         <div class="typing-indicator" id="typing-indicator">
@@ -1187,7 +1278,7 @@ html, body {
 
 /* ─── IndexedDB Storage Layer ─── */
 const DB_NAME = 'zayvora_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 function openDB() {
   return new Promise((resolve, reject) => {
@@ -1206,6 +1297,10 @@ function openDB() {
       }
       if (!db.objectStoreNames.contains('preferences')) {
         db.createObjectStore('preferences', { keyPath: 'key' });
+      }
+      if (!db.objectStoreNames.contains('pendingMessages')) {
+        const pendingStore = db.createObjectStore('pendingMessages', { keyPath: 'id' });
+        pendingStore.createIndex('timestamp', 'timestamp', { unique: false });
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -1383,6 +1478,13 @@ const state = {
   isStreaming: false,
   abortController: null,
   inactivityTimer: null,
+  connection: {
+    status: 'connecting',
+    nextRetryAt: null,
+    checkInterval: null,
+    countdownInterval: null,
+    lastChecked: null
+  },
   settings: {
     endpoint: 'http://localhost:11434',
     model: 'zayvora-engineer'
@@ -1392,6 +1494,126 @@ const state = {
 /* ─── DOM References ─── */
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 5000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function fetchWithRetry(url, options = {}, maxRetries = 3, timeoutMs = 5000) {
+  let lastError = null;
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetchWithTimeout(url, options, timeoutMs);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (i < maxRetries - 1) await sleep(Math.pow(2, i) * 1000);
+    }
+  }
+  throw lastError;
+}
+
+function setConnectionStatus(status) {
+  state.connection.status = status;
+  state.connection.lastChecked = Date.now();
+
+  const pill = $('#connection-pill');
+  const pillText = $('#connection-pill-text');
+  const banner = $('#connection-banner');
+  if (!pill || !pillText || !banner) return;
+
+  pill.classList.remove('connected', 'connecting', 'disconnected');
+  pill.classList.add(status);
+
+  if (status === 'connected') {
+    pillText.textContent = 'Connected';
+    banner.classList.add('hidden');
+  } else if (status === 'connecting') {
+    pillText.textContent = 'Reconnecting...';
+    banner.classList.remove('hidden');
+  } else {
+    pillText.textContent = 'Disconnected';
+    banner.classList.remove('hidden');
+  }
+}
+
+function updateRetryCountdown() {
+  const label = $('#retry-next-attempt');
+  if (!label) return;
+  if (!state.connection.nextRetryAt) {
+    label.textContent = 'Retrying... (Next attempt in 5s)';
+    return;
+  }
+  const remainingMs = Math.max(0, state.connection.nextRetryAt - Date.now());
+  const seconds = Math.ceil(remainingMs / 1000);
+  label.textContent = `Retrying... (Next attempt in ${seconds}s)`;
+}
+
+async function checkConnection(silent = false) {
+  if (!silent) setConnectionStatus('connecting');
+  const endpoint = state.settings.endpoint.replace(/\/$/, '');
+
+  try {
+    await fetchWithRetry(`${endpoint}/health`, { method: 'GET' }, 2, 3000);
+    const wasDisconnected = state.connection.status !== 'connected';
+    setConnectionStatus('connected');
+    if (wasDisconnected) await flushQueuedMessages();
+    return true;
+  } catch {
+    setConnectionStatus('disconnected');
+    state.connection.nextRetryAt = Date.now() + 5000;
+    updateRetryCountdown();
+    return false;
+  }
+}
+
+function startConnectionMonitor() {
+  stopConnectionMonitor();
+  state.connection.checkInterval = setInterval(() => {
+    checkConnection();
+  }, 5000);
+  state.connection.countdownInterval = setInterval(updateRetryCountdown, 1000);
+}
+
+function stopConnectionMonitor() {
+  clearInterval(state.connection.checkInterval);
+  clearInterval(state.connection.countdownInterval);
+  state.connection.checkInterval = null;
+  state.connection.countdownInterval = null;
+}
+
+async function queuePendingMessage(conversationId, text) {
+  await dbPut('pendingMessages', {
+    id: generateId(),
+    conversationId,
+    text,
+    timestamp: Date.now(),
+    status: 'pending'
+  });
+}
+
+async function flushQueuedMessages() {
+  const pending = await dbGetAll('pendingMessages');
+  for (const item of pending.sort((a, b) => a.timestamp - b.timestamp)) {
+    try {
+      await streamResponseByConversationId(item.conversationId, item.text, true);
+      await dbDelete('pendingMessages', item.id);
+    } catch {
+      break;
+    }
+  }
+}
 
 /* ─── View Navigation ─── */
 function showView(viewId) {
@@ -1552,6 +1774,7 @@ async function logout() {
   state.currentUser = null;
   state.currentConversationId = null;
   clearInactivityTimer();
+  stopConnectionMonitor();
   showView('login');
 }
 
@@ -1575,6 +1798,7 @@ function clearInactivityTimer() {
 async function enterApp() {
   showView('chat');
   resetInactivityTimer();
+  setConnectionStatus('connecting');
 
   // Load settings
   const prefs = await dbGet('preferences', 'settings');
@@ -1594,6 +1818,9 @@ async function enterApp() {
   } else {
     selectConversation(state.conversations[0].id);
   }
+
+  startConnectionMonitor();
+  checkConnection();
 }
 
 /* ─── Conversation Management ─── */
@@ -1877,7 +2104,33 @@ async function sendMessage() {
   }
 
   // Start streaming response
+  if (state.connection.status !== 'connected') {
+    await queuePendingMessage(conv.id, text);
+    conv.messages.push({
+      role: 'assistant',
+      content: '⚠️ Connection unavailable\n\n• We can’t reach your local AI service right now.\n• Your message has been queued and will auto-send when connection restores.\n• Retrying every 5 seconds.',
+      timestamp: Date.now()
+    });
+    await dbPut('conversations', conv);
+    renderMessages();
+    await checkConnection();
+    return;
+  }
+
   await streamResponse(conv, text);
+}
+
+async function streamResponseByConversationId(conversationId, prompt, isQueueFlush) {
+  const conv = state.conversations.find(c => c.id === conversationId);
+  if (!conv) return;
+  if (isQueueFlush) {
+    conv.messages.push({ role: 'user', content: prompt, timestamp: Date.now() });
+    conv.timestamp = Date.now();
+    await dbPut('conversations', conv);
+    renderMessages();
+    renderConversationList();
+  }
+  return streamResponse(conv, prompt);
 }
 
 async function streamResponse(conv, prompt) {
@@ -1950,7 +2203,10 @@ async function streamResponse(conv, prompt) {
     if (err.name === 'AbortError') {
       fullResponse += '\n\n[Generation stopped]';
     } else {
-      fullResponse = fullResponse || `[Connection error: ${err.message}. Check that Zayvora is running at ${state.settings.endpoint}]`;
+      setConnectionStatus('disconnected');
+      state.connection.nextRetryAt = Date.now() + 5000;
+      updateRetryCountdown();
+      fullResponse = fullResponse || '⚠️ Connection unavailable\n\n• We can’t reach your local AI service right now.\n• Your message will be queued and sent when connection restores\n• Retrying... (Next attempt in 5s)\n\nUse [Connect Now] from the status banner for immediate retry.';
     }
     streamBody.textContent = fullResponse;
   }
@@ -2026,6 +2282,7 @@ $('#link-privacy').addEventListener('click', () => showView('privacy'));
 $('#setting-endpoint').addEventListener('change', async (e) => {
   state.settings.endpoint = e.target.value.trim();
   await saveSettings();
+  await checkConnection();
 });
 
 $('#setting-model').addEventListener('change', async (e) => {
@@ -2056,6 +2313,10 @@ $('#btn-delete-all').addEventListener('click', async () => {
   await dbClear('tokens');
   sessionStorage.clear();
   location.reload();
+});
+
+$('#btn-connection-retry').addEventListener('click', () => {
+  checkConnection();
 });
 
 /* ─── Bottom Nav (Mobile) ─── */

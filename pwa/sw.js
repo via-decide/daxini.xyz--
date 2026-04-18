@@ -1,7 +1,8 @@
 // Zayvora PWA — Service Worker
 // Offline-first caching strategy
 
-const CACHE_NAME = 'zayvora-v1.2';
+const CACHE_NAME = 'zayvora-v1.3';
+const ZAYVORA_API_CACHE = 'zayvora-api-v1';
 const ASSETS = [
   './index.html',
   './manifest.json'
@@ -28,10 +29,24 @@ self.addEventListener('activate', (event) => {
 // Fetch: cache-first for app shell, network-first for API
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+  const isLocalZayvora = url.hostname === 'localhost' && url.port === '11434';
 
   // API calls — network only (streaming responses)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(fetch(event.request));
+    return;
+  }
+
+  if (isLocalZayvora) {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        if (response.ok && event.request.method === 'GET') {
+          const clone = response.clone();
+          caches.open(ZAYVORA_API_CACHE).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => caches.match(event.request))
+    );
     return;
   }
 
