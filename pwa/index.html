@@ -401,6 +401,12 @@ html, body {
   cursor: pointer;
 }
 .connection-banner-actions button:hover { border-color: var(--primary); }
+.connection-help-note {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
 
 .chat-header-title {
   font-size: 0.9rem;
@@ -898,12 +904,30 @@ html, body {
   .chat-view { flex-direction: column; }
 
   .chat-messages { padding: 16px; }
+  .connection-banner { margin: 8px 12px 0; font-size: 0.78rem; }
+  .connection-pill { padding: 4px 8px; font-size: 0.7rem; }
+  .chat-header { padding: 0 12px; }
+  .chat-header-title {
+    max-width: 36vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   .chat-input-area { padding: 10px 12px 10px; }
 
   .message { max-width: 100%; }
 
   .settings-body { max-width: 100%; }
+  .settings-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .settings-row select, .settings-row input[type="text"], .settings-row .btn-danger, .settings-row span {
+    width: 100%;
+    text-align: left;
+  }
 }
 
 /* ═══════════════════════════════════════════
@@ -1077,12 +1101,17 @@ html, body {
       <div class="connection-banner hidden" id="connection-banner" aria-live="polite">
         <div class="connection-banner-title">⚠️ Zayvora backend unavailable</div>
         <ul>
+          <li>Is your local Zayvora service running?</li>
           <li>Is Zayvora running? (<span id="connection-endpoint-label">localhost:11434</span>)</li>
           <li>Your message will be queued and sent when connection restores</li>
           <li id="retry-next-attempt">Retrying... (Next attempt in 5s)</li>
         </ul>
         <div class="connection-banner-actions">
           <button id="btn-connection-retry" type="button">Retry Now</button>
+          <button id="btn-manual-instructions" type="button">Connection Help</button>
+        </div>
+        <div class="connection-help-note hidden" id="connection-help-note">
+          Open <strong>Settings → Inference</strong> to verify your endpoint and model. Messages remain queued until reconnection.
           <button id="btn-manual-instructions" type="button">Manual Instructions</button>
         </div>
       </div>
@@ -2094,6 +2123,7 @@ async function sendMessage() {
     await queuePendingMessage(conv.id, text);
     conv.messages.push({
       role: 'assistant',
+      content: '⚠️ Zayvora backend unavailable\n\n• Is your local Zayvora service running?\n• Your message has been queued and will auto-send when connection restores.\n• Retrying every 5 seconds.',
       content: '⚠️ Zayvora backend unavailable\n\n• Is Zayvora running? (' + state.settings.endpoint + ')\n• Your message has been queued and will auto-send when connection restores.\n• Retrying every 5 seconds.',
       timestamp: Date.now()
     });
@@ -2192,6 +2222,7 @@ async function streamResponse(conv, prompt) {
       setConnectionStatus('disconnected');
       state.connection.nextRetryAt = Date.now() + 5000;
       updateRetryCountdown();
+      fullResponse = fullResponse || '⚠️ Zayvora backend unavailable\n\n• Is your local Zayvora service running?\n• Your message will be queued and sent when connection restores\n• Retrying... (Next attempt in 5s)\n\nUse [Retry Now] from the status banner for immediate retry.';
       fullResponse = fullResponse || `⚠️ Zayvora backend unavailable\n\n• Is Zayvora running? (${state.settings.endpoint})\n• Your message will be queued and sent when connection restores\n• Retrying... (Next attempt in 5s)\n\nUse [Retry Now] from the status banner for immediate retry.`;
     }
     streamBody.textContent = fullResponse;
@@ -2306,6 +2337,7 @@ $('#btn-connection-retry').addEventListener('click', () => {
 });
 
 $('#btn-manual-instructions').addEventListener('click', () => {
+  $('#connection-help-note').classList.toggle('hidden');
   alert(
     'Start Zayvora backend:\n\n' +
     'python3 -m zayvora.server --host localhost --port 11434\n' +
