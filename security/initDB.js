@@ -1,7 +1,7 @@
 /*
   security/initDB.js
-  Initializes the telemetry database with a resilient mock fallback.
-  Prevents 500 errors on Vercel caused by native dependency failures.
+  Sovereign Database Orchestrator (Lazy Load Edition)
+  Guarantees stability on Vercel by isolating the better-sqlite3 native driver.
 */
 
 import { fileURLToPath } from 'url';
@@ -10,88 +10,73 @@ import path from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Mock Database class to mimic better-sqlite3 API
+// Internal state
+let cachedDB = null;
+let isMock = false;
+
+/**
+ * Mock Database to keep the system alive if better-sqlite3 vanishes
+ */
 class MockDatabase {
-    constructor(path) {
-        console.warn(`[SECURITY] Using In-Memory Mock Database (Reason: ${path === ':memory:' ? 'Requested' : 'Native Driver Failed'})`);
-        this.inMemory = {};
+    constructor() {
+        console.warn("[SECURITY] WARNING: Native DB driver unavailable. Using In-Memory Mock.");
+        isMock = true;
     }
-    prepare(sql) {
+    prepare() {
         return {
-            run: (...args) => ({ changes: 0, lastInsertRowid: 0 }),
-            get: (...args) => undefined,
-            all: (...args) => []
+            run: () => ({ changes: 0, lastInsertRowid: 0 }),
+            get: () => undefined,
+            all: () => []
         };
     }
     transaction(fn) { return fn; }
     close() {}
 }
 
-let db;
+/**
+ * Retrieves the database instance lazily.
+ * Guarantees a valid object (Mock or SQLite) is always returned.
+ */
+export async function getDB() {
+    if (cachedDB) return cachedDB;
 
-try {
-    // We use a dynamic import to prevent top-level crashes if the library is missing
-    const { default: Database } = await import('better-sqlite3');
-    
     try {
-        const dbPath = path.join(__dirname, '../data/telemetry.db');
-        db = new Database(dbPath);
-    } catch (err) {
-        // Fallback to SQLite in-memory if disk is read-only
-        db = new Database(':memory:');
+        // Dynamic import isolates the library crash
+        const { default: Database } = await import('better-sqlite3');
+        
+        try {
+            const dbPath = path.join(__dirname, '../data/telemetry.db');
+            cachedDB = new Database(dbPath);
+        } catch (e) {
+            // Rollback to in-memory if disk-write is forbidden (Vercel)
+            cachedDB = new Database(':memory:');
+        }
+    } catch (criticalErr) {
+        // Ultimate fallback
+        cachedDB = new MockDatabase();
     }
-} catch (err) {
-    // total fallback to Mock if better-sqlite3 is completely missing (Vercel case)
-    db = new MockDatabase('Vercel Fallback');
+
+    // Initialize Schema on first boot
+    const schema = [
+        `CREATE TABLE IF NOT EXISTS security_events (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, ip_hash TEXT, endpoint TEXT, threat_score REAL)`,
+        `CREATE TABLE IF NOT EXISTS reputation_scores (target_id TEXT PRIMARY KEY, score REAL DEFAULT 0.0)`,
+        `CREATE TABLE IF NOT EXISTS threat_edges (source_id TEXT, target_id TEXT, PRIMARY KEY(source_id, target_id))`
+    ];
+
+    schema.forEach(sql => {
+        try { cachedDB.prepare(sql).run(); } catch(err) { /* ignore schema noise */ }
+    });
+
+    return cachedDB;
 }
 
-// Ensure tables exist (on whichever DB we have)
-const schema = [
-    `CREATE TABLE IF NOT EXISTS security_events (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-        ip_hash TEXT,
-        fingerprint_id TEXT,
-        endpoint TEXT,
-        behavior_pattern TEXT,
-        user_agent TEXT,
-        suspicion_delta INTEGER,
-        threat_score REAL
-    )`,
-    `CREATE TABLE IF NOT EXISTS reputation_scores (
-        target_id TEXT PRIMARY KEY,
-        target_type TEXT,
-        score REAL DEFAULT 0.0,
-        trust_flags TEXT,
-        last_incident DATETIME,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`,
-    `CREATE TABLE IF NOT EXISTS threat_edges (
-        source_id TEXT,
-        target_id TEXT,
-        relation_type TEXT,
-        weight REAL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY(source_id, target_id, relation_type)
-    )`,
-    `CREATE TABLE IF NOT EXISTS security_statistics (
-        target_id TEXT,
-        window_start INTEGER,
-        req_count INTEGER DEFAULT 0,
-        err_count INTEGER DEFAULT 0,
-        unique_endpoints TEXT,
-        PRIMARY KEY(target_id, window_start)
-    )`
-];
-
-schema.forEach(sql => {
-    try {
-        db.prepare(sql).run();
-    } catch (e) {
-        console.error("[SECURITY] Schema Init Error:", e.message);
+// Support older static imports by exporting a proxy or the getter
+export default {
+    prepare: (...args) => {
+        if (!cachedDB) {
+            console.error("[SECURITY] FATAL: Async DB used before initialization. Re-routing through mock.");
+            return (new MockDatabase()).prepare(...args);
+        }
+        return cachedDB.prepare(...args);
     }
-});
-
-console.log('[SECURITY] Resilient database initialized.');
-
-export default db;
+};

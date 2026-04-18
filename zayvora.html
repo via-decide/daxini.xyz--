@@ -39,13 +39,39 @@
 
 <!-- ═══════ DASHBOARD ════════════════════════════════════ -->
 <div class="zv-page">
+    <!-- Sovereign Authorization Overlay -->
+    <div id="zv-auth-overlay" class="zv-auth-overlay">
+      <div class="zv-auth-modal">
+        <div class="zv-auth-icon">🛡️</div>
+        <h2 class="zv-auth-title">Sovereign Authorization Required</h2>
+        <p class="zv-auth-desc">You are attempting to access the Zayvora Orchestration Engine. Please provide your Sovereign Passport details to unlock the 3-panel dashboard.</p>
+        
+        <form id="zv-auth-form" class="zv-auth-form">
+          <div class="zv-auth-group">
+            <label for="zv-uid-input">PASSPORT UID</label>
+            <input type="text" id="zv-uid-input" placeholder="e.g. UID-0001" required>
+          </div>
+          <div class="zv-auth-group">
+            <label for="zv-serial-input">SERIAL NUMBER</label>
+            <input type="password" id="zv-serial-input" placeholder="••••••••" required>
+          </div>
+          <button type="submit" id="zv-login-btn" class="zv-auth-btn">Authorize Access</button>
+          <div id="zv-login-status" class="zv-auth-status"></div>
+        </form>
+
+        <div class="zv-auth-footer">
+          Don't have a passport? <a href="/research#sovereignty" target="_blank">Apply for access</a>
+        </div>
+      </div>
+    </div>
+
   <div class="zv-layout">
 
     <!-- ── Panel 1: Command Input ──────────────────────── -->
     <div class="zv-panel mobile-active" id="zv-panel-input">
       <div class="zv-panel-header">
-        <div class="zv-panel-title">Command</div>
-        <div class="zv-panel-badge">Beast-Mode</div>
+        <div class="zv-panel-title">Operations Command</div>
+        <button id="zv-logout-btn" class="zv-logout-link" title="Revoke Authorization">Logout Passport</button>
       </div>
 
       <div class="zv-input-area">

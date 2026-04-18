@@ -1,17 +1,9 @@
 /*
-  api/index.js — Daxini Systems API Gateway (Hardened)
+  api/index.js — Daxini Systems API Gateway (Hardened & Resilient)
+  MISSION: BEAST-MODE SOVEREIGNTY
 */
 
-import { generateClientFingerprint } from '../security/browserFingerprint.js';
-import { detectAutomatedSignals } from '../security/botDetection.js';
-import { analyzeBehavior } from '../security/behaviorEngine.js';
-import { analyzeTrafficAnomaly, logAnomalyError } from '../security/anomalyDetector.js';
-import { analyzeActorRelationships } from '../security/networkGraphAnalyzer.js';
-import { updateReputation, isBlacklisted, scoreIpByBehavior } from '../security/reputationEngine.js';
-import { logThreatEvent } from '../security/threatTelemetry.js';
-import { serveMirroredResponse, routeToHoneypot } from '../security/mirrorRouter.js';
-import { evaluateMirrorThreat } from '../security/honeypotRouter.js';
-import db from '../security/initDB.js';
+// Core Deterministic Imports (No native dependencies)
 import { generateCodeStream } from './llm/sovereign_engine.js';
 
 const passportRegistry = new Map([
@@ -29,6 +21,53 @@ const activePassportSession = {
   status: 'active'
 };
 
+/**
+ * Lazy Security Loader
+ * Dynamically imports v3 intelligence modules to isolate native driver crashes.
+ */
+async function loadSecurityKit() {
+    try {
+        const [
+            { generateClientFingerprint },
+            { detectAutomatedSignals },
+            { analyzeBehavior },
+            { analyzeTrafficAnomaly },
+            { analyzeActorRelationships },
+            { updateReputation, isBlacklisted, scoreIpByBehavior },
+            { logThreatEvent },
+            dbModule
+        ] = await Promise.all([
+            import('../security/browserFingerprint.js'),
+            import('../security/botDetection.js'),
+            import('../security/behaviorEngine.js'),
+            import('../security/anomalyDetector.js'),
+            import('../security/networkGraphAnalyzer.js'),
+            import('../security/reputationEngine.js'),
+            import('../security/threatTelemetry.js'),
+            import('../security/initDB.js')
+        ]);
+
+        const db = await (dbModule.getDB ? dbModule.getDB() : dbModule.default);
+        
+        return {
+            generateClientFingerprint,
+            detectAutomatedSignals,
+            analyzeBehavior,
+            analyzeTrafficAnomaly,
+            analyzeActorRelationships,
+            updateReputation,
+            isBlacklisted,
+            scoreIpByBehavior,
+            logThreatEvent,
+            db,
+            active: true
+        };
+    } catch (err) {
+        console.warn("[SECURITY] Sovereign Shield Isolated Case: Dynamic loading failed. Defaulting to passive mode.", err.message);
+        return { active: false };
+    }
+}
+
 export default async function handler(req, res) {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
@@ -36,98 +75,91 @@ export default async function handler(req, res) {
     const ua = req.headers['user-agent'] || 'unknown';
     const ip = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || '0.0.0.0';
 
-    // ── Pre-Processing ──────────────────────────────────────
-    // Normalize body if Vercel didn't parse it
+    // Normalize body
     if (req.method === 'POST' && typeof req.body === 'string') {
-        try { req.body = JSON.parse(req.body); } catch (e) { /* ignore */ }
+        try { req.body = JSON.parse(req.body); } catch (e) {}
     }
 
-    // 1. Critical Reputation & Shielding
-    // We make these optional/fail-safe to prevent dashboard death
+    // ── Resilient Security Core ────────────────────────────
+    const kit = await loadSecurityKit();
     let fingerprint = 'unknown';
     let totalThreatScore = 0;
-    try {
-        fingerprint = generateClientFingerprint(req);
-        if (isBlacklisted(ip) || isBlacklisted(fingerprint)) {
-            // Only block if we are SURE. If DB is mocked, this is usually skip.
-        }
 
-        const botSignals = detectAutomatedSignals(req);
-        const passportToken = req.headers['authorization'] || null;
-        const behavior = analyzeBehavior(req, fingerprint, passportToken);
-        const anomaly = analyzeTrafficAnomaly(ip, path);
-        const graph = analyzeActorRelationships(ip, fingerprint);
-        
-        totalThreatScore = botSignals.risk_score + behavior.behavior_score + anomaly.anomaly_score;
-        totalThreatScore += graph.cluster_density * 0.2;
-        totalThreatScore = Math.min(1.0, totalThreatScore);
+    if (kit.active) {
+        try {
+            fingerprint = kit.generateClientFingerprint(req);
+            const botSignals = kit.detectAutomatedSignals(req);
+            const passportToken = req.headers['authorization'] || null;
+            const behavior = kit.analyzeBehavior(req, fingerprint, passportToken);
+            const anomaly = kit.analyzeTrafficAnomaly(ip, path);
+            const graph = kit.analyzeActorRelationships(ip, fingerprint);
+            
+            totalThreatScore = botSignals.risk_score + behavior.behavior_score + anomaly.anomaly_score + (graph.cluster_density * 0.2);
+            totalThreatScore = Math.min(1.0, totalThreatScore);
 
-        updateReputation(ip, 'ip', (totalThreatScore > 0.4 ? 0.05 : -0.01), 'GA_SCORE');
-        updateReputation(fingerprint, 'fp', (totalThreatScore > 0.4 ? 0.05 : -0.01), 'GA_SCORE');
-        scoreIpByBehavior(ip, behavior);
-
-        if (totalThreatScore > 0.1) {
-            logThreatEvent({ ip, fingerprint_id: fingerprint, threat_score: totalThreatScore, classification: behavior.classification, path_accessed: path, agent: ua });
-        }
-    } catch (secErr) {
-        console.warn("[SECURITY] Passive monitoring failure:", secErr.message);
+            kit.updateReputation(ip, 'ip', (totalThreatScore > 0.4 ? 0.05 : -0.01), 'GA_SCORE');
+            kit.scoreIpByBehavior(ip, behavior);
+            if (totalThreatScore > 0.1) kit.logThreatEvent({ ip, fingerprint_id: fingerprint, threat_score: totalThreatScore, classification: behavior.classification, path_accessed: path, agent: ua });
+        } catch (e) { console.warn("[SECURITY] Run-time skip:", e.message); }
     }
 
-    // 2. Standard Logic
+    // ── Headers ─────────────────────────────────────────────
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
     if (req.method === 'OPTIONS') return res.status(200).end();
 
-    if (path === '/passport/verify') {
-      const uid = url.searchParams.get('uid');
-      if (!uid || !passportRegistry.has(uid)) return res.status(403).json({ error: 'UID not registered' });
-      return res.status(200).json(passportRegistry.get(uid));
+    // ── Specialized Routes ──────────────────────────────────
+    
+    // Passport Verification (Login Endpoint)
+    if (path === '/api/passport/verify') {
+        const uid = url.searchParams.get('uid');
+        const serial = url.searchParams.get('serial');
+        
+        if (!uid || !passportRegistry.has(uid)) return res.status(403).json({ error: 'UID not registered' });
+        
+        const record = passportRegistry.get(uid);
+        if (serial && record.serial !== serial) return res.status(403).json({ error: 'Serial mismatch' });
+        
+        return res.status(200).json(record);
     }
 
-    if (path === '/passport/session') return res.status(200).json(activePassportSession);
-
-    if (path === '/api/check' || path === '/api') return res.status(200).json({ status: 'HEALTHY', mission: 'RESEARCH_OS', version: '3.1', telemetry: 'resilient' });
-
     if (path === '/api/zayvora/execute') {
-      if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-      const prompt = req.body ? req.body.prompt : null;
-      if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+        
+        // Authorization Required for Zayvora Orchestration
+        const auth = req.headers['authorization'];
+        if (!auth || !auth.startsWith('Bearer UID-')) {
+            return res.status(401).json({ error: 'Sovereign Passport Required' });
+        }
 
-      try {
+        const prompt = req.body ? req.body.prompt : null;
+        if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
         
         await generateCodeStream(
-          prompt,
-          (chunk) => res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`),
-          (err) => { res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`); res.end(); },
-          () => { res.write(`data: [DONE]\n\n`); res.end(); }
+            prompt,
+            (chunk) => res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`),
+            (err) => { res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`); res.end(); },
+            () => { res.write(`data: [DONE]\n\n`); res.end(); }
         );
         return;
-      } catch (err) {
-        if (!res.headersSent) return res.status(502).json({ error: 'Local Zayvora engine unavailable', details: err.message });
-        res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
-        res.end();
-        return;
-      }
     }
 
-    if (path === '/api/security/stats') {
-      const stats = db.prepare('SELECT COUNT(*) as count FROM security_events').get();
-      const reputations = db.prepare('SELECT * FROM reputation_scores ORDER BY score DESC LIMIT 10').all();
-      return res.status(200).json({ eventCount: stats ? stats.count : 0, topRisks: reputations || [] });
+    if (path === '/api/check' || path === '/api') {
+        return res.status(200).json({ status: 'HEALTHY', mission: 'RESEARCH_OS', kit_active: kit.active });
     }
 
     return res.status(404).json({ error: 'Not found' });
+
   } catch (globalError) {
-    console.error("[CRITICAL] API Handler Error:", globalError);
+    console.error("[CRITICAL] Sovereign Engine Fault:", globalError);
     return res.status(500).json({ 
         error: 'Sovereign Engine Fault', 
-        message: globalError.message,
-        stack: globalError.stack.split('\n')[0] 
+        message: globalError.message 
     });
   }
 }

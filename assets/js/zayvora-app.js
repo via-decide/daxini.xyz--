@@ -305,9 +305,13 @@
     addLog('GENERATE', '⚙️ BEAST-MODE: Synthesizing natively via local Zayvora:latest...', 'accent');
 
     try {
+      const auth = JSON.parse(localStorage.getItem('zv_passport') || '{}');
       const response = await fetch('/api/zayvora/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth.uid || ''}`
+        },
         body: JSON.stringify({ prompt: description })
       });
 
