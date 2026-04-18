@@ -300,7 +300,7 @@
       ]},
       { stage: 'PR', delay: 1000, msgs: [
         { m: 'Opening pull request...', t: 'info' },
-        { m: '✅ PR opened: https://github.com/via-decide/nex/pull/42', t: 'success' },
+        { m: '✅ PR opened: https://github.com/via-decide/nex/pull/36', t: 'success' },
       ]},
     ];
 
@@ -333,7 +333,7 @@
 
     state.executionState = 'done';
     task.lines = 487;
-    task.prUrl = 'https://github.com/via-decide/nex/pull/42';
+    task.prUrl = 'https://github.com/via-decide/nex/pull/36';
     updateTask(task.id, { status: 'success', completedAt: new Date().toISOString(), lines: 487, prUrl: task.prUrl });
     updateExecStatus('Complete');
 
