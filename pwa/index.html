@@ -1102,6 +1102,7 @@ html, body {
         <div class="connection-banner-title">⚠️ Zayvora backend unavailable</div>
         <ul>
           <li>Is your local Zayvora service running?</li>
+          <li>Is Zayvora running? (<span id="connection-endpoint-label">localhost:11434</span>)</li>
           <li>Your message will be queued and sent when connection restores</li>
           <li id="retry-next-attempt">Retrying... (Next attempt in 5s)</li>
         </ul>
@@ -1111,6 +1112,7 @@ html, body {
         </div>
         <div class="connection-help-note hidden" id="connection-help-note">
           Open <strong>Settings → Inference</strong> to verify your endpoint and model. Messages remain queued until reconnection.
+          <button id="btn-manual-instructions" type="button">Manual Instructions</button>
         </div>
       </div>
       <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
@@ -1573,6 +1575,9 @@ function updateRetryCountdown() {
 async function checkConnection(silent = false) {
   if (!silent) setConnectionStatus('connecting');
   const endpoint = state.settings.endpoint.replace(/\/$/, '');
+  const hostLabel = endpoint.replace(/^https?:\/\//, '') || 'localhost:11434';
+  const endpointLabel = $('#connection-endpoint-label');
+  if (endpointLabel) endpointLabel.textContent = hostLabel;
 
   try {
     await fetchWithRetry(`${endpoint}/health`, { method: 'GET' }, 2, 3000);
@@ -2119,6 +2124,7 @@ async function sendMessage() {
     conv.messages.push({
       role: 'assistant',
       content: '⚠️ Zayvora backend unavailable\n\n• Is your local Zayvora service running?\n• Your message has been queued and will auto-send when connection restores.\n• Retrying every 5 seconds.',
+      content: '⚠️ Zayvora backend unavailable\n\n• Is Zayvora running? (' + state.settings.endpoint + ')\n• Your message has been queued and will auto-send when connection restores.\n• Retrying every 5 seconds.',
       timestamp: Date.now()
     });
     await dbPut('conversations', conv);
@@ -2217,6 +2223,7 @@ async function streamResponse(conv, prompt) {
       state.connection.nextRetryAt = Date.now() + 5000;
       updateRetryCountdown();
       fullResponse = fullResponse || '⚠️ Zayvora backend unavailable\n\n• Is your local Zayvora service running?\n• Your message will be queued and sent when connection restores\n• Retrying... (Next attempt in 5s)\n\nUse [Retry Now] from the status banner for immediate retry.';
+      fullResponse = fullResponse || `⚠️ Zayvora backend unavailable\n\n• Is Zayvora running? (${state.settings.endpoint})\n• Your message will be queued and sent when connection restores\n• Retrying... (Next attempt in 5s)\n\nUse [Retry Now] from the status banner for immediate retry.`;
     }
     streamBody.textContent = fullResponse;
   }
@@ -2331,6 +2338,14 @@ $('#btn-connection-retry').addEventListener('click', () => {
 
 $('#btn-manual-instructions').addEventListener('click', () => {
   $('#connection-help-note').classList.toggle('hidden');
+  alert(
+    'Start Zayvora backend:\n\n' +
+    'python3 -m zayvora.server --host localhost --port 11434\n' +
+    'or\n' +
+    'python3 api/main.py --host localhost --port 11434\n\n' +
+    'Then verify:\n' +
+    'curl http://localhost:11434/health'
+  );
 });
 
 /* ─── Bottom Nav (Mobile) ─── */
