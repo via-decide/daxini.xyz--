@@ -48,14 +48,14 @@
         
         <form id="zv-auth-form" class="zv-auth-form">
           <div class="zv-auth-group">
-            <label for="zv-uid-input">PASSPORT UID</label>
-            <input type="text" id="zv-uid-input" placeholder="e.g. UID-0001" required>
+            <label for="zv-nfc-input">PHYSICAL NFC TAG ID</label>
+            <input type="text" id="zv-nfc-input" placeholder="Tap NFC or Paste Hardware ID..." required autofocus>
           </div>
           <div class="zv-auth-group">
-            <label for="zv-serial-input">SERIAL NUMBER</label>
-            <input type="password" id="zv-serial-input" placeholder="••••••••" required>
+            <label for="zv-pin-input">SECURE PIN</label>
+            <input type="password" id="zv-pin-input" placeholder="••••••••" required>
           </div>
-          <button type="submit" id="zv-login-btn" class="zv-auth-btn">Authorize Access</button>
+          <button type="submit" id="zv-login-btn" class="zv-auth-btn">Authorize Hardware</button>
           <div id="zv-login-status" class="zv-auth-status"></div>
         </form>
 

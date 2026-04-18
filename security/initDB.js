@@ -60,7 +60,14 @@ export async function getDB() {
     const schema = [
         `CREATE TABLE IF NOT EXISTS security_events (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, ip_hash TEXT, endpoint TEXT, threat_score REAL)`,
         `CREATE TABLE IF NOT EXISTS reputation_scores (target_id TEXT PRIMARY KEY, score REAL DEFAULT 0.0)`,
-        `CREATE TABLE IF NOT EXISTS threat_edges (source_id TEXT, target_id TEXT, PRIMARY KEY(source_id, target_id))`
+        `CREATE TABLE IF NOT EXISTS threat_edges (source_id TEXT, target_id TEXT, PRIMARY KEY(source_id, target_id))`,
+        `CREATE TABLE IF NOT EXISTS sovereign_passports (
+            uid TEXT PRIMARY KEY,
+            owner_name TEXT,
+            nfc_tag_id TEXT UNIQUE,
+            pin_hash TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`
     ];
 
     schema.forEach(sql => {

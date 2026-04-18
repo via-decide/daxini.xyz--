@@ -3,8 +3,9 @@
   MISSION: BEAST-MODE SOVEREIGNTY
 */
 
-// Core Deterministic Imports (No native dependencies)
+import crypto from 'crypto';
 import { generateCodeStream } from './llm/sovereign_engine.js';
+import { issueSessionToken } from '../security/sessionToken.js';
 
 const passportRegistry = new Map([
   ['UID-0001', { passport_id: 'PPT-AXIOM-0001', serial: 'ZX-93A7', owner: 'Sovereign Node Alpha', status: 'active' }],
@@ -111,17 +112,69 @@ export default async function handler(req, res) {
 
     // ── Specialized Routes ──────────────────────────────────
     
-    // Passport Verification (Login Endpoint)
+    // ── Sovereign Hardware Identity ────────────────────────
+    
+    // Provisioning Endpoint (Mac Mini Database Native)
+    if (path === '/api/passport/provision') {
+        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+        
+        try {
+            const { nfc_tag_id, pin, owner_name } = req.body;
+            if (!nfc_tag_id || !pin || !owner_name) {
+                return res.status(400).json({ error: 'NFC Tag ID, PIN, and Owner Name are required to forge a passport.' });
+            }
+
+            // Create SHA256 Hash of PIN
+            const pinHash = crypto.createHash('sha256').update(pin).digest('hex');
+            const uid = `UID-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+
+            if (kit.active && kit.db) {
+                kit.db.prepare(`
+                    INSERT INTO sovereign_passports (uid, owner_name, nfc_tag_id, pin_hash)
+                    VALUES (?, ?, ?, ?)
+                `).run(uid, owner_name, nfc_tag_id, pinHash);
+            } else {
+                return res.status(503).json({ error: 'Database offline. Provisioning must happen on local Node server.' });
+            }
+
+            return res.status(200).json({ status: 'success', message: 'Sovereign Passport Forged', uid: uid });
+        } catch (dbErr) {
+            // Check for UNIQUE constraint failure
+            if (dbErr.message.includes('UNIQUE constraint failed')) {
+                return res.status(409).json({ error: 'This Physical NFC Tag is already bound to a Sovereign Passport.' });
+            }
+            return res.status(500).json({ error: 'Provisioning Failed', details: dbErr.message });
+        }
+    }
+
+    // Hardware NFC + PIN Verification (Login Endpoint)
     if (path === '/api/passport/verify') {
-        const uid = url.searchParams.get('uid');
-        const serial = url.searchParams.get('serial');
+        const nfc_tag_id = url.searchParams.get('nfc_tag_id');
+        const pin = url.searchParams.get('pin');
         
-        if (!uid || !passportRegistry.has(uid)) return res.status(403).json({ error: 'UID not registered' });
+        // 1. Try checking the Local SQLite DB First (if active)
+        if (nfc_tag_id && pin && kit.active && kit.db) {
+            const pinHash = crypto.createHash('sha256').update(pin).digest('hex');
+            const row = kit.db.prepare('SELECT * FROM sovereign_passports WHERE nfc_tag_id = ? AND pin_hash = ?').get(nfc_tag_id, pinHash);
+            
+            if (row) {
+                const session = issueSessionToken({ uid: row.uid, owner: row.owner_name, nfcTagId: row.nfc_tag_id });
+                return res.status(200).json({ uid: row.uid, owner: row.owner_name, jwt: session.jwt, passport_id: `PPT-${row.uid}` });
+            }
+        }
         
-        const record = passportRegistry.get(uid);
-        if (serial && record.serial !== serial) return res.status(403).json({ error: 'Serial mismatch' });
+        // 2. Fallback to Hardcoded Registry ONLY if the DB query fails or DB is mocked
+        const fallbackUid = url.searchParams.get('uid');
+        const fallbackSerial = url.searchParams.get('serial');
+        if (fallbackUid && passportRegistry.has(fallbackUid)) {
+            const record = passportRegistry.get(fallbackUid);
+            if (fallbackSerial && record.serial === fallbackSerial) {
+                const session = issueSessionToken({ uid: fallbackUid, owner: record.owner, nfcTagId: 'FALLBACK-USB-TOKEN' });
+                return res.status(200).json({ uid: fallbackUid, owner: record.owner, jwt: session.jwt, passport_id: record.passport_id });
+            }
+        }
         
-        return res.status(200).json(record);
+        return res.status(403).json({ error: 'Sovereign Protocol Violation: Authentication Failed' });
     }
 
     if (path === '/api/zayvora/execute') {
