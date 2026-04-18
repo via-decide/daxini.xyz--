@@ -170,9 +170,12 @@
           ></textarea>
           <div class="zv-input-footer">
             <span class="zv-char-count" id="zv-char-count">0 / 2000</span>
-            <button class="zv-submit-btn" id="zv-submit" aria-label="Submit task">
-              Execute <span class="zv-submit-kbd">⌘↵</span>
-            </button>
+            <div class="zv-input-actions">
+              <button class="zv-voice-btn" id="zv-voice" aria-label="Use voice input" title="Voice input">🎙</button>
+              <button class="zv-submit-btn" id="zv-submit" aria-label="Submit task">
+                Execute <span class="zv-submit-kbd">⌘↵</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -227,6 +230,7 @@
       <div class="zv-controls">
         <button class="zv-ctrl-btn danger" id="zv-cancel" aria-label="Cancel execution">Cancel</button>
         <button class="zv-ctrl-btn" id="zv-clear" aria-label="Clear logs">Clear</button>
+        <div class="zv-token-chip" id="zv-token-usage" aria-live="polite">Tokens: 0</div>
         <div class="zv-exec-status">Idle</div>
       </div>
     </div>
@@ -240,6 +244,12 @@
 
       <div class="zv-panel-body">
         <!-- Task List -->
+        <div class="zv-task-toolbar" aria-label="Task filters">
+          <button type="button" class="zv-task-filter active" data-filter="all">All</button>
+          <button type="button" class="zv-task-filter" data-filter="running">Running</button>
+          <button type="button" class="zv-task-filter" data-filter="success">Done</button>
+          <button type="button" class="zv-task-filter" data-filter="failed">Failed</button>
+        </div>
         <div id="zv-task-list"></div>
 
         <!-- Output Preview -->

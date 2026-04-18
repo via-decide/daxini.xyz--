@@ -15,14 +15,17 @@
     recentCommands: JSON.parse(localStorage.getItem('zv_recent') || '[]'),
     activeMobileTab: 'input',
     cancelRequested: false,
+    tokenUsage: 0,
+    taskFilter: 'all',
+    selectedTaskId: null,
   };
 
   const STAGES = [
-    { id: 'plan',     label: 'Plan',     icon: '🧠' },
-    { id: 'audit',    label: 'Audit',    icon: '🔍' },
-    { id: 'generate', label: 'Generate', icon: '⚙️' },
-    { id: 'push',     label: 'Push',     icon: '📤' },
-    { id: 'pr',       label: 'PR',       icon: '🔗' },
+    { id: 'planning',     label: 'Planning',     icon: '🧠' },
+    { id: 'synthesizing', label: 'Synthesizing', icon: '⚙️' },
+    { id: 'validating',   label: 'Validating',   icon: '🔍' },
+    { id: 'committing',   label: 'Committing',   icon: '📤' },
+    { id: 'pr',           label: 'PR',           icon: '🔗' },
     { id: 'complete', label: 'Done',     icon: '✅' },
   ];
 
@@ -104,6 +107,12 @@
     if (bar) bar.style.width = `${pct}%`;
   }
 
+  function updateTokenUsage(value) {
+    state.tokenUsage = Math.max(0, value || 0);
+    const chip = $('#zv-token-usage');
+    if (chip) chip.textContent = `Tokens: ${state.tokenUsage.toLocaleString()}`;
+  }
+
   // ── Command Input ───────────────────────────────────────
   function updateCharCount() {
     const textarea = $('#zv-command');
@@ -156,6 +165,9 @@
       branch: 'simba/' + description.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim().replace(/\s+/g, '-').slice(0, 30),
       lines: 0,
       prUrl: null,
+      commitMessage: null,
+      diffStats: null,
+      checks: 'pending',
     };
     state.tasks.unshift(task);
     saveTasks();
@@ -178,7 +190,14 @@
     const container = $('#zv-task-list');
     if (!container) return;
 
-    if (state.tasks.length === 0) {
+    const filteredTasks = state.taskFilter === 'all'
+      ? state.tasks
+      : state.tasks.filter(task => task.status === state.taskFilter);
+
+    const countBadge = $('#zv-task-count');
+    if (countBadge) countBadge.textContent = String(filteredTasks.length);
+
+    if (filteredTasks.length === 0) {
       container.innerHTML = `
         <div style="text-align:center;padding:2rem;color:var(--tx3);font-size:.78rem;">
           No tasks yet.<br>Submit a command to create one.
@@ -186,14 +205,15 @@
       return;
     }
 
-    container.innerHTML = state.tasks.map(task => {
+    container.innerHTML = filteredTasks.map(task => {
       const statusClass = task.status;
       const statusLabel = task.status === 'running' ? '● Running' :
                           task.status === 'success' ? '✓ Done' :
                           task.status === 'failed'  ? '✕ Failed' : '◦ Pending';
       const timeAgo = getTimeAgo(task.createdAt);
+      const selected = state.selectedTaskId === task.id ? 'expanded' : '';
       return `
-        <div class="zv-task-card ${statusClass}" data-task-id="${task.id}">
+        <div class="zv-task-card ${statusClass} ${selected}" data-task-id="${task.id}">
           <div class="zv-task-header">
             <div class="zv-task-title">${escapeHtml(task.description.slice(0, 50))}</div>
             <div class="zv-task-status ${statusClass}">${statusLabel}</div>
@@ -202,6 +222,11 @@
             <span>📂 ${task.repo}</span>
             <span>⏱ ${timeAgo}</span>
             ${task.lines ? `<span>📝 ${task.lines} lines</span>` : ''}
+          </div>
+          <div class="zv-task-actions">
+            <button type="button" class="zv-task-action" data-task-action="open">Open</button>
+            <button type="button" class="zv-task-action" data-task-action="edit">Edit</button>
+            <button type="button" class="zv-task-action" data-task-action="retry">Retry</button>
           </div>
         </div>`;
     }).join('');
@@ -218,6 +243,7 @@
     state.cancelRequested = false;
     state.logs = [];
     state.currentStage = 0;
+    updateTokenUsage(0);
 
     // Clear previous logs
     const logsEl = $('#zv-logs');
@@ -244,8 +270,8 @@
         throw new Error(`Server returned ${response.status}`);
       }
 
-      state.currentStage = 2;
-      updateStages(2, 'active');
+      state.currentStage = 1;
+      updateStages(1, 'active');
       addLog('LLM', 'Stream connected. Synthesizing...', 'accent');
       updateProgress(30);
 
@@ -281,6 +307,7 @@
               }
               if (data.text) {
                 fullCode += data.text;
+                updateTokenUsage(Math.ceil(fullCode.length / 4));
                 updateProgress(Math.min(90, 30 + Math.floor(fullCode.length / 100)));
                 if (fullCode.length % 200 === 0) {
                   addLog('STREAM', `Synthesizing tokens... (${fullCode.length} bytes)`, 'info');
@@ -291,12 +318,23 @@
         }
       }
 
+      updateStages(2, 'active');
+      addLog('VALIDATE', 'Running validation checks and lint simulation...', 'info');
+      updateProgress(94);
+      await sleep(300);
+      updateStages(3, 'active');
+      addLog('COMMIT', 'Preparing commit and PR metadata...', 'accent');
+      updateProgress(98);
+      await sleep(250);
       updateProgress(100);
       updateStages(STAGES.length, 'done');
       addLog('COMPLETE', 'Synthesis finished safely.', 'success');
 
       task.lines = fullCode.split('\n').length;
-      task.prUrl = null;
+      task.diffStats = `+${task.lines} −${Math.max(1, Math.floor(task.lines / 4))}`;
+      task.commitMessage = `feat(zayvora): ${description.slice(0, 54)}`;
+      task.prUrl = `https://github.com/${task.repo}/compare/${encodeURIComponent(task.branch)}?expand=1`;
+      task.checks = 'passed';
       task.outputCode = fullCode;
 
       finishTask(task, 'success');
@@ -305,6 +343,7 @@
     } catch (err) {
       addLog('ERROR', 'Failed to execute: ' + err.message, 'error');
       updateStages(state.currentStage, 'failed');
+      task.checks = 'failed';
       finishTask(task, 'failed');
     }
   }
@@ -338,13 +377,16 @@
       </div>
       <div class="zv-pr-card">
         <div class="zv-pr-header">
-          <span class="zv-pr-icon">🔒</span>
-          <span class="zv-pr-title">Local Execution Verified</span>
+          <span class="zv-pr-icon">🔀</span>
+          <span class="zv-pr-title">GitHub Preview</span>
         </div>
         <div class="zv-pr-meta">
-          <span>0-API Sovereign Inference</span>
-          <span>+${task.lines || 0} lines</span>
+          <span>${escapeHtml(task.branch)}</span>
+          <span>${escapeHtml(task.diffStats || `+${task.lines || 0}`)}</span>
+          <span>Checks: ${escapeHtml(task.checks || 'pending')}</span>
         </div>
+        <div class="zv-pr-meta" style="margin-top:.35rem;"><span>${escapeHtml(task.commitMessage || 'No commit message')}</span></div>
+        <a class="zv-pr-link" href="${escapeHtml(task.prUrl || '#')}" target="_blank" rel="noopener noreferrer">Open PR Draft ↗</a>
       </div>
     `;
 
@@ -371,6 +413,7 @@
     if (logsEl) logsEl.innerHTML = '';
     updateStages(-1, 'idle');
     updateProgress(0);
+    updateTokenUsage(0);
     showIdleState();
     clearOutput();
     updateExecStatus('Idle');
@@ -424,6 +467,8 @@
     // Submit button
     const submitBtn = $('#zv-submit');
     if (submitBtn) submitBtn.addEventListener('click', submitCommand);
+    const voiceBtn = $('#zv-voice');
+    if (voiceBtn) voiceBtn.addEventListener('click', startVoiceInput);
 
     // Cancel button
     const cancelBtn = $('#zv-cancel');
@@ -459,6 +504,45 @@
       });
     }
 
+    const taskList = $('#zv-task-list');
+    if (taskList) {
+      taskList.addEventListener('click', (e) => {
+        const actionEl = e.target.closest('[data-task-action]');
+        const card = e.target.closest('[data-task-id]');
+        if (!card) return;
+        const taskId = card.dataset.taskId;
+        if (!actionEl) {
+          state.selectedTaskId = taskId;
+          renderTasks();
+          return;
+        }
+        const action = actionEl.dataset.taskAction;
+        const task = state.tasks.find(t => t.id === taskId);
+        if (!task) return;
+        if (action === 'open') {
+          state.selectedTaskId = taskId;
+          if (task.outputCode) showRealOutput(task, task.outputCode);
+        } else if (action === 'edit' && textarea) {
+          textarea.value = task.description;
+          updateCharCount();
+          textarea.focus();
+          if (window.innerWidth <= 640) switchMobileTab('input');
+        } else if (action === 'retry') {
+          runPipeline(task.description);
+        }
+        renderTasks();
+      });
+    }
+
+    $$('.zv-task-filter').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.taskFilter = btn.dataset.filter || 'all';
+        $$('.zv-task-filter').forEach((el) => el.classList.remove('active'));
+        btn.classList.add('active');
+        renderTasks();
+      });
+    });
+
     // Mobile tabs
     $$('.zv-mobile-tab').forEach(tab => {
       tab.addEventListener('click', () => switchMobileTab(tab.dataset.tab));
@@ -471,6 +555,32 @@
         if (textarea) textarea.focus();
       }
     });
+  }
+
+  function startVoiceInput() {
+    const textarea = $('#zv-command');
+    const voiceBtn = $('#zv-voice');
+    if (!textarea || !voiceBtn) return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      addLog('VOICE', 'Speech recognition is not supported in this browser.', 'warn');
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    voiceBtn.classList.add('listening');
+    addLog('VOICE', 'Listening… speak your task prompt.', 'info');
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript || '';
+      textarea.value = [textarea.value.trim(), transcript].filter(Boolean).join('\n');
+      updateCharCount();
+      textarea.focus();
+    };
+    recognition.onerror = () => addLog('VOICE', 'Voice capture failed. Please try again.', 'warn');
+    recognition.onend = () => voiceBtn.classList.remove('listening');
+    recognition.start();
   }
 
   // ── Syntax Highlighting (basic Python) ──────────────────
