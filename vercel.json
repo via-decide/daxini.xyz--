@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/zayvora", "destination": "/zayvora.html" },
+    { "source": "/workspace", "destination": "/workspace.html" }
+  ]
+}

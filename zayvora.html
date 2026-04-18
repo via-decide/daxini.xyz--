@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0b0c0f"/>
+  <title>Zayvora — Sovereign Orchestration Dashboard</title>
+  <meta name="description" content="Zayvora Orchestration Dashboard. Real-time code synthesis, GitHub integration, and task management powered by the Antigravity Beast-Mode engine."/>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="./assets/css/base.css"/>
+  <link rel="stylesheet" href="./assets/css/layout.css"/>
+  <link rel="stylesheet" href="./assets/css/components.css"/>
+  <link rel="stylesheet" href="./assets/css/zayvora.css"/>
+</head>
+<body>
+
+<!-- Noise texture -->
+<div class="noise" aria-hidden="true"></div>
+
+<!-- ═══════ NAV ═══════════════════════════════════════════ -->
+<nav class="site-nav" role="navigation" aria-label="Main navigation">
+  <a href="/" class="nav-brand">
+    <div class="nav-pulse" aria-hidden="true"></div>
+    DAXINI
+  </a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/#stack">Stack</a>
+    <a href="/zayvora" style="color:var(--accent);">Zayvora</a>
+    <a href="https://github.com/via-decide" target="_blank" rel="noopener noreferrer">GitHub</a>
+  </div>
+</nav>
+
+<!-- ═══════ DASHBOARD ════════════════════════════════════ -->
+<div class="zv-page">
+  <div class="zv-layout">
+
+    <!-- ── Panel 1: Command Input ──────────────────────── -->
+    <div class="zv-panel mobile-active" id="zv-panel-input">
+      <div class="zv-panel-header">
+        <div class="zv-panel-title">Command</div>
+        <div class="zv-panel-badge">Beast-Mode</div>
+      </div>
+
+      <div class="zv-input-area">
+        <div class="zv-input-wrapper">
+          <textarea
+            class="zv-textarea"
+            id="zv-command"
+            placeholder="Describe your task...&#10;&#10;Example: Build a cognitive bias detector module for the ViaDecide reasoning pipeline with 20+ bias patterns, severity scoring, and CLI."
+            aria-label="Task description"
+            spellcheck="false"
+          ></textarea>
+          <div class="zv-input-footer">
+            <span class="zv-char-count" id="zv-char-count">0 / 2000</span>
+            <button class="zv-submit-btn" id="zv-submit" aria-label="Submit task">
+              Execute <span class="zv-submit-kbd">⌘↵</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="zv-panel-body">
+        <div class="zv-recent-header">Recent Commands</div>
+        <div class="zv-recent-list" id="zv-recent-list"></div>
+
+        <!-- Quick task templates -->
+        <div class="zv-recent-header" style="margin-top:1.5rem;">Quick Tasks</div>
+        <div class="zv-recent-list" id="zv-quick-tasks">
+          <div class="zv-recent-item" title="Build a cognitive bias detector for solo founders with 20+ bias patterns, severity scoring, Socratic counter-questions, and full CLI.">
+            🧠 Cognitive Bias Detector
+          </div>
+          <div class="zv-recent-item" title="Create a decision journal analyzer that tracks decision patterns over time, identifies recurring biases, and generates weekly insight reports.">
+            📓 Decision Journal Analyzer
+          </div>
+          <div class="zv-recent-item" title="Build a competitive intelligence parser that extracts market signals from competitor announcements, press releases, and product updates.">
+            📊 Competitive Intel Parser
+          </div>
+          <div class="zv-recent-item" title="Create a technical debt scanner that analyzes Python codebases for anti-patterns, code smells, and maintainability risks with severity scoring.">
+            🔧 Tech Debt Scanner
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Panel 2: Execution Visualization ─────────────── -->
+    <div class="zv-panel" id="zv-panel-exec">
+      <div class="zv-panel-header">
+        <div class="zv-panel-title">Execution</div>
+        <div class="zv-panel-badge" id="zv-model-badge">Gemini 3.1 Pro</div>
+      </div>
+
+      <!-- Stage Pipeline -->
+      <div class="zv-stages" id="zv-stages" aria-label="Pipeline stages"></div>
+
+      <!-- Progress -->
+      <div class="zv-progress"><div class="zv-progress-bar"></div></div>
+
+      <!-- Log Feed -->
+      <div class="zv-logs" id="zv-logs" role="log" aria-label="Execution logs" aria-live="polite"></div>
+
+      <!-- Controls -->
+      <div class="zv-controls">
+        <button class="zv-ctrl-btn danger" id="zv-cancel" aria-label="Cancel execution">Cancel</button>
+        <button class="zv-ctrl-btn" id="zv-clear" aria-label="Clear logs">Clear</button>
+        <div class="zv-exec-status">Idle</div>
+      </div>
+    </div>
+
+    <!-- ── Panel 3: Tasks + Output ──────────────────────── -->
+    <div class="zv-panel" id="zv-panel-tasks">
+      <div class="zv-panel-header">
+        <div class="zv-panel-title">Tasks</div>
+        <div class="zv-panel-badge" id="zv-task-count">0</div>
+      </div>
+
+      <div class="zv-panel-body">
+        <!-- Task List -->
+        <div id="zv-task-list"></div>
+
+        <!-- Output Preview -->
+        <div id="zv-output"></div>
+      </div>
+    </div>
+
+  </div><!-- /zv-layout -->
+</div><!-- /zv-page -->
+
+<!-- ═══════ MOBILE BOTTOM NAV ════════════════════════════ -->
+<nav class="zv-mobile-nav" aria-label="Mobile navigation">
+  <div class="zv-mobile-tabs">
+    <button class="zv-mobile-tab active" data-tab="input" aria-label="Command input">
+      <span class="zv-mobile-tab-icon">💬</span>
+      Input
+    </button>
+    <button class="zv-mobile-tab" data-tab="exec" aria-label="Execution">
+      <span class="zv-mobile-tab-icon">🔄</span>
+      Running
+    </button>
+    <button class="zv-mobile-tab" data-tab="tasks" aria-label="Tasks">
+      <span class="zv-mobile-tab-icon">📋</span>
+      Tasks
+    </button>
+    <button class="zv-mobile-tab" data-tab="output" aria-label="Output">
+      <span class="zv-mobile-tab-icon">📄</span>
+      Output
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════ SCRIPTS ═══════════════════════════════════════ -->
+<script src="./assets/js/zayvora-app.js"></script>
+
+</body>
+</html>
