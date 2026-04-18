@@ -2355,6 +2355,21 @@ $('#btn-export').addEventListener('click', async () => {
   URL.revokeObjectURL(url);
 });
 
+const installBtn = $('#btn-install-pwa');
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (!state.deferredInstallPrompt) return;
+    const promptEvent = state.deferredInstallPrompt;
+    promptEvent.prompt();
+    const choice = await promptEvent.userChoice;
+    if (choice && choice.outcome !== 'accepted') {
+      updateInstallButton();
+      return;
+    }
+    state.deferredInstallPrompt = null;
+    updateInstallButton();
+  });
+}
 $('#btn-install-pwa').addEventListener('click', async () => {
   if (!state.deferredInstallPrompt) return;
   const promptEvent = state.deferredInstallPrompt;
@@ -2378,6 +2393,12 @@ $('#btn-delete-all').addEventListener('click', async () => {
   location.reload();
 });
 
+const retryBtn = $('#btn-connection-retry');
+if (retryBtn) {
+  retryBtn.addEventListener('click', () => {
+    checkConnection();
+  });
+}
 $('#btn-connection-retry').addEventListener('click', () => {
   checkConnection();
 });
