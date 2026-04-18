@@ -1171,7 +1171,7 @@ html, body {
         <h3>Inference</h3>
         <div class="settings-row">
           <label for="setting-endpoint">Zayvora Endpoint</label>
-          <input type="text" id="setting-endpoint" placeholder="http://localhost:11434">
+          <input type="text" id="setting-endpoint" placeholder="Local service URL">
         </div>
         <div class="settings-row">
           <label for="setting-model">Model</label>
@@ -1502,7 +1502,7 @@ const state = {
     lastChecked: null
   },
   settings: {
-    endpoint: 'http://localhost:11434',
+    endpoint: '',
     model: 'zayvora-engineer'
   }
 };
@@ -1513,6 +1513,10 @@ const $$ = (sel) => document.querySelectorAll(sel);
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getConfiguredEndpoint() {
+  return (state.settings.endpoint || '').trim() || 'http://localhost:11434';
 }
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = 5000) {
@@ -1578,6 +1582,7 @@ function updateRetryCountdown() {
 
 async function checkConnection(silent = false) {
   if (!silent) setConnectionStatus('connecting');
+  const endpoint = getConfiguredEndpoint().replace(/\/$/, '');
   const endpoint = state.settings.endpoint.replace(/\/$/, '');
   const hostLabel = endpoint.replace(/^https?:\/\//, '') || 'localhost:11434';
   const endpointLabel = $('#connection-endpoint-label');
@@ -1824,7 +1829,7 @@ async function enterApp() {
   if (prefs) {
     state.settings = { ...state.settings, ...prefs.value };
   }
-  $('#setting-endpoint').value = state.settings.endpoint;
+  $('#setting-endpoint').value = state.settings.endpoint === 'http://localhost:11434' ? '' : state.settings.endpoint;
   $('#setting-model').value = state.settings.model;
   $('#settings-email').textContent = state.currentUser.email;
 
@@ -2167,7 +2172,7 @@ async function streamResponse(conv, prompt) {
   let fullResponse = '';
 
   try {
-    const endpoint = state.settings.endpoint;
+    const endpoint = getConfiguredEndpoint();
     const model = state.settings.model;
 
     // Build message history for context
