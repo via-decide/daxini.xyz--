@@ -128,8 +128,8 @@
     textarea.value = '';
     updateCharCount();
 
-    // Run demo pipeline
-    runDemoPipeline(text);
+    // Run sovereign pipeline
+    runPipeline(text);
   }
 
   function renderRecentCommands() {
@@ -253,8 +253,8 @@
     if (container) container.innerHTML = '';
   }
 
-  // ── Demo Pipeline ───────────────────────────────────────
-  async function runDemoPipeline(description) {
+  // ── Sovereign Pipeline ───────────────────────────────────────
+  async function runPipeline(description) {
     state.executionState = 'running';
     state.cancelRequested = false;
     state.logs = [];
@@ -269,79 +269,127 @@
     updateExecStatus('Running...');
 
     const task = createTask(description);
-
-    // Switch mobile to execution view
     if (window.innerWidth <= 640) switchMobileTab('exec');
 
-    const steps = [
-      { stage: 'FLIGHT_PLAN', delay: 800, msgs: [
-        { m: `🛫 Global Flight Plan (Operation Beast-Mode)`, t: 'accent' },
-        { m: `Mode: DIRECT_SYNTHESIS`, t: 'info' },
-        { m: `Repo: ${task.repo}`, t: 'info' },
-        { m: `Model: gemini-2.5-flash → gemini-3.1-pro`, t: 'info' },
-      ]},
-      { stage: 'PLAN', delay: 1200, msgs: [
-        { m: '🧠 Activating Beast Brain (Synapse self-history)...', t: 'accent' },
-        { m: 'Validating inputs and building task context.', t: 'info' },
-      ]},
-      { stage: 'AUDIT', delay: 1500, msgs: [
-        { m: `Inspecting ${task.repo} via GitHub API.`, t: 'info' },
-        { m: 'Branch: main | Lang: Python | Source: github-api', t: 'info' },
-      ]},
-      { stage: 'GENERATE', delay: 3000, msgs: [
-        { m: '⚙️ BEAST-MODE: Synthesizing via Gemini 3.1 Pro (max tokens: 65536)...', t: 'accent' },
-        { m: '✅ Synthesized 487 lines (18.3 KB) — validation passed', t: 'success' },
-      ]},
-      { stage: 'PUSH', delay: 1800, msgs: [
-        { m: `Creating branch ${task.branch}...`, t: 'info' },
-        { m: '📝 Committing synthesized file (18.3 KB)...', t: 'accent' },
-        { m: `✅ File committed to ${task.branch}`, t: 'success' },
-        { m: `Branch ${task.branch} created with 5 commits.`, t: 'success' },
-      ]},
-      { stage: 'PR', delay: 1000, msgs: [
-        { m: 'Opening pull request...', t: 'info' },
-        { m: '✅ PR opened: https://github.com/via-decide/nex/pull/36', t: 'success' },
-      ]},
-    ];
+    addLog('INIT', 'Connecting to local zayvora:latest...', 'info');
 
-    for (let sIdx = 0; sIdx < steps.length; sIdx++) {
-      if (state.cancelRequested) {
-        addLog('CANCELLED', 'Pipeline cancelled by user.', 'warn');
-        state.executionState = 'idle';
-        updateTask(task.id, { status: 'failed' });
-        updateExecStatus('Cancelled');
-        return;
+    try {
+      const response = await fetch('/api/zayvora/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: description })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
       }
 
-      const step = steps[sIdx];
-      state.currentStage = sIdx;
-      updateStages(sIdx, 'active');
-      updateProgress(Math.round((sIdx / steps.length) * 100));
+      addLog('LLM', 'Stream connected. Synthesizing...', 'accent');
+      updateProgress(30);
 
-      for (const msg of step.msgs) {
-        addLog(step.stage, msg.m, msg.t);
-        await sleep(300 + Math.random() * 200);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      
+      let fullCode = "";
+      
+      while (true) {
+        if (state.cancelRequested) {
+          reader.cancel();
+          addLog('CANCELLED', 'Pipeline cancelled by user.', 'warn');
+          finishTask(task, 'failed');
+          return;
+        }
+
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const str = decoder.decode(value, { stream: true });
+        const lines = str.split('\\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const dataStr = line.slice(6);
+            if (dataStr === '[DONE]') continue;
+            try {
+              const data = JSON.parse(dataStr);
+              if (data.error) {
+                addLog('ERROR', data.error, 'error');
+                throw new Error(data.error);
+              }
+              if (data.text) {
+                fullCode += data.text;
+                if (fullCode.length % 200 === 0) {
+                    addLog('STREAM', `Synthesizing tokens... (${fullCode.length} bytes)`, 'info');
+                }
+              }
+            } catch (e) {}
+          }
+        }
       }
 
-      await sleep(step.delay);
+      updateProgress(100);
+      addLog('COMPLETE', 'Synthesis finished safely.', 'success');
+      
+      task.lines = fullCode.split('\\n').length;
+      task.prUrl = null;
+      task.outputCode = fullCode;
+      
+      finishTask(task, 'success');
+      showRealOutput(task, fullCode);
+
+    } catch (err) {
+      addLog('ERROR', 'Failed to execute: ' + err.message, 'error');
+      finishTask(task, 'failed');
     }
+  }
 
-    // Complete
-    updateStages(STAGES.length, 'done');
-    updateProgress(100);
-    addLog('COMPLETE', `Pipeline finished (Beast-Mode + Direct Synthesis).`, 'success');
-
-    state.executionState = 'done';
-    task.lines = 487;
-    task.prUrl = 'https://github.com/via-decide/nex/pull/36';
-    updateTask(task.id, { status: 'success', completedAt: new Date().toISOString(), lines: 487, prUrl: task.prUrl });
-    updateExecStatus('Complete');
-
-    showOutput(task);
-
-    // Switch mobile to output view
-    if (window.innerWidth <= 640) {
+  function finishTask(task, status) {
+    state.executionState = status === 'success' ? 'done' : 'idle';
+    updateTask(task.id, { status, completedAt: new Date().toISOString(), lines: task.lines });
+    updateExecStatus(status === 'success' ? 'Complete' : 'Failed');
+    if (window.innerWidth <= 640 && status === 'success') {
       setTimeout(() => switchMobileTab('output'), 1000);
+    }
+  }
+
+  function showRealOutput(task, code) {
+    const container = $('#zv-output');
+    if (!container) return;
+
+    let pureCode = code;
+    const match = code.match(/```[a-z]*\\n([\\s\\S]*?)```/);
+    if (match) pureCode = match[1];
+
+    const highlighted = highlightPython(pureCode);
+
+    container.innerHTML = `
+      <div class="zv-output-section">
+        <div class="zv-output-header">
+          <div class="zv-output-title">Sovereign Output (zayvora:latest)</div>
+          <button class="zv-copy-btn" id="zv-copy-code">Copy</button>
+        </div>
+        <div class="zv-code-block" id="zv-code-content">\${highlighted}</div>
+      </div>
+      <div class="zv-pr-card">
+        <div class="zv-pr-header">
+          <span class="zv-pr-icon">🔒</span>
+          <span class="zv-pr-title">Local Execution Verified</span>
+        </div>
+        <div class="zv-pr-meta">
+          <span>0-API Sovereign Inference</span>
+          <span>+\${task.lines || 0} lines</span>
+        </div>
+      </div>
+    `;
+
+    const copyBtn = $('#zv-copy-code');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(pureCode).then(() => {
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+        });
+      });
     }
   }
 

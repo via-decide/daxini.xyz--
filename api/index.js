@@ -12,6 +12,7 @@ import { logThreatEvent } from '../security/threatTelemetry.js';
 import { serveMirroredResponse, routeToHoneypot } from '../security/mirrorRouter.js';
 import { evaluateMirrorThreat } from '../security/honeypotRouter.js';
 import db from '../security/initDB.js';
+import { generateCodeStream } from './llm/sovereign_engine.js';
 
 const passportRegistry = new Map([
   ['UID-0001', { passport_id: 'PPT-AXIOM-0001', serial: 'ZX-93A7', owner: 'Sovereign Node Alpha', status: 'active' }],
@@ -105,36 +106,36 @@ export default async function handler(req, res) {
       if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
 
       try {
-        // Proxy to the core Zayvora server (port 3000)
-        const response = await fetch('http://localhost:3000/api/zayvora/execute', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': req.headers['authorization'] || ''
-          },
-          body: JSON.stringify({ prompt })
-        });
-
-        if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            return res.status(response.status).json(errData);
-        }
-
-        // Set headers for SSE passthrough
+        // Set headers for Server-Sent Events (SSE)
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
         
-        // Pipe the stream
-        const reader = response.body.getReader();
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          res.write(value);
-        }
-        return res.end();
+        // Initiate generation via local Ollama
+        await generateCodeStream(
+          prompt,
+          (chunk) => {
+            // Write each chunk as an SSE data payload
+            res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+          },
+          (err) => {
+            res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+            res.end();
+          },
+          () => {
+            res.write(`data: [DONE]\n\n`);
+            res.end();
+          }
+        );
+        return; // Connection is kept open until onComplete or onError
       } catch (err) {
-        return res.status(502).json({ error: 'Upstream reasoning engine unavailable', details: err.message });
+        if (!res.headersSent) {
+          return res.status(502).json({ error: 'Local Zayvora engine unavailable', details: err.message });
+        } else {
+          res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+          res.end();
+          return;
+        }
       }
     }
 
