@@ -39,6 +39,25 @@
     updateCharCount();
     showIdleState();
     initMobileNav();
+    loadEngineBadge();
+  }
+
+  async function loadEngineBadge() {
+    const badge = $('#zv-model-badge');
+    if (!badge) return;
+
+    badge.textContent = 'Zayvora Local Engine';
+
+    try {
+      const response = await fetch('/zayvora/status', { method: 'GET' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      if (data && typeof data.engine === 'string' && data.engine.trim()) {
+        badge.textContent = data.engine.trim();
+      }
+    } catch (_) {
+      // Keep local fallback label when backend status is unavailable.
+    }
   }
 
   // ── Stages ──────────────────────────────────────────────

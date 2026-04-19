@@ -8,7 +8,7 @@ import bcrypt from 'bcrypt';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import { createRequire } from 'module';
-import { generateCodeStream } from './llm/sovereign_engine.js';
+import { ENGINE_MODEL, ENGINE_NAME, ENGINE_PROVIDER, generateCodeStream } from './llm/sovereign_engine.js';
 import { ensureDatabase, sqliteExec } from './db.js';
 
 dotenv.config();
@@ -375,6 +375,14 @@ export default async function handler(req, res) {
             githubToken
         );
         return;
+    }
+
+    if (path === '/api/zayvora/status' || path === '/zayvora/status') {
+        return res.status(200).json({
+            engine: ENGINE_NAME,
+            provider: ENGINE_PROVIDER,
+            model: ENGINE_MODEL
+        });
     }
 
     if (path === '/api/check' || path === '/api') {
