@@ -4,7 +4,16 @@
 */
 
 import crypto from 'crypto';
+import bcrypt from 'bcrypt';
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+import { createRequire } from 'module';
 import { generateCodeStream } from './llm/sovereign_engine.js';
+import { ensureDatabase, sqliteExec } from './db.js';
+
+dotenv.config();
+const require = createRequire(import.meta.url);
+const { generateToken, verifyToken } = require('../auth/jwt_manager.cjs');
 
 const passportRegistry = new Map([
   ['UID-0001', { passport_id: 'PPT-AXIOM-0001', serial: 'ZX-93A7', owner: 'Sovereign Node Alpha', status: 'active' }],
@@ -25,6 +34,55 @@ function issueSessionToken(payload) {
   const sessionId = `sess-${crypto.randomBytes(8).toString('hex')}`;
   const token = `legacy_${Buffer.from(JSON.stringify(payload)).toString('base64url')}`;
   return { sessionId, jwt: token, issuedAt: Date.now() };
+}
+
+const authAttempts = new Map();
+const AUTH_WINDOW_MS = 15 * 60 * 1000;
+const AUTH_LIMIT = 10;
+
+function isValidUsername(username) {
+  return typeof username === 'string' && /^[A-Za-z0-9_.@-]{3,64}$/.test(username) && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(username);
+}
+
+function isValidPassword(password) {
+  return typeof password === 'string' && password.length >= 10 && password.length <= 128;
+}
+
+function applySecurityHeaders(res) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+}
+
+function applyAuthRateLimit(req, res, path) {
+  const ip = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || '0.0.0.0';
+  const key = `${ip}:${path}`;
+  const now = Date.now();
+  const existing = authAttempts.get(key) || [];
+  const recent = existing.filter((ts) => now - ts < AUTH_WINDOW_MS);
+  recent.push(now);
+  authAttempts.set(key, recent);
+  if (recent.length > AUTH_LIMIT) {
+    res.status(429).json({ message: 'Too many requests. Try again later.' });
+    return false;
+  }
+  return true;
+}
+
+function applyAuthCors(req, res) {
+  const envOrigins = (process.env.CORS_ORIGINS || 'https://daxini.xyz,http://localhost:3000')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  const allowOrigins = new Set([...envOrigins, 'https://daxini.xyz']);
+  const origin = req.headers.origin;
+  if (origin && allowOrigins.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', 'https://daxini.xyz');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 
 /**
@@ -71,6 +129,7 @@ async function loadSecurityKit() {
 
 export default async function handler(req, res) {
   try {
+    ensureDatabase();
     const url = new URL(req.url, `http://${req.headers.host}`);
     const path = url.pathname.replace(/\/$/, "");
     const ua = req.headers['user-agent'] || 'unknown';
@@ -105,12 +164,126 @@ export default async function handler(req, res) {
     }
 
     // ── Headers ─────────────────────────────────────────────
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    applyAuthCors(req, res);
+    if (path.startsWith('/auth/') || path.startsWith('/api/')) {
+      applySecurityHeaders(res);
+      if (!applyAuthRateLimit(req, res, path)) return;
+    }
     if (req.method === 'OPTIONS') return res.status(200).end();
 
     // ── Specialized Routes ──────────────────────────────────
+
+    if (path === '/auth/register' && req.method === 'POST') {
+      const { username, password } = req.body || {};
+      const normalizedUsername = String(username || '').trim().toLowerCase();
+      if (!isValidUsername(normalizedUsername) || !isValidPassword(password)) {
+        return res.status(400).json({ message: 'Invalid username or password format.' });
+      }
+      try {
+        const passwordHash = await bcrypt.hash(password, 12);
+        sqliteExec(
+          'INSERT INTO users (username, password_hash, created_at) VALUES (?, ?, CURRENT_TIMESTAMP);',
+          [normalizedUsername, passwordHash]
+        );
+        return res.status(201).json({ message: 'User registered successfully.' });
+      } catch (error) {
+        if (String(error.message || '').includes('UNIQUE constraint failed')) {
+          return res.status(409).json({ message: 'Username already taken.' });
+        }
+        return res.status(500).json({ message: 'Unable to register user.' });
+      }
+    }
+
+    if (path === '/auth/login' && req.method === 'POST') {
+      const { username, password } = req.body || {};
+      const normalizedUsername = String(username || '').trim().toLowerCase();
+      if (!normalizedUsername || !password) {
+        return res.status(400).json({ message: 'Username and password are required.' });
+      }
+      try {
+        const row = sqliteExec('SELECT id, username, password_hash FROM users WHERE username = ? LIMIT 1;', [normalizedUsername]);
+        if (!row) return res.status(401).json({ message: 'Invalid username or password.' });
+        const [id, storedUsername, passwordHash] = row.split('|');
+        const match = await bcrypt.compare(password, passwordHash);
+        if (!match) return res.status(401).json({ message: 'Invalid username or password.' });
+        const token = generateToken({ userId: Number(id), username: storedUsername }, { expiresIn: '1h' });
+        return res.status(200).json({ token });
+      } catch {
+        return res.status(500).json({ message: 'Unable to login.' });
+      }
+    }
+
+    if (path === '/auth/logout' && req.method === 'POST') {
+      const header = req.headers.authorization || '';
+      const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+      if (token) {
+        try { verifyToken(token); } catch {}
+      }
+      return res.status(200).json({ message: 'Logged out.' });
+    }
+
+    if (path === '/api/forgot-password' && req.method === 'POST') {
+      const { email } = req.body || {};
+      const normalizedEmail = String(email || '').trim().toLowerCase();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(normalizedEmail)) {
+        return res.status(200).json({ success: true });
+      }
+
+      try {
+        const row = sqliteExec('SELECT id FROM users WHERE username = ? LIMIT 1;', [normalizedEmail]);
+        let mockToken = null;
+        if (row) {
+          const userId = Number(row.split('|')[0]);
+          const token = crypto.randomBytes(32).toString('hex');
+          sqliteExec(
+            "INSERT INTO password_reset_tokens (user_id, token, expires_at, created_at) VALUES (?, ?, datetime('now', '+1 hour'), CURRENT_TIMESTAMP);",
+            [userId, token]
+          );
+          if (!process.env.SMTP_HOST) {
+            mockToken = token;
+          } else {
+            const transporter = nodemailer.createTransport({
+              host: process.env.SMTP_HOST,
+              port: Number(process.env.SMTP_PORT || 587),
+              secure: Number(process.env.SMTP_PORT || 587) === 465,
+              auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+            });
+            await transporter.sendMail({
+              from: process.env.EMAIL_FROM || 'App Support <support@daxini.xyz>',
+              to: normalizedEmail,
+              subject: 'Reset your Daxini password',
+              text: `Use this reset token to set a new password: ${token}`,
+            });
+          }
+        }
+        const payload = { success: true };
+        if (mockToken) payload._mockToken = mockToken;
+        return res.status(200).json(payload);
+      } catch {
+        return res.status(200).json({ success: true });
+      }
+    }
+
+    if (path === '/api/reset-password' && req.method === 'POST') {
+      const { token, newPassword } = req.body || {};
+      if (typeof token !== 'string' || !token || !isValidPassword(newPassword)) {
+        return res.status(400).json({ message: 'Invalid token or password.' });
+      }
+      try {
+        const row = sqliteExec(
+          "SELECT id, user_id FROM password_reset_tokens WHERE token = ? AND expires_at > datetime('now') LIMIT 1;",
+          [token]
+        );
+        if (!row) return res.status(400).json({ message: 'Invalid or expired token.' });
+        const [, userId] = row.split('|');
+        const passwordHash = await bcrypt.hash(newPassword, 12);
+        sqliteExec('UPDATE users SET password_hash = ? WHERE id = ?;', [passwordHash, Number(userId)]);
+        sqliteExec('DELETE FROM password_reset_tokens WHERE token = ?;', [token]);
+        return res.status(200).json({ message: 'Password reset successful.' });
+      } catch {
+        return res.status(400).json({ message: 'Invalid or expired token.' });
+      }
+    }
     
     // ── Sovereign Hardware Identity ────────────────────────
     
