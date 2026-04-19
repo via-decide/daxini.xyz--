@@ -1,16 +1,10 @@
 {
-  "version": 2,
-  "buildCommand": "npm run vercel-build",
+  "buildCommand": "echo 'Static build'",
   "outputDirectory": ".",
-  "functions": {
-    "api/index.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
+  "public": true,
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/auth/(.*)", "destination": "/api/index.js" },
     { "source": "/api/(.*)", "destination": "/api/index.js" },
     { "source": "/api", "destination": "/api/index.js" },
     { "source": "/zayvora", "destination": "/zayvora.html" },
@@ -18,18 +12,12 @@
     { "source": "/workspace", "destination": "/workspace.html" },
     { "source": "/workspace/", "destination": "/workspace.html" },
     { "source": "/research", "destination": "/research.html" },
-    { "source": "/research/", "destination": "/research.html" }
+    { "source": "/research/", "destination": "/research.html" },
+    { "source": "/(.*).html", "destination": "/$1.html" },
+    { "source": "/pwa/(.*)", "destination": "/pwa/index.html" },
+    { "source": "/assets/(.*)", "destination": "/assets/$1" }
   ],
   "headers": [
-    {
-      "source": "/sw.js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        }
-      ]
-    },
     {
       "source": "/assets/(.*)",
       "headers": [
