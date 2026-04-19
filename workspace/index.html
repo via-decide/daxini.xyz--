@@ -48,24 +48,13 @@
     </nav>
 
     <main class="workspace-layout">
-        <!-- Panel 1: Reasoning Architecture -->
         <aside class="panel" id="p-reasoning" aria-label="Reasoning Architecture">
-            <header class="p-header">Reasoning Architecture</header>
+            <header class="p-header">Modules / Tools</header>
             <div class="p-content" id="mount-reasoning-loop"></div>
         </aside>
 
-        <!-- Panel 2: Execution Trace -->
-        <section class="panel" id="p-trace" aria-label="Execution Trace">
-            <header class="p-header">
-                Execution Trace
-                <span class="p-meta" id="trace-meta">0 steps</span>
-            </header>
-            <div class="p-content" id="mount-execution-trace"></div>
-        </section>
-
-        <!-- Panel 3: Console -->
-        <section class="panel" id="p-console" aria-label="Sovereign Interface Console">
-            <header class="p-header">Sovereign Interface</header>
+        <section class="panel" id="p-trace" aria-label="Zayvora reasoning console">
+            <header class="p-header">Zayvora Reasoning Console</header>
             <div class="p-content" id="mount-console-log">
                 <div class="log-entry system">[SYSTEM] Bridge established. Zayvora-Nex gateway ready.</div>
             </div>
@@ -75,20 +64,29 @@
             </div>
         </section>
 
-        <!-- Panel 4: Knowledge Map -->
-        <aside class="panel" id="p-knowledge" aria-label="Knowledge Map">
-            <header class="p-header">Knowledge Map</header>
-            <div class="p-content" id="mount-knowledge-graph" style="padding:0;"></div>
+        <aside class="panel" id="p-harness" aria-label="Live Harness">
+            <header class="p-header">
+                Live Harness
+                <span class="p-meta" id="trace-meta">0 steps</span>
+            </header>
+            <div class="harness-controls" id="harness-controls">
+                <button data-view="reasoning" class="active">Reasoning</button>
+                <button data-view="execution" class="active">Execution</button>
+                <button data-view="research" class="active">Research</button>
+                <label class="debug-toggle">
+                    <input type="checkbox" id="debug-toggle-input">
+                    Debug
+                </label>
+            </div>
+            <div class="p-content" id="zayvora-harness" aria-live="polite"></div>
         </aside>
 
-        <!-- Panel 5: Performance HUD -->
         <footer class="panel" id="p-metrics" aria-label="Inference Metrics">
             <header class="p-header">System Telemetry</header>
             <div class="p-content" id="mount-metrics"></div>
         </footer>
     </main>
 
-    <!-- Orchestration Logic -->
     <script type="module" src="./assets/js/workspaceApp.js"></script>
 </body>
 </html>
