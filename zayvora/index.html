@@ -98,6 +98,17 @@
     .nav-links { display: flex; gap: 1.5rem; font-size: .9rem; color: var(--tx2); }
     .nav-links a:hover { color: var(--tx); }
     .logout-btn { color: #fca5a5; }
+    .install-btn {
+      display: none;
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .install-btn:hover { background: #38bdf8; }
     @media (max-width: 640px) { .nav-links { display: none; } }
 
     /* ── Hero ──────────────────────────────────────────── */
@@ -344,6 +355,7 @@
       <a href="#pricing">Pricing</a>
       <a href="#metrics">Impact</a>
       <a href="/">Daxini</a>
+      <button id="install-zayvora" class="install-btn">Install Zayvora</button>
       <button type="button" id="logoutButton" class="logout-btn">Logout</button>
     </div>
   </nav>
@@ -437,7 +449,7 @@
     <div class="banner-icon" aria-hidden="true">Z</div>
     <div class="banner-copy">
       <div class="banner-title" id="install-title">Install Zayvora</div>
-      <div class="banner-sub" id="install-sub">Use offline, loads instantly.</div>
+      <div class="banner-sub" id="install-sub">Install Zayvora for offline execution and faster runtime.</div>
     </div>
     <div class="banner-actions">
       <button type="button" class="banner-btn" id="install-accept" aria-label="Install Zayvora app">Install</button>
@@ -483,7 +495,15 @@
 
       const banner = document.getElementById('install-banner');
       const iosHint = document.getElementById('ios-hint');
-      let deferredPrompt = null;
+      let installZayvora = function () {};
+
+      import('../src/ui/zayvoraInstallButton.js').then((mod) => {
+        installZayvora = mod.installZayvora;
+        const installButton = document.getElementById('install-zayvora');
+        if (installButton) {
+          installButton.addEventListener('click', installZayvora);
+        }
+      }).catch(() => {});
 
       function showInstallBanner() {
         if (isStandalone) return;
@@ -513,20 +533,10 @@
       }
 
       function installApp() {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choice) => {
-          if (choice && choice.outcome === 'accepted') {
-            deferredPrompt = null;
-            hideInstallBanner();
-          }
-        }).catch(() => {});
+        installZayvora();
       }
 
-      // ── Install prompt listener (Android / Chrome / Edge) ──
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
+      window.addEventListener('zayvora-install-available', () => {
         setTimeout(() => {
           if (!sessionStorage.getItem(DISMISS_KEY) && !isStandalone) {
             showInstallBanner();
@@ -535,7 +545,6 @@
       });
 
       window.addEventListener('appinstalled', () => {
-        deferredPrompt = null;
         sessionStorage.setItem(DISMISS_KEY, '1');
         hideInstallBanner();
       });
