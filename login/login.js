@@ -7,7 +7,7 @@
   const errorMessage = document.getElementById('errorMessage');
 
   if (window.AuthManager && window.AuthManager.isAuthenticated()) {
-    window.location.replace('../zayvora/');
+    window.location.replace('../zayvora/index.html');
   }
 
   function showError(message) {
@@ -32,6 +32,6 @@
     }
 
     showError('');
-    window.location.replace('../zayvora/');
+    window.location.replace('../zayvora/index.html');
   });
 })();
