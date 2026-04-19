@@ -293,66 +293,21 @@
     addLog('INIT', 'Connecting to local zayvora:latest...', 'info');
 
     try {
-      const response = await fetch('/api/zayvora/execute', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: description })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
-      }
-
-      addLog('LLM', 'Stream connected. Synthesizing...', 'accent');
+      addLog('LLM', 'Dispatching local execution task...', 'accent');
       updateProgress(30);
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      
-      let fullCode = "";
-      
-      while (true) {
-        if (state.cancelRequested) {
-          reader.cancel();
-          addLog('CANCELLED', 'Pipeline cancelled by user.', 'warn');
-          finishTask(task, 'failed');
-          return;
-        }
-
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const str = decoder.decode(value, { stream: true });
-        const lines = str.split('\\n');
-        
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const dataStr = line.slice(6);
-            if (dataStr === '[DONE]') continue;
-            try {
-              const data = JSON.parse(dataStr);
-              if (data.error) {
-                addLog('ERROR', data.error, 'error');
-                throw new Error(data.error);
-              }
-              if (data.text) {
-                fullCode += data.text;
-                if (fullCode.length % 200 === 0) {
-                    addLog('STREAM', `Synthesizing tokens... (${fullCode.length} bytes)`, 'info');
-                }
-              }
-            } catch (e) {}
-          }
-        }
-      }
+      const result = await executeTaskLocally({ prompt: description });
+      const fullCode = typeof result?.text === 'string'
+        ? result.text
+        : (typeof result?.code === 'string' ? result.code : JSON.stringify(result, null, 2));
 
       updateProgress(100);
       addLog('COMPLETE', 'Synthesis finished safely.', 'success');
-      
-      task.lines = fullCode.split('\\n').length;
+
+      task.lines = fullCode.split('\n').length;
       task.prUrl = null;
       task.outputCode = fullCode;
-      
+
       finishTask(task, 'success');
       showRealOutput(task, fullCode);
 
@@ -432,6 +387,34 @@
   function updateExecStatus(text) {
     const el = $('.zv-exec-status');
     if (el) el.textContent = text;
+  }
+
+  function executeTaskLocally(task) {
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        window.removeEventListener('zayvora-result', handleResult);
+        reject(new Error('Local runtime timeout'));
+      }, 30000);
+
+      function handleResult(event) {
+        clearTimeout(timeoutId);
+        window.removeEventListener('zayvora-result', handleResult);
+        const result = event.detail;
+        if (result && result.error) {
+          reject(new Error(result.error));
+          return;
+        }
+        resolve(result || {});
+      }
+
+      window.addEventListener('zayvora-result', handleResult, { once: true });
+
+      window.dispatchEvent(
+        new CustomEvent('zayvora-execute', {
+          detail: task
+        })
+      );
+    });
   }
 
   // ── Mobile Navigation ───────────────────────────────────
@@ -523,6 +506,10 @@
         e.preventDefault();
         if (textarea) textarea.focus();
       }
+    });
+
+    window.addEventListener('zayvora-result', () => {
+      addLog('RUNTIME', 'Execution complete');
     });
   }
 
