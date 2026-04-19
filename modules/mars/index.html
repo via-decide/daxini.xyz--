@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><title>Mars Rover Simulation</title>
+<style>
+  body{margin:0;font-family:system-ui,sans-serif;background:#0a0503;color:#f4e5d5;padding:2rem;}
+  h1{letter-spacing:.2em;}
+  #terminal{background:#140906;border:1px solid #3a1d12;padding:1rem;height:260px;overflow:auto;border-radius:6px;font-family:monospace;white-space:pre-wrap;}
+  input{width:100%;padding:.5rem;background:#140906;color:#f4e5d5;border:1px solid #3a1d12;border-radius:4px;margin-top:.75rem;font-family:monospace;box-sizing:border-box;}
+</style>
+</head><body>
+<h1>MARS · ROVER SIM</h1>
+<p>Commands: forward, back, left, right, scan, drill, status</p>
+<div id="terminal">Mission online. Sol 1. Rover nominal.</div>
+<input id="cmd" placeholder="Enter command…" autofocus/>
+<script>
+const term=document.getElementById("terminal");
+const state={sol:1,battery:100,x:0,y:0,heading:"N"};
+function log(m){term.textContent+=`\n> ${m}`;term.scrollTop=term.scrollHeight;}
+document.getElementById("cmd").addEventListener("keydown",e=>{
+  if(e.key!=="Enter")return;
+  const cmd=e.target.value.trim().toLowerCase();e.target.value="";
+  switch(cmd){
+    case "forward":state.y++;log(`Moved N to (${state.x},${state.y}).`);break;
+    case "back":state.y--;log(`Moved S to (${state.x},${state.y}).`);break;
+    case "left":state.x--;log(`Moved W to (${state.x},${state.y}).`);break;
+    case "right":state.x++;log(`Moved E to (${state.x},${state.y}).`);break;
+    case "scan":log("Scan: iron oxide 38%, silica 22%, perchlorates detected.");break;
+    case "drill":state.battery=Math.max(0,state.battery-10);log(`Drilled. Battery ${state.battery}%.`);break;
+    case "status":log(`Sol ${state.sol} | pos (${state.x},${state.y}) | battery ${state.battery}% | heading ${state.heading}`);break;
+    default:log(`Unknown command: ${cmd}`);
+  }
+  parent?.postMessage({type:"skill",skill:"mars",value:1},"*");
+});
+</script>
+</body></html>

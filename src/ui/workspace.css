@@ -1,0 +1,199 @@
+:root {
+  --bg: #0a1118;
+  --panel: #0f1720;
+  --border: #1f2a36;
+  --text: #e5ecf4;
+  --muted: #8491a0;
+  --accent: #5b8cff;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", system-ui, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 240px 1fr 320px;
+  height: 100vh;
+  gap: 1px;
+  background: var(--border);
+}
+
+.panel {
+  background: var(--panel);
+  padding: 1rem;
+  overflow: auto;
+}
+
+.panel-left h3,
+.side-stack h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.launcher-section {
+  margin-bottom: 1.25rem;
+}
+
+.launcher-section button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin: 0.25rem 0;
+  padding: 0.55rem 0.75rem;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color .15s, background .15s;
+}
+
+.launcher-section button:hover {
+  border-color: var(--accent);
+  background: rgba(91, 140, 255, .08);
+}
+
+.console {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.console-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: .75rem;
+  font-weight: 600;
+}
+
+.console-output {
+  flex: 1;
+  overflow: auto;
+  padding: .75rem;
+  background: #0a0f15;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+
+.console-line { margin: .25rem 0; }
+.console-user   { color: var(--accent); }
+.console-zayvora { color: #a7f3d0; }
+.console-error  { color: #f87171; }
+
+.console-input-row {
+  display: flex;
+  gap: .5rem;
+  margin-top: .75rem;
+}
+
+.console-input-row textarea {
+  flex: 1;
+  padding: .5rem;
+  background: #0a0f15;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.console-input-row button {
+  padding: .5rem 1rem;
+  background: var(--accent);
+  color: #061226;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.side-stack section { margin-bottom: 1rem; }
+
+.log-box {
+  background: #0a0f15;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: .5rem;
+  min-height: 60px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  overflow: auto;
+  max-height: 200px;
+}
+
+.login-screen {
+  display: grid;
+  place-items: center;
+  height: 100vh;
+}
+
+.login-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  border-radius: 6px;
+  width: min(360px, 90vw);
+  text-align: center;
+}
+
+.login-card h1 {
+  margin: 0 0 .25rem;
+  letter-spacing: .2em;
+}
+
+.login-sub {
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+}
+
+.login-card input {
+  width: 100%;
+  padding: .6rem .75rem;
+  background: #0a0f15;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-family: inherit;
+}
+
+.login-card button {
+  width: 100%;
+  padding: .6rem;
+  background: var(--accent);
+  color: #061226;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.mono { font-family: var(--mono); }
+
+@media (max-width: 900px) {
+  .workspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    height: auto;
+    min-height: 100vh;
+  }
+  body { overflow: auto; }
+}

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><title>Orchade</title>
+<style>
+  body{margin:0;font-family:system-ui,sans-serif;background:#070d13;color:#e5ecf4;display:flex;flex-direction:column;align-items:center;padding:2rem;}
+  h1{letter-spacing:.2em;margin:.5rem 0;}
+  #score{font-family:monospace;color:#5b8cff;font-weight:700;}
+  canvas{background:#0a0f15;border:1px solid #1f2a36;border-radius:6px;margin-top:1rem;}
+</style>
+</head><body>
+<h1>ORCHADE</h1>
+<p>Click the pulsing orbs. Score: <span id="score">0</span></p>
+<canvas id="game" width="600" height="400"></canvas>
+<script>
+const c=document.getElementById("game"),ctx=c.getContext("2d");
+let score=0,orb=spawn();
+function spawn(){return{x:50+Math.random()*500,y:50+Math.random()*300,r:20};}
+function draw(){
+  ctx.fillStyle="#0a0f15";ctx.fillRect(0,0,c.width,c.height);
+  const pulse=1+0.2*Math.sin(Date.now()/200);
+  ctx.fillStyle="#5b8cff";ctx.beginPath();ctx.arc(orb.x,orb.y,orb.r*pulse,0,7);ctx.fill();
+  requestAnimationFrame(draw);
+}
+c.addEventListener("click",(e)=>{
+  const r=c.getBoundingClientRect();
+  const dx=e.clientX-r.left-orb.x,dy=e.clientY-r.top-orb.y;
+  if(dx*dx+dy*dy<orb.r*orb.r*2){
+    score++;document.getElementById("score").textContent=score;
+    orb=spawn();
+    parent?.postMessage({type:"skill",skill:"orchade",value:score},"*");
+  }
+});
+draw();
+</script>
+</body></html>
