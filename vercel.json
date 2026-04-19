@@ -3,9 +3,7 @@
   "buildCommand": "npm run vercel-build",
   "outputDirectory": ".",
   "functions": {
-    "api/index.js": {
-      "runtime": "nodejs20.x"
-    }
+    "api/index.js": {}
   },
   "cleanUrls": true,
   "trailingSlash": false,
