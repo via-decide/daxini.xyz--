@@ -1,9 +1,13 @@
 const crypto = require('crypto');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'replace-with-a-strong-random-secret';
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 const JWT_ISSUER = process.env.JWT_ISSUER || 'via-passport-idp';
 const JWT_AUDIENCE = process.env.JWT_AUDIENCE || 'via-ecosystem';
+
+if (!JWT_SECRET || !String(JWT_SECRET).trim()) {
+  throw new Error('Missing required JWT_SECRET environment variable.');
+}
 
 function parseExpiresToSeconds(expiresIn) {
   if (typeof expiresIn === 'number') return expiresIn;
