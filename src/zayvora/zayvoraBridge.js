@@ -1,11 +1,18 @@
+export async function runZayvoraQuery(query) {
+  console.log('Zayvora query:', query);
 import { logEvent } from '../../infra/observability/logger.js';
 import { incrementMetric } from '../../infra/observability/metrics.js';
 import { logHarness } from './harness.js';
 
-export async function runZayvoraQuery(query, runQuery) {
-  logEvent('zayvora-query', query);
-  incrementMetric('zayvora_requests');
+  const response = await fetch('https://logichub.app/api/reason', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ query })
+  });
 
+  return response.json();
   logHarness('Decompose', query, { view: 'reasoning' });
 
   const result = await runQuery(query);

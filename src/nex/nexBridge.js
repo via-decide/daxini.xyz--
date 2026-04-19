@@ -1,3 +1,10 @@
+export async function runResearch(query) {
+  const res = await fetch('https://logichub.app/api/research', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ query })
 import { addJob } from '../../infra/jobs/jobQueue.js';
 import { incrementMetric } from '../../infra/observability/metrics.js';
 import { logHarness } from '../zayvora/harness.js';
@@ -15,5 +22,5 @@ export function queueResearchJob(query, runResearch) {
     }
   });
 
-  incrementMetric('research_jobs');
+  return res.json();
 }
