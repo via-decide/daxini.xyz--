@@ -20,6 +20,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <script src="../auth/auth_manager.js"></script>
+  <script>
+    if (!window.AuthManager || !window.AuthManager.isAuthenticated()) {
+      window.location.replace('../login/');
+    }
+  </script>
 
   <style>
     /* ── Zayvora design tokens ─────────────────────────── */
@@ -91,6 +97,7 @@
     }
     .nav-links { display: flex; gap: 1.5rem; font-size: .9rem; color: var(--tx2); }
     .nav-links a:hover { color: var(--tx); }
+    .logout-btn { color: #fca5a5; }
     @media (max-width: 640px) { .nav-links { display: none; } }
 
     /* ── Hero ──────────────────────────────────────────── */
@@ -337,6 +344,7 @@
       <a href="#pricing">Pricing</a>
       <a href="#metrics">Impact</a>
       <a href="/">Daxini</a>
+      <button type="button" id="logoutButton" class="logout-btn">Logout</button>
     </div>
   </nav>
 
@@ -457,6 +465,11 @@
     (function () {
       'use strict';
 
+      if (!window.AuthManager || !window.AuthManager.isAuthenticated()) {
+        window.location.replace('../login/');
+        return;
+      }
+
       document.getElementById('year').textContent = new Date().getFullYear();
 
       const DISMISS_KEY = 'zayvora-install-dismissed';
@@ -536,6 +549,10 @@
       document.getElementById('ios-dismiss').addEventListener('click', () => {
         sessionStorage.setItem(IOS_DISMISS_KEY, '1');
         hideIOSHint();
+      });
+      document.getElementById('logoutButton').addEventListener('click', () => {
+        window.AuthManager.logout();
+        window.location.replace('../login/');
       });
 
       // ── iOS fallback (no beforeinstallprompt API) ──────
