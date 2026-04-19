@@ -2,11 +2,6 @@
   "version": 2,
   "buildCommand": "npm run vercel-build",
   "outputDirectory": ".",
-  "functions": {
-    "api/index.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
@@ -18,7 +13,8 @@
     { "source": "/workspace", "destination": "/workspace.html" },
     { "source": "/workspace/", "destination": "/workspace.html" },
     { "source": "/research", "destination": "/research.html" },
-    { "source": "/research/", "destination": "/research.html" }
+    { "source": "/research/", "destination": "/research.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {
