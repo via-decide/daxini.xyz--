@@ -165,9 +165,14 @@ export default async function handler(req, res) {
 
     // ── Headers ─────────────────────────────────────────────
     applyAuthCors(req, res);
+    const isAuthRateLimitedRoute =
+      path.startsWith('/auth/') ||
+      path === '/api/forgot-password' ||
+      path === '/api/reset-password';
+
     if (path.startsWith('/auth/') || path.startsWith('/api/')) {
       applySecurityHeaders(res);
-      if (!applyAuthRateLimit(req, res, path)) return;
+      if (isAuthRateLimitedRoute && !applyAuthRateLimit(req, res, path)) return;
     }
     if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -231,7 +236,6 @@ export default async function handler(req, res) {
 
       try {
         const row = sqliteExec('SELECT id FROM users WHERE username = ? LIMIT 1;', [normalizedEmail]);
-        let mockToken = null;
         if (row) {
           const userId = Number(row.split('|')[0]);
           const token = crypto.randomBytes(32).toString('hex');
@@ -239,9 +243,7 @@ export default async function handler(req, res) {
             "INSERT INTO password_reset_tokens (user_id, token, expires_at, created_at) VALUES (?, ?, datetime('now', '+1 hour'), CURRENT_TIMESTAMP);",
             [userId, token]
           );
-          if (!process.env.SMTP_HOST) {
-            mockToken = token;
-          } else {
+          if (process.env.SMTP_HOST) {
             const transporter = nodemailer.createTransport({
               host: process.env.SMTP_HOST,
               port: Number(process.env.SMTP_PORT || 587),
@@ -256,9 +258,7 @@ export default async function handler(req, res) {
             });
           }
         }
-        const payload = { success: true };
-        if (mockToken) payload._mockToken = mockToken;
-        return res.status(200).json(payload);
+        return res.status(200).json({ success: true });
       } catch {
         return res.status(200).json({ success: true });
       }
