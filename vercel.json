@@ -1,11 +1,25 @@
 {
   "version": 2,
   "buildCommand": "npm run vercel-build",
+  "outputDirectory": ".",
   "functions": {
     "api/index.js": {
       "runtime": "nodejs20.x"
     }
   },
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/auth/(.*)", "destination": "/api/index.js" },
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/api", "destination": "/api/index.js" },
+    { "source": "/zayvora", "destination": "/zayvora.html" },
+    { "source": "/zayvora/", "destination": "/zayvora.html" },
+    { "source": "/workspace", "destination": "/workspace.html" },
+    { "source": "/workspace/", "destination": "/workspace.html" },
+    { "source": "/research", "destination": "/research.html" },
+    { "source": "/research/", "destination": "/research.html" }
+  ],
   "headers": [
     {
       "source": "/sw.js",
@@ -15,13 +29,24 @@
           "value": "no-cache, no-store, must-revalidate"
         }
       ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*).html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600"
+        }
+      ]
     }
-  ],
-  "rewrites": [
-    { "source": "/auth/(.*)", "destination": "/api/index.js" },
-    { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/api", "destination": "/api/index.js" },
-    { "source": "/zayvora", "destination": "/zayvora.html" },
-    { "source": "/workspace", "destination": "/workspace.html" }
   ]
 }
