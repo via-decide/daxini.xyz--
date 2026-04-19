@@ -1,11 +1,11 @@
-import { addJob } from '../../infra/jobs/jobQueue.js';
-import { incrementMetric } from '../../infra/observability/metrics.js';
-
-export function queueResearchJob(query, runResearch) {
-  addJob({
-    type: 'research',
-    run: () => runResearch(query)
+export async function runResearch(query) {
+  const res = await fetch('https://logichub.app/api/research', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ query })
   });
 
-  incrementMetric('research_jobs');
+  return res.json();
 }
