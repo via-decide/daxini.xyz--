@@ -18,7 +18,8 @@
     { "source": "/workspace", "destination": "/workspace.html" },
     { "source": "/workspace/", "destination": "/workspace.html" },
     { "source": "/research", "destination": "/research.html" },
-    { "source": "/research/", "destination": "/research.html" }
+    { "source": "/research/", "destination": "/research.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {
