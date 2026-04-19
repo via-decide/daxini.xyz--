@@ -202,6 +202,16 @@
   color: var(--tx);
 }
 
+#router-log {
+  margin-top: 12px;
+  max-height: 120px;
+  overflow-y: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  border-top: 1px solid var(--bd);
+  padding-top: 8px;
+}
+
 /* ── Mobile Layout ─────────────────────────────────────── */
 @media (max-width: 900px) {
   .workspace-root {

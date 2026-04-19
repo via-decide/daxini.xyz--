@@ -1,3 +1,8 @@
+import { routeAction } from '../router/actions/router.js';
+
+export async function handleZayvoraQuery(query) {
+  return routeAction('reason', query);
+}
 export async function runZayvoraQuery(query) {
   console.log('Zayvora query:', query);
 import { logEvent } from '../../infra/observability/logger.js';
@@ -23,5 +28,6 @@ import { logHarness } from './harness.js';
   logHarness('Verify', result?.checks ?? result, { view: 'reasoning' });
   logHarness('Execute', result?.action ?? result, { view: 'execution' });
 
-  return result;
+export async function runZayvoraQuery(query) {
+  return handleZayvoraQuery(query);
 }

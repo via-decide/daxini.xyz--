@@ -8,6 +8,8 @@ import { workspace } from './workspaceManager.js';
 import { ReasoningLoop } from './components/reasoningLoop.js';
 import { SystemMetrics } from './components/systemMetrics.js';
 import { logHarness, setHarnessDebug } from '../../src/zayvora/harness.js';
+import { emit, on } from '../../src/router/events/eventBus.js';
+import { initRouterDebug } from '../../src/router/routerDebugPanel.js';
 
 const loop = new ReasoningLoop('mount-reasoning-loop');
 const hud = new SystemMetrics('mount-metrics');
@@ -29,6 +31,31 @@ const log = document.getElementById('mount-console-log');
 const devToggle = document.getElementById('dev-toggle-input');
 const debugToggle = document.getElementById('debug-toggle-input');
 const viewControls = document.getElementById('harness-controls');
+const routerLogPanel = document.getElementById('router-log');
+
+function appendRouterEvent(event) {
+    if (!routerLogPanel) return;
+
+    const line = document.createElement('div');
+    line.textContent = `${event.name} :: ${JSON.stringify(event.payload)}`;
+    routerLogPanel.appendChild(line);
+    routerLogPanel.scrollTop = routerLogPanel.scrollHeight;
+}
+
+function initializeRouterWorkspace() {
+    emit('workspace-ready', {
+        timestamp: Date.now()
+    });
+
+    initRouterDebug();
+    on('*', appendRouterEvent);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeRouterWorkspace);
+} else {
+    initializeRouterWorkspace();
+}
 
 if (devToggle) devToggle.addEventListener('change', () => workspace.toggleDevMode());
 if (debugToggle) {
