@@ -45,46 +45,4 @@
   var yearEl = document.getElementById('footer-year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  /* ── PWA Install Logic ────────────────────────────────── */
-  var deferredPrompt;
-  var installBtn = document.getElementById('pwa-install-btn');
-
-  window.addEventListener('beforeinstallprompt', function (e) {
-    // Prevent the mini-infobar from appearing on mobile
-    e.preventDefault();
-    // Stash the event so it can be triggered later.
-    deferredPrompt = e;
-    // Update UI notify the user they can install the PWA
-    if (installBtn) {
-      installBtn.classList.remove('hidden');
-    }
-  });
-
-  if (installBtn) {
-    installBtn.addEventListener('click', function () {
-      if (!deferredPrompt) return;
-      // Show the install prompt
-      deferredPrompt.prompt();
-      // Wait for the user to respond to the prompt
-      deferredPrompt.userChoice.then(function (choiceResult) {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the PWA install prompt');
-          installBtn.classList.add('hidden');
-        } else {
-          console.log('User dismissed the PWA install prompt');
-        }
-        deferredPrompt = null;
-      });
-    });
-  }
-
-  // Register SW for the root as well if needed, but the PWA is in /pwa
-  if ('serviceWorker' in navigator) {
-    // Check if we are in the PWA path or root
-    var swPath = window.location.pathname.startsWith('/pwa/') ? 'sw.js' : '/pwa/sw.js';
-    navigator.serviceWorker.register(swPath).catch(function(err) {
-      console.log('SW registration failed: ', err);
-    });
-  }
-
 })();
