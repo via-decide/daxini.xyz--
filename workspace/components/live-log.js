@@ -18,3 +18,7 @@ export function addLog(message) {
     log.scrollTop = log.scrollHeight;
   });
 }
+
+export function streamLog(message) {
+  addLog(`[TOOLKIT] ${message}`);
+}

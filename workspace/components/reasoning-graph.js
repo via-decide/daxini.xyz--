@@ -1,5 +1,13 @@
 const NODE_IDS = ['user', 'planning', 'knowledge', 'reasoning', 'verify', 'output'];
 
+const TOOLKIT_NODE_MAP = {
+  planning: 'planning',
+  search: 'knowledge',
+  reason: 'reasoning',
+  verify: 'verify',
+  output: 'output'
+};
+
 export function renderReasoningGraph(targetId = 'reasoning-graph') {
   const root = document.getElementById(targetId);
   if (!root) return;
@@ -35,6 +43,12 @@ export function activateNode(node) {
   items.forEach((item) => item.classList.remove('node-active'));
   const active = document.querySelector(`#reasoning-graph [data-node="${node}"]`);
   if (active) active.classList.add('node-active');
+}
+
+export function activateToolkitStep(step) {
+  const node = TOOLKIT_NODE_MAP[step];
+  if (!node) return;
+  activateNode(node);
 }
 
 export function clearNodes() {

@@ -1,8 +1,14 @@
-import { addLog, initLiveLog } from './components/live-log.js';
-import { renderReasoningGraph, activateNode, clearNodes } from './components/reasoning-graph.js';
+import { addLog, initLiveLog, streamLog } from './components/live-log.js';
+import {
+  renderReasoningGraph,
+  activateNode,
+  activateToolkitStep,
+  clearNodes
+} from './components/reasoning-graph.js';
+import { runToolkitTask } from './connectors/zayvora-toolkit.js';
 
 const templates = [
-  { key: 'research', label: '🧠 Research', prompt: 'Research the current state of AI agent memory architectures and summarize the top 5 approaches.' },
+  { key: 'research', label: '🔭 Research', prompt: 'Research the current state of AI agent memory architectures and summarize the top 5 approaches.' },
   { key: 'create', label: '🎬 Create', prompt: 'Create a launch plan for a short-form educational content series with scripts and hooks.' },
   { key: 'game-dev', label: '🧩 Game Dev', prompt: 'Design a replayable progression loop for an indie survival game with clear player rewards.' },
   { key: 'analyze', label: '📊 Analyze', prompt: 'Analyze this product concept and provide strengths, risks, and metrics to validate it.' },
@@ -11,7 +17,7 @@ const templates = [
   { key: 'explore', label: '🔭 Explore Knowledge', prompt: 'Explore adjacent opportunities related to this idea and suggest unconventional directions.' }
 ];
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+let selectedMode = 'standard';
 
 function buildTemplates() {
   const container = document.getElementById('task-templates');
@@ -27,9 +33,11 @@ function buildTemplates() {
     button.addEventListener('click', () => {
       input.value = template.prompt;
       input.focus();
+      selectedMode = template.key === 'research' ? 'research' : 'standard';
       document.querySelectorAll('.template-item').forEach((item) => item.classList.remove('active'));
       button.classList.add('active');
       addLog(`[TEMPLATE] Loaded ${template.label}`);
+      if (selectedMode === 'research') addLog('[MODE] NEX Research enabled');
     });
     container.appendChild(button);
   });
@@ -45,17 +53,24 @@ function setResult(message) {
   if (result) result.textContent = message;
 }
 
-function renderMetrics(executionMs) {
+function renderMetrics(executionMs, data = {}) {
   const metrics = document.getElementById('metrics-output');
   if (!metrics) return;
   const seconds = (executionMs / 1000).toFixed(1);
+  const source = data?.reasoning?.source || data?.research?.source || (data?.verification?.offline ? 'cache' : 'toolkit');
   metrics.innerHTML = `
     <p>✔ Execution complete</p>
     <p>Execution time: ${seconds}s</p>
-    <p>Sources: 8</p>
-    <p>Reasoning steps: 5</p>
-    <p>Confidence: High</p>
+    <p>Pipeline: ${data.mode === 'research' ? 'NEX Research' : 'Standard reasoning'}</p>
+    <p>Source: ${source || 'toolkit'}</p>
+    <p>Verification: ${data.verification ? 'Complete' : 'Skipped'}</p>
   `;
+}
+
+function formatResult(payload) {
+  const result = payload?.result ?? payload;
+  if (typeof result === 'string') return result;
+  return JSON.stringify(result, null, 2);
 }
 
 async function runTask() {
@@ -72,40 +87,34 @@ async function runTask() {
   runButton.disabled = true;
   clearNodes();
   setProgress('Starting execution...');
-  setResult('Running reasoning engine...');
+  setResult('Running toolkit...');
   const startedAt = performance.now();
 
   activateNode('user');
   addLog('[INPUT] Mission received');
-  await sleep(400);
 
-  addLog('[ZAYVORA] Planning task...');
-  activateNode('planning');
-  setProgress('Planning');
-  await sleep(800);
+  try {
+    const payload = await runToolkitTask(prompt, {
+      mode: selectedMode,
+      onStep: (step) => {
+        activateToolkitStep(step);
+        setProgress(`Step: ${step}`);
+      },
+      onLog: (message) => streamLog(message.replace(/^\[TOOLKIT\]\s*/i, ''))
+    });
 
-  addLog('[TOOLKIT] Searching knowledge base...');
-  activateNode('knowledge');
-  setProgress('Knowledge retrieval');
-  await sleep(900);
-
-  addLog('[ENGINE] Building solution...');
-  activateNode('reasoning');
-  setProgress('Reasoning');
-  await sleep(1000);
-
-  addLog('[VERIFY] Checking reasoning...');
-  activateNode('verify');
-  setProgress('Verification');
-  await sleep(600);
-
-  activateNode('output');
-  addLog('[DONE] Task completed');
-  setProgress('Execution complete');
-  setResult(`Mission output ready: ${prompt.slice(0, 140)}${prompt.length > 140 ? '…' : ''}`);
-  renderMetrics(performance.now() - startedAt);
-
-  runButton.disabled = false;
+    addLog('[ENGINE] Task completed');
+    setProgress(payload.verification?.offline ? 'Execution complete (offline cache)' : 'Execution complete');
+    setResult(formatResult(payload));
+    renderMetrics(performance.now() - startedAt, payload);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Task failed';
+    addLog(`[ERROR] ${message}`);
+    setProgress('Execution failed');
+    setResult(`Toolkit error: ${message}`);
+  } finally {
+    runButton.disabled = false;
+  }
 }
 
 function setupCommandPalette() {
@@ -139,7 +148,9 @@ function setupCommandPalette() {
       const template = templates.find((item) => item.key === action);
       if (template) {
         prompt.value = template.prompt;
+        selectedMode = action === 'research' ? 'research' : 'standard';
         addLog(`[PALETTE] Loaded ${template.label}`);
+        if (selectedMode === 'research') addLog('[MODE] NEX Research enabled');
       }
     }
     palette.hidden = true;
