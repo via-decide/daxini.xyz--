@@ -6,6 +6,7 @@ import {
   clearNodes
 } from './components/reasoning-graph.js';
 import { runToolkitTask } from './connectors/zayvora-toolkit.js';
+import { initRepoPanel } from './repo-panel.js';
 
 const templates = [
   { key: 'research', label: '🔭 Research', prompt: 'Research the current state of AI agent memory architectures and summarize the top 5 approaches.' },
@@ -157,10 +158,33 @@ function setupCommandPalette() {
   });
 }
 
+function setupWorkspaceTabs() {
+  const missionTab = document.getElementById('tab-mission');
+  const repoTab = document.getElementById('tab-repo');
+  const missionPanel = document.getElementById('mission-panel');
+  const repoPanel = document.getElementById('repo-panel');
+  if (!missionTab || !repoTab || !missionPanel || !repoPanel) return;
+
+  const activate = (key) => {
+    const missionActive = key === 'mission';
+    missionTab.classList.toggle('active', missionActive);
+    repoTab.classList.toggle('active', !missionActive);
+    missionTab.setAttribute('aria-selected', missionActive ? 'true' : 'false');
+    repoTab.setAttribute('aria-selected', missionActive ? 'false' : 'true');
+    missionPanel.hidden = !missionActive;
+    repoPanel.hidden = missionActive;
+  };
+
+  missionTab.addEventListener('click', () => activate('mission'));
+  repoTab.addEventListener('click', () => activate('repo'));
+}
+
 function initWorkspace() {
   renderReasoningGraph();
   initLiveLog();
   addLog('[ZAYVORA] Mission control ready');
+  initRepoPanel({ onLog: addLog });
+  setupWorkspaceTabs();
   buildTemplates();
   setupCommandPalette();
 
