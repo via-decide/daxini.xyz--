@@ -187,6 +187,26 @@
   gap: 8px;
 }
 
+.workspace-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0 10px;
+}
+
+.workspace-tab {
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #111827;
+  color: #dbeafe;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.workspace-tab.active {
+  border-color: #3b82f6;
+  background: #12213f;
+}
+
 #main-prompt {
   width: 100%;
   border-radius: 10px;
@@ -238,6 +258,54 @@
   background: #0b1325;
   padding: 12px;
   line-height: 1.6;
+}
+
+.repo-panel {
+  margin-top: 6px;
+  display: grid;
+  gap: 12px;
+}
+
+.repo-input-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+#repo-url-input {
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #0b1325;
+  color: #fff;
+  padding: 10px 12px;
+}
+
+#analyze-repo {
+  border: 0;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 700;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.commit-list {
+  display: grid;
+  gap: 6px;
+}
+
+.commit-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.freq-bar {
+  height: 8px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #38bdf8, #2563eb);
 }
 
 .live-log {

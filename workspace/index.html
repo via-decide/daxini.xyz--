@@ -30,24 +30,41 @@
                 <h1>AI Mission Control</h1>
                 <p>Launch multi-step runs with live reasoning and verification.</p>
             </div>
-
-            <div class="prompt-area">
-                <label for="main-prompt">Mission Prompt</label>
-                <textarea id="main-prompt" rows="6" placeholder="Describe what you want Daxini to research, build, or solve..."></textarea>
-                <div class="prompt-actions">
-                    <button id="run-task" type="button">RUN TASK</button>
-                    <div id="task-progress" class="task-progress" aria-live="polite"></div>
-                </div>
+            <div class="workspace-tabs" role="tablist" aria-label="Workspace panels">
+                <button id="tab-mission" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="mission-panel">Mission Control</button>
+                <button id="tab-repo" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="repo-panel">Repository Intelligence</button>
             </div>
 
-            <section class="result-area" aria-live="polite">
-                <h3>Result</h3>
-                <div id="result-output" class="result-output">Waiting for task execution...</div>
+            <section id="mission-panel" role="tabpanel" aria-labelledby="tab-mission">
+                <div class="prompt-area">
+                    <label for="main-prompt">Mission Prompt</label>
+                    <textarea id="main-prompt" rows="6" placeholder="Describe what you want Daxini to research, build, or solve..."></textarea>
+                    <div class="prompt-actions">
+                        <button id="run-task" type="button">RUN TASK</button>
+                        <div id="task-progress" class="task-progress" aria-live="polite"></div>
+                    </div>
+                </div>
+
+                <section class="result-area" aria-live="polite">
+                    <h3>Result</h3>
+                    <div id="result-output" class="result-output">Waiting for task execution...</div>
+                </section>
+
+                <section class="metrics-area" aria-label="Task metrics">
+                    <h3>Task Metrics</h3>
+                    <div id="metrics-output" class="metrics-output"></div>
+                </section>
             </section>
 
-            <section class="metrics-area" aria-label="Task metrics">
-                <h3>Task Metrics</h3>
-                <div id="metrics-output" class="metrics-output"></div>
+            <section id="repo-panel" class="repo-panel" role="tabpanel" aria-labelledby="tab-repo" hidden>
+                <h3>Analyze repository history</h3>
+                <div class="repo-input-row">
+                    <input id="repo-url-input" type="url" placeholder="https://github.com/user/project" aria-label="Repository URL">
+                    <button id="analyze-repo" type="button">Analyze repository</button>
+                </div>
+                <div id="repo-status" class="task-progress" aria-live="polite">Paste a GitHub repository URL to begin.</div>
+                <div id="repo-summary" class="result-output">Repository Evolution summary will appear here.</div>
+                <div id="commit-graph" class="result-output"></div>
             </section>
 
             <section class="live-log mobile-log" aria-label="Live execution log on mobile">
