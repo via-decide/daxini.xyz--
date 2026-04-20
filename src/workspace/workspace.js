@@ -2,6 +2,7 @@ import { createActionLauncher } from '../components/workspace/ActionLauncher.js'
 import { createTaskInput } from '../components/workspace/TaskInput.js';
 import { createExecutionPanel } from '../components/workspace/ExecutionPanel.js';
 import { getTemplateByCategory, executeTemplate } from '../integrations/viaTools.js';
+import { triggerInstall } from '../pwa/install.js';
 
 const RUNTIME_FALLBACK = [
   'Planning task...',
@@ -12,6 +13,13 @@ const RUNTIME_FALLBACK = [
 ];
 
 const REASONING_STAGES = ['DECOMPOSE', 'RETRIEVE', 'SYNTHESIZE', 'CALCULATE', 'VERIFY', 'REVISE'];
+
+function ensureServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 
 async function fetchRuntimeSteps() {
   try {
@@ -84,6 +92,13 @@ async function streamExecution({ prompt, category, executionPanel }) {
 }
 
 async function initWorkspace() {
+  ensureServiceWorker();
+
+  const installButton = document.getElementById('install-zayvora');
+  if (installButton) {
+    installButton.addEventListener('click', triggerInstall);
+  }
+
   const root = document.getElementById('workspace-app');
   if (!root) return;
 
