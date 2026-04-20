@@ -1,69 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAXINI // Aporaksha Workspace</title>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0b0c0f">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/base.css">
-    <link rel="stylesheet" href="/src/ui/workspace.css">
-    <link rel="stylesheet" href="/styles/updates.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DAXINI Workspace</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0b0c0f">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/src/ui/workspace.css">
 </head>
 <body class="workspace-body">
-    <nav class="workspace-nav" style="height:60px;background:#0f1320;border-bottom:1px solid #273449;display:flex;align-items:center;justify-content:space-between;padding:0 16px;">
-        <a href="/" class="nav-brand" style="font-family:'Space Grotesk',sans-serif;font-weight:800;letter-spacing:1px;">DAXINI // APORAKSHA</a>
-        <span style="font-size:12px;color:#93c5fd;">Unified Ecosystem Workspace</span>
-    </nav>
-
-    <main class="workspace-layout">
-        <!-- Panel 1: Reasoning Architecture -->
-        <aside class="panel" id="p-reasoning" aria-label="Reasoning Architecture">
-            <header class="p-header">Reasoning Architecture</header>
-            <div class="p-content" id="mount-reasoning-loop"></div>
-        </aside>
-
-        <!-- Panel 2: Execution Trace -->
-        <section class="panel" id="p-trace" aria-label="Execution Trace">
-            <header class="p-header">
-                Execution Trace
-                <span class="p-meta" id="trace-meta">0 steps</span>
-            </header>
-            <div class="p-content" id="mount-execution-trace"></div>
-            <div class="p-content" id="router-log" aria-live="polite"></div>
-        </section>
-
-        <!-- Panel 3: Console -->
-        <section class="panel" id="p-console" aria-label="Sovereign Interface Console">
-            <header class="p-header">Sovereign Interface</header>
-            <div class="p-content" id="mount-console-log">
-                <div class="log-entry system">[SYSTEM] Bridge established. Zayvora-Nex gateway ready.</div>
-            </div>
-            <div class="workspace-input">
-                <input type="text" id="main-prompt" placeholder="Input engineering constraints or research target..." autocomplete="off">
-                <button id="send-prompt">EXECUTE ⤖</button>
-            </div>
-        </section>
-
-        <!-- Panel 4: Knowledge Map -->
-        <aside class="panel" id="p-knowledge" aria-label="Knowledge Map">
-            <header class="p-header">Knowledge Map</header>
-            <div class="p-content" id="mount-knowledge-graph" style="padding:0;"></div>
-        </aside>
-
-        <!-- Panel 5: Performance HUD -->
-        <footer class="panel" id="p-metrics" aria-label="Inference Metrics">
-            <header class="p-header">Inference Metrics</header>
-            <div class="p-content" id="mount-metrics"></div>
-        </footer>
-    </main>
-
-    <!-- Orchestration Logic -->
-    <script type="module" src="/assets/js/workspaceApp.js"></script>
-    <div id="workspace-app"></div>
-    <script type="module" src="/src/workspace/workspace.js"></script>
+  <main id="workspace-app"></main>
+  <script type="module" src="/src/workspace/workspace.js"></script>
 </body>
 </html>

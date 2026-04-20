@@ -25,6 +25,7 @@ const MIME = {
 
 const REWRITES = {
   '/workspace': '/workspace.html',
+  '/workspace/nex': '/workspace-nex.html',
   '/zayvora': '/zayvora.html'
 };
 

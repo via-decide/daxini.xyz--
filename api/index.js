@@ -350,7 +350,7 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: 'Sovereign Protocol Violation: Authentication Failed' });
     }
 
-    if (path === '/api/zayvora/execute') {
+    if (path === '/api/zayvora/execute' || path === '/zayvora/execute') {
         if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
         
         // Authorization Required for Zayvora Orchestration
@@ -375,6 +375,20 @@ export default async function handler(req, res) {
             githubToken
         );
         return;
+    }
+
+
+    if (path === '/zayvora/runtime' || path === '/api/zayvora/runtime') {
+        return res.status(200).json({
+            steps: [
+                'Planning task...',
+                'Searching knowledge...',
+                'Building solution...',
+                'Generating output...',
+                'Verifying results...'
+            ],
+            reasoning_trace: ['DECOMPOSE', 'RETRIEVE', 'SYNTHESIZE', 'CALCULATE', 'VERIFY', 'REVISE']
+        });
     }
 
     if (path === '/api/zayvora/status' || path === '/zayvora/status') {
