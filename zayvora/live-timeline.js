@@ -5,8 +5,32 @@
     running: 'Running',
     completed: 'Completed',
     failed: 'Failed',
-    pending: 'Pending',
+    pending: 'Pending'
   };
+
+  function pushMemoryEvent(event) {
+    if (typeof global.GlobalMemoryGraphClient === 'undefined') return;
+    global.GlobalMemoryGraphClient.pushEvent({
+      source: 'zayvora-live-timeline',
+      ...event
+    });
+  }
+
+  function appendTimelineEvent(taskId, step) {
+    if (!taskId || !step) return;
+
+    if (global.ZayvoraThreadManager && typeof global.ZayvoraThreadManager.appendStep === 'function') {
+      global.ZayvoraThreadManager.appendStep(taskId, step);
+    }
+
+    pushMemoryEvent({
+      event: 'timeline.step',
+      task_id: taskId,
+      step: step.step,
+      status: step.status || 'pending',
+      label: step.label || ''
+    });
+  }
 
   function renderTimeline(container, steps) {
     if (!container) return;
@@ -19,11 +43,13 @@
     container.innerHTML = sortedSteps.map((step) => {
       const status = step.status || 'pending';
       const label = step.label || `Step ${step.step}`;
+      const time = step.updated_at || step.timestamp || '';
       return `
         <div class="zv-timeline-item ${status}">
           <div class="zv-timeline-step">STEP ${step.step}</div>
           <div class="zv-timeline-label">${escapeHtml(label)}</div>
           <div class="zv-timeline-status">${STATUS_LABEL[status] || status}</div>
+          <div class="zv-timeline-time">${escapeHtml(time)}</div>
         </div>
       `;
     }).join('');
@@ -36,6 +62,7 @@
   }
 
   global.ZayvoraLiveTimeline = {
-    renderTimeline,
+    appendTimelineEvent,
+    renderTimeline
   };
 })(window);

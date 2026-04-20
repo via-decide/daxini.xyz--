@@ -8,11 +8,18 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         .dashboard-container { display: grid; grid-template-columns: 2fr 1.2fr; gap: 20px; padding: 20px; }
-        #graph-view { height: 600px; background: rgba(0,0,0,0.5); border-radius: 12px; }
+        #graph-view { height: 420px; background: rgba(0,0,0,0.5); border-radius: 12px; }
         .risk-list { list-style: none; padding: 0; }
         .risk-item { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; }
         .score-bar { height: 4px; background: #333; flex: 1; margin: 0 15px; border-radius: 2px; position: relative; }
         .score-fill { height: 100%; background: var(--accent-primary); box-shadow: 0 0 10px var(--accent-primary); }
+        .telemetry-grid { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 10px; margin-bottom: 14px; }
+        .telemetry-card { padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.35); }
+        .telemetry-card .label { font-size: 0.72rem; color: rgba(255,255,255,0.7); }
+        .telemetry-card .value { font-size: 1.2rem; font-weight: 700; }
+        .table-wrap { max-height: 320px; overflow: auto; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { font-size: 0.78rem; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); text-align: left; }
     </style>
 </head>
 <body class="workspace-body">
@@ -30,17 +37,56 @@
             <header class="p-header">High-Risk Reputations</header>
             <div id="risk-list-container"></div>
         </section>
+
+        <section class="glass-panel" style="grid-column: 1 / -1;">
+            <header class="p-header">Telemetry Dashboard</header>
+            <div class="telemetry-grid" id="telemetry-cards"></div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Attacks blocked</th>
+                            <th>Source IP region</th>
+                            <th>Threat type</th>
+                            <th>Target domain</th>
+                        </tr>
+                    </thead>
+                    <tbody id="telemetry-rows"></tbody>
+                </table>
+            </div>
+        </section>
     </div>
 
     <script>
         async function fetchIntelligence() {
             const secret = localStorage.getItem('security_secret');
-            const res = await fetch('/api/security/stats', {
+            const intelligenceRes = await fetch('/api/security/stats', {
                 headers: { 'Authorization': `Bearer ${secret}` }
             });
-            const data = await res.json();
-            renderReputation(data.topRisks);
-            renderGraph(data.threatGraph);
+            const intelligenceData = await intelligenceRes.json();
+            renderReputation(intelligenceData.topRisks || []);
+            renderGraph(intelligenceData.threatGraph || []);
+
+            let telemetryData;
+            try {
+                const telemetryRes = await fetch('/api/security/telemetry/dashboard', {
+                    headers: { 'Authorization': `Bearer ${secret}` }
+                });
+                telemetryData = await telemetryRes.json();
+            } catch (error) {
+                telemetryData = {
+                    summary: {
+                        total_events: 0,
+                        attacks_blocked: 0,
+                        by_region: {},
+                        by_threat_type: {},
+                        by_target_domain: {}
+                    },
+                    recent: []
+                };
+            }
+
+            renderTelemetry(telemetryData);
         }
 
         function renderReputation(risks) {
@@ -48,40 +94,67 @@
             container.innerHTML = risks.map(r => `
                 <div class="risk-item">
                     <span style="font-family:monospace; font-size:0.7rem;">${r.target_id.substring(0,12)}</span>
-                    <div class="score-bar"><div class="score-fill" style="width:${r.score*100}%"></div></div>
+                    <div class="score-bar"><div class="score-fill" style="width:${r.score * 100}%"></div></div>
                     <span style="font-weight:bold; color:var(--accent-primary)">${r.score.toFixed(2)}</span>
                 </div>
             `).join('');
         }
 
         function renderGraph(edges) {
-            // Simple D3 Force Graph
-            const width = document.getElementById('graph-view').offsetWidth;
-            const height = 600;
-            const svg = d3.select("#graph-view").append("svg").attr("width", width).attr("height", height);
-            
-            // Transform edges to nodes
-            const nodes = [...new Set(edges.flatMap(e => [e.source_id, e.target_id]))].map(d => ({id: d}));
-            const links = edges.map(e => ({source: e.source_id, target: e.target_id, type: e.relation_type}));
+            const graph = document.getElementById('graph-view');
+            graph.innerHTML = '';
+            const width = graph.offsetWidth;
+            const height = 420;
+            const svg = d3.select('#graph-view').append('svg').attr('width', width).attr('height', height);
+
+            const nodes = [...new Set(edges.flatMap(e => [e.source_id, e.target_id]))].map(d => ({ id: d }));
+            const links = edges.map(e => ({ source: e.source_id, target: e.target_id, type: e.relation_type }));
 
             const simulation = d3.forceSimulation(nodes)
-                .force("link", d3.forceLink(links).id(d => d.id).distance(100))
-                .force("charge", d3.forceManyBody().strength(-150))
-                .force("center", d3.forceCenter(width / 2, height / 2));
+                .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+                .force('charge', d3.forceManyBody().strength(-150))
+                .force('center', d3.forceCenter(width / 2, height / 2));
 
-            const link = svg.append("g").selectAll("line").data(links).enter().append("line")
-                .attr("stroke", "rgba(0, 242, 255, 0.2)").attr("stroke-width", 1);
+            const link = svg.append('g').selectAll('line').data(links).enter().append('line')
+                .attr('stroke', 'rgba(0, 242, 255, 0.2)').attr('stroke-width', 1);
 
-            const node = svg.append("g").selectAll("circle").data(nodes).enter().append("circle")
-                .attr("r", 5).attr("fill", "var(--accent-primary)");
+            const node = svg.append('g').selectAll('circle').data(nodes).enter().append('circle')
+                .attr('r', 5).attr('fill', 'var(--accent-primary)');
 
-            node.append("title").text(d => d.id);
+            node.append('title').text(d => d.id);
 
-            simulation.on("tick", () => {
-                link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
-                    .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
-                node.attr("cx", d => d.x).attr("cy", d => d.y);
+            simulation.on('tick', () => {
+                link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+                node.attr('cx', d => d.x).attr('cy', d => d.y);
             });
+        }
+
+        function renderTelemetry(telemetry) {
+            const summary = telemetry.summary || {};
+            const cards = document.getElementById('telemetry-cards');
+            cards.innerHTML = [
+                ['Total events', summary.total_events || 0],
+                ['Attacks blocked', summary.attacks_blocked || 0],
+                ['Regions tracked', Object.keys(summary.by_region || {}).length],
+                ['Threat types', Object.keys(summary.by_threat_type || {}).length]
+            ].map(([label, value]) => `
+                <div class="telemetry-card">
+                    <div class="label">${label}</div>
+                    <div class="value">${value}</div>
+                </div>
+            `).join('');
+
+            const rows = (telemetry.recent || []).slice(0, 50);
+            const tbody = document.getElementById('telemetry-rows');
+            tbody.innerHTML = rows.map((row) => `
+                <tr>
+                    <td>${row.blocked ? 'Yes' : 'No'}</td>
+                    <td>${row.source_ip_region || 'unknown'}</td>
+                    <td>${row.threat_type || 'unknown'}</td>
+                    <td>${row.target_domain || 'unknown'}</td>
+                </tr>
+            `).join('');
         }
 
         fetchIntelligence();
