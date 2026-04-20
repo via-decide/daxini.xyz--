@@ -3,8 +3,8 @@ export function createTaskInput({ onRun }) {
   section.className = 'task-input-panel';
   section.innerHTML = `
     <label class="visually-hidden" for="zayvora-task-input">Task prompt</label>
-    <input id="zayvora-task-input" type="text" placeholder="Ask Zayvora anything..." autocomplete="off" />
-    <button id="zayvora-run-task" type="button">RUN TASK</button>
+    <input id="zayvora-task-input" type="text" placeholder="Ask Zayvora something..." autocomplete="off" />
+    <button id="zayvora-run-task" type="button">Run Task</button>
   `;
 
   const input = section.querySelector('#zayvora-task-input');

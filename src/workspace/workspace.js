@@ -36,16 +36,6 @@ async function fetchRuntimeSteps() {
   return RUNTIME_FALLBACK;
 }
 
-function renderTemplatePreview(container, category, template) {
-  const examples = Array.isArray(template?.examples) ? template.examples : [];
-  container.innerHTML = `
-    <h2>${template?.label || category}</h2>
-    <ul>
-      ${examples.map((item) => `<li>${item}</li>`).join('')}
-    </ul>
-  `;
-}
-
 async function streamExecution({ prompt, category, executionPanel }) {
   executionPanel.clearTrace();
   REASONING_STAGES.forEach((stage) => executionPanel.appendReasoningStage(stage));
@@ -124,13 +114,9 @@ async function initWorkspace() {
     selected: selectedCategory,
     async onSelect(category) {
       selectedCategory = category;
-      const template = await getTemplateByCategory(category);
-      renderTemplatePreview(previewPanel, category, template);
+      await getTemplateByCategory(category);
     }
   });
-
-  const previewPanel = document.createElement('section');
-  previewPanel.className = 'template-preview';
 
   const executionPanel = createExecutionPanel();
   executionPanel.setSteps(await fetchRuntimeSteps());
@@ -146,11 +132,8 @@ async function initWorkspace() {
     }
   });
 
-  shell.append(actionLauncher, previewPanel, executionPanel.element, taskInput.element);
-
-  const template = await getTemplateByCategory(selectedCategory);
-  renderTemplatePreview(previewPanel, selectedCategory, template);
-  taskInput.setValue('Design a game mechanic for a survival game');
+  shell.append(actionLauncher, executionPanel.element, taskInput.element);
+  taskInput.setValue('');
 }
 
 if (document.readyState === 'loading') {

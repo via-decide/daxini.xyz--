@@ -4,15 +4,14 @@ const ACTIONS = [
   { key: 'game', icon: '🧩', label: 'Game Dev', template: 'game' },
   { key: 'analysis', icon: '📊', label: 'Analyze', template: 'analysis' },
   { key: 'problem', icon: '🛠', label: 'Solve', template: 'problem' },
-  { key: 'docs', icon: '📁', label: 'Documents', template: 'docs' },
-  { key: 'research_deep', icon: '🔭', label: 'Research (NEX)', template: 'research_deep', route: '/workspace/nex' }
+  { key: 'docs', icon: '📁', label: 'Documents', template: 'docs' }
 ];
 
 export function createActionLauncher({ selected = 'research', onSelect }) {
   const wrapper = document.createElement('section');
   wrapper.className = 'action-launcher';
   wrapper.innerHTML = `
-    <h1>DAXINI WORKSPACE</h1>
+    <h1>Daxini Workspace</h1>
     <p class="workspace-subtitle">What do you want to do today?</p>
     <div class="action-grid" id="action-grid"></div>
   `;

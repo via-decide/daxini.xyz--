@@ -1,16 +1,14 @@
 const DEFAULT_STEPS = [
-  'Planning task...',
-  'Searching knowledge...',
-  'Building solution...',
-  'Generating output...',
-  'Verifying results...'
+  'Planning task',
+  'Searching knowledge',
+  'Building solution'
 ];
 
 export function createExecutionPanel() {
   const panel = document.createElement('section');
   panel.className = 'execution-panel';
   panel.innerHTML = `
-    <h2>Execution</h2>
+    <h2>Live task logs</h2>
     <ul id="execution-steps" class="execution-steps"></ul>
     <div class="reasoning-trace">
       <h3>Reasoning trace</h3>
