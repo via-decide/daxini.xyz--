@@ -16,7 +16,10 @@
 <body class="workspace-body">
     <nav class="workspace-nav" style="height:60px;background:#0f1320;border-bottom:1px solid #273449;display:flex;align-items:center;justify-content:space-between;padding:0 16px;">
         <a href="../" class="nav-brand" style="font-family:'Space Grotesk',sans-serif;font-weight:800;letter-spacing:1px;">DAXINI // APORAKSHA</a>
-        <span style="font-size:12px;color:#93c5fd;">Unified Ecosystem Workspace</span>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <button id="mobile-drawer-toggle" class="workspace-tab" type="button">Actions</button>
+            <span style="font-size:12px;color:#93c5fd;">Unified Ecosystem Workspace</span>
+        </div>
     </nav>
 
     <main class="workspace-root workspace-container workspace-layout" aria-label="Daxini workspace mission control">
@@ -30,9 +33,14 @@
 
         <section class="workspace-panel center-panel" aria-label="Main workspace">
             <div class="task-header">
-                <h1>AI Mission Control</h1>
-                <p>Launch multi-step runs with live reasoning and verification.</p>
+                <h1>DAXINI WORKSPACE</h1>
+                <p>Action-first launcher for users, creators, researchers, and builders.</p>
             </div>
+
+            <section class="workspace-panel launcher-panel" aria-label="Workspace launcher">
+                <h3>Start a real action</h3>
+                <div id="workspace-launcher" class="launcher-grid"></div>
+            </section>
             <div class="workspace-tabs" role="tablist" aria-label="Workspace panels">
                 <button id="tab-mission" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="mission-panel">Mission Control</button>
                 <button id="tab-repo" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="repo-panel">Repository Intelligence</button>
@@ -57,6 +65,11 @@
                     <h3>Task Metrics</h3>
                     <div id="metrics-output" class="metrics-output"></div>
                 </section>
+
+                <details class="reasoning-collapse" id="reasoning-collapse">
+                    <summary>How this task is being handled</summary>
+                    <div id="reasoning-stages" class="reasoning-stages"></div>
+                </details>
             </section>
 
             <section id="repo-panel" class="repo-panel" role="tabpanel" aria-labelledby="tab-repo" hidden>
@@ -73,6 +86,16 @@
             <section class="live-log mobile-log" aria-label="Live execution log on mobile">
                 <h3>Live Execution Feed</h3>
                 <div id="live-log-mobile" class="live-log-view"></div>
+            </section>
+
+            <section class="workspace-panel capability-panel" aria-label="Visible backend capabilities">
+                <h3>Backend capabilities available now</h3>
+                <div id="capability-cards" class="capability-grid"></div>
+            </section>
+
+            <section class="workspace-panel status-panel" aria-label="Install and runtime status">
+                <h3>Install and Runtime Status</h3>
+                <div id="status-cards" class="status-grid"></div>
             </section>
         </section>
 
@@ -98,6 +121,11 @@
             <button data-action="run">Run task</button>
         </div>
     </div>
+
+    <section class="mobile-sticky-bar" aria-label="Mobile quick input">
+        <input id="mobile-quick-input" type="text" placeholder="Ask Zayvora something..." />
+        <button id="mobile-run-task" type="button">Run</button>
+    </section>
 
     <script type="module" src="./main.js"></script>
 </body>
