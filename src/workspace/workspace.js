@@ -13,6 +13,9 @@ const RUNTIME_FALLBACK = [
 ];
 
 const REASONING_STAGES = ['DECOMPOSE', 'RETRIEVE', 'SYNTHESIZE', 'CALCULATE', 'VERIFY', 'REVISE'];
+const ZAYVORA_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:7070'
+  : 'https://zayvora.yourdomain.workers.dev';
 
 function ensureServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
@@ -48,14 +51,22 @@ async function streamExecution({ prompt, category, executionPanel }) {
   REASONING_STAGES.forEach((stage) => executionPanel.appendReasoningStage(stage));
 
   try {
-    const response = await fetch('/zayvora/execute', {
+    const requestPayload = { query: prompt, prompt, category };
+    console.log('[ZAYVORA] execute request', {
+      endpoint: `${ZAYVORA_API}/execute`,
+      method: 'POST',
+      payload: requestPayload
+    });
+
+    const response = await fetch(`${ZAYVORA_API}/execute`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Bearer UID-WORKSPACE'
       },
-      body: JSON.stringify({ prompt, category })
+      body: JSON.stringify(requestPayload)
     });
+    console.log('[ZAYVORA] execute response', { status: response.status, ok: response.ok });
 
     if (!response.ok || !response.body) {
       throw new Error(`Execution request failed (${response.status})`);
@@ -87,6 +98,8 @@ async function streamExecution({ prompt, category, executionPanel }) {
       }
     }
   } catch (error) {
+    console.error('[ZAYVORA] execute error', error);
+    executionPanel.appendStep('Zayvora engine offline — connect local runtime');
     executionPanel.appendStep(`Error: ${error.message}`);
   }
 }
