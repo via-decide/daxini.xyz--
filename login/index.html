@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zayvora Student Login</title>
+  <link rel="stylesheet" href="./login.css" />
+  <script src="../auth/auth_manager.js"></script>
+</head>
+<body>
+  <main class="login-shell" aria-labelledby="login-title">
+    <h1 id="login-title">Student Login</h1>
+    <p class="sub">Authenticate to access the Zayvora interface.</p>
+
+    <form id="loginForm" novalidate>
+      <label for="studentId">Student ID</label>
+      <input id="studentId" name="studentId" type="text" autocomplete="username" required />
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required />
+
+      <button type="submit">Login</button>
+      <p id="errorMessage" class="error" role="alert" aria-live="polite"></p>
+    </form>
+  </main>
+
+  <script src="./login.js"></script>
+</body>
+</html>

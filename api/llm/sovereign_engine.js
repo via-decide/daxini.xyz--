@@ -10,6 +10,9 @@
 
 const OLLAMA_ENDPOINT = 'https://injuries-grown-relations-throat.trycloudflare.com/api/generate';
 const MODEL = 'zayvora:latest';
+export const ENGINE_NAME = 'Zayvora Local Engine';
+export const ENGINE_PROVIDER = 'zayvora-local';
+export const ENGINE_MODEL = MODEL;
 
 /**
  * System Context derived from NEX Core configurations.

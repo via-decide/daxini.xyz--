@@ -1,0 +1,42 @@
+{
+  "repos": [
+    {
+      "name": "via-decide/zayvora-toolkit",
+      "branch": "main",
+      "path": "./workspace/connectors"
+    },
+    {
+      "name": "via-decide/daxini.xyz",
+      "branch": "main",
+      "path": "./workspace"
+    }
+  ],
+  "indexed_at": null,
+  "files": [
+    {
+      "file_path": "workspace/main.js",
+      "source": "function runTask() { activateNode('user'); updateReasoningPanel('RETRIEVE'); }",
+      "tags": ["pipeline", "reasoning", "workspace", "retrieve"]
+    },
+    {
+      "file_path": "workspace/connectors/zayvora-toolkit.js",
+      "source": "export async function runToolkitTask(query, options = {}) { const knowledge = await toolkitSearch(query); const reasoning = await toolkitReason(query, knowledge); }",
+      "tags": ["api", "handler", "pipeline", "synthesize"]
+    },
+    {
+      "file_path": "workspace/connectors/toolkit-api.js",
+      "source": "async function requestToolkit(endpoint, payload) { return postJson('/toolkit/' + endpoint, payload); }",
+      "tags": ["api", "request", "response", "toolkit"]
+    },
+    {
+      "file_path": "workspace/generated-code/voxel-terrain-generator.js",
+      "source": "export function createVoxelTerrain({ width = 32, height = 32, seed = 1 } = {}) { return []; }",
+      "tags": ["simulation", "terrain", "voxel", "generator"]
+    },
+    {
+      "file_path": "zayvora/reasoning-engine.js",
+      "source": "function recordStep(taskId, step, label) { STORAGE.upsertStep(taskId, { step, label }); }",
+      "tags": ["reasoning", "timeline", "data-pipeline"]
+    }
+  ]
+}

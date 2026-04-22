@@ -3,92 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZAYVORA // Reasoning Workstation</title>
-    
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/assets/icon-192.png">
+    <title>DAXINI // Aporaksha Workspace</title>
+    <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#0b0c0f">
-
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@600;800&display=swap" rel="stylesheet">
-
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="./assets/css/base.css">
-    <link rel="stylesheet" href="./assets/css/workspace.css">
-    <link rel="stylesheet" href="./assets/css/console-layout.css">
-    
-    <!-- Dependencies -->
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script type="module" src="./assets/js/identity-hud.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../src/ui/workspace.css">
+    <link rel="stylesheet" href="../styles/updates.css">
 </head>
 <body class="workspace-body">
-    <!-- Noise texture -->
-    <div class="noise" aria-hidden="true"></div>
-
-    <div id="identity-hud"></div>
-
-    <nav class="workspace-nav">
-        <a href="/" class="nav-brand">DAXINI // ZAYVORA</a>
-        
-        <div class="workspace-controls">
-            <div id="status-indicator">
-                <span class="status-pulse"></span>
-                REASONING HARNESS ACTIVE
-            </div>
-            
-            <label class="toggle-dev">
-                DEV_MODE
-                <input type="checkbox" id="dev-toggle-input">
-            </label>
-            
-            <a href="/" class="exit-btn">CLOSE PORTAL</a>
+    <nav class="workspace-nav" style="height:60px;background:#0f1320;border-bottom:1px solid #273449;display:flex;align-items:center;justify-content:space-between;padding:0 16px;">
+        <a href="../" class="nav-brand" style="font-family:'Space Grotesk',sans-serif;font-weight:800;letter-spacing:1px;">DAXINI // APORAKSHA</a>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <button id="mobile-drawer-toggle" class="workspace-tab" type="button">Actions</button>
+            <span style="font-size:12px;color:#93c5fd;">Unified Ecosystem Workspace</span>
         </div>
     </nav>
 
-    <main class="workspace-layout">
-        <!-- Panel 1: Reasoning Architecture -->
-        <aside class="panel" id="p-reasoning">
-            <header class="p-header">Reasoning Architecture</header>
-            <div class="p-content" id="mount-reasoning-loop"></div>
+    <main class="workspace-root workspace-container workspace-layout" aria-label="Daxini workspace mission control">
+        <section id="workspace-loading" class="workspace-loading" aria-live="polite">
+            Loading Daxini Workspace...
+        </section>
+        <aside class="workspace-panel template-panel" aria-label="Task templates">
+            <h2>What do you want to do today?</h2>
+            <div id="task-templates" class="template-list"></div>
         </aside>
 
-        <!-- Panel 2: Execution Trace -->
-        <section class="panel" id="p-trace">
-            <header class="p-header">
-                Execution Trace
-                <span class="p-meta" id="trace-meta">0 steps</span>
-            </header>
-            <div class="p-content" id="mount-execution-trace"></div>
+        <section class="workspace-panel center-panel" aria-label="Main workspace">
+            <div class="task-header">
+                <h1>DAXINI WORKSPACE</h1>
+                <p>Action-first launcher for users, creators, researchers, and builders.</p>
+            </div>
+
+            <section class="workspace-panel launcher-panel" aria-label="Workspace launcher">
+                <h3>Start a real action</h3>
+                <div id="workspace-launcher" class="launcher-grid"></div>
+            </section>
+            <div class="workspace-tabs" role="tablist" aria-label="Workspace panels">
+                <button id="tab-mission" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="mission-panel">Mission Control</button>
+                <button id="tab-repo" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="repo-panel">Repository Intelligence</button>
+            </div>
+
+            <section id="mission-panel" role="tabpanel" aria-labelledby="tab-mission">
+                <div class="prompt-area">
+                    <label for="main-prompt">Mission Prompt</label>
+                    <textarea id="main-prompt" rows="6" placeholder="Describe what you want Daxini to research, build, or solve..."></textarea>
+                    <div class="prompt-actions">
+                        <button id="run-task" type="button">RUN TASK</button>
+                        <div id="task-progress" class="task-progress" aria-live="polite"></div>
+                    </div>
+                </div>
+
+                <section class="result-area" aria-live="polite">
+                    <h3>Result</h3>
+                    <div id="result-output" class="result-output">Waiting for task execution...</div>
+                </section>
+
+                <section class="metrics-area" aria-label="Task metrics">
+                    <h3>Task Metrics</h3>
+                    <div id="metrics-output" class="metrics-output"></div>
+                </section>
+
+                <details class="reasoning-collapse" id="reasoning-collapse">
+                    <summary>How this task is being handled</summary>
+                    <div id="reasoning-stages" class="reasoning-stages"></div>
+                </details>
+            </section>
+
+            <section id="repo-panel" class="repo-panel" role="tabpanel" aria-labelledby="tab-repo" hidden>
+                <h3>Analyze repository history</h3>
+                <div class="repo-input-row">
+                    <input id="repo-url-input" type="url" placeholder="https://github.com/user/project" aria-label="Repository URL">
+                    <button id="analyze-repo" type="button">Analyze repository</button>
+                </div>
+                <div id="repo-status" class="task-progress" aria-live="polite">Paste a GitHub repository URL to begin.</div>
+                <div id="repo-summary" class="result-output">Repository Evolution summary will appear here.</div>
+                <div id="commit-graph" class="result-output"></div>
+            </section>
+
+            <section class="live-log mobile-log" aria-label="Live execution log on mobile">
+                <h3>Live Execution Feed</h3>
+                <div id="live-log-mobile" class="live-log-view"></div>
+            </section>
+
+
+            <section class="workspace-panel code-intelligence-panel" aria-label="Code intelligence">
+                <h3>Code Intelligence</h3>
+                <div class="repo-input-row">
+                    <input id="code-search-input" type="text" placeholder="Search code (e.g. terrain generation)" aria-label="Search code intelligence library">
+                    <button id="code-search-run" type="button">Search code</button>
+                </div>
+                <div class="prompt-actions">
+                    <button id="code-generate-run" type="button">Generate module</button>
+                    <div class="task-progress">Uses internal codebase retrieval and synthesis.</div>
+                </div>
+                <div class="launcher-grid code-actions">
+                    <button id="artifact-download" class="launcher-action" type="button">Download</button>
+                    <button id="artifact-export" class="launcher-action" type="button">Export</button>
+                    <button id="artifact-publish" class="launcher-action" type="button">Publish</button>
+                </div>
+                <h4>Search results</h4>
+                <div id="code-search-results" class="status-grid"></div>
+                <h4>Pattern matches</h4>
+                <div id="code-pattern-results" class="status-grid"></div>
+                <h4>Generated module</h4>
+                <pre id="code-generate-output" class="result-output">Generated module preview will appear here.</pre>
+                <h4>Workspace artifacts</h4>
+                <div id="generated-code-results" class="status-grid"></div>
+            </section>
+            <section class="workspace-panel capability-panel" aria-label="Visible backend capabilities">
+                <h3>Backend capabilities available now</h3>
+                <div id="capability-cards" class="capability-grid"></div>
+            </section>
+
+            <section class="workspace-panel status-panel" aria-label="Install and runtime status">
+                <h3>Install and Runtime Status</h3>
+                <div id="status-cards" class="status-grid"></div>
+            </section>
         </section>
 
-        <!-- Panel 3: Console -->
-        <section class="panel" id="p-console">
-            <header class="p-header">Sovereign Interface</header>
-            <div class="p-content" id="mount-console-log">
-                <div class="log-entry system">[SYSTEM] Bridge established. Zayvora-Nex gateway ready.</div>
-            </div>
-            <div class="workspace-input">
-                <input type="text" id="main-prompt" placeholder="Input engineering constraints or research target..." autocomplete="off">
-                <button id="send-prompt">EXECUTE ⤖</button>
-            </div>
-        </section>
+        <aside class="workspace-panel engine-panel" id="engine-panel" aria-label="Live engine panel">
+            <section class="reasoning-panel">
+                <h3>Reasoning Graph</h3>
+                <div id="reasoning-graph"></div>
+            </section>
 
-        <!-- Panel 4: Knowledge Map -->
-        <aside class="panel" id="p-knowledge">
-            <header class="p-header">Knowledge Map</header>
-            <div class="p-content" id="mount-knowledge-graph" style="padding:0;"></div>
+            <section class="live-log" aria-label="Live execution log">
+                <h3>Live Execution Feed</h3>
+                <div id="live-log" class="live-log-view"></div>
+            </section>
         </aside>
-
-        <!-- Panel 5: Performance HUD -->
-        <footer class="panel" id="p-metrics">
-            <header class="p-header">System Telemetry</header>
-            <div class="p-content" id="mount-metrics"></div>
-        </footer>
     </main>
 
-    <!-- Orchestration Logic -->
-    <script type="module" src="./assets/js/workspaceApp.js"></script>
+    <div id="command-palette" class="command-palette" hidden>
+        <div class="palette-card" role="dialog" aria-modal="true" aria-labelledby="palette-title">
+            <h3 id="palette-title">Quick Actions</h3>
+            <button data-action="research">Research</button>
+            <button data-action="create">Create</button>
+            <button data-action="analyze">Analyze</button>
+            <button data-action="run">Run task</button>
+        </div>
+    </div>
+
+    <section class="mobile-sticky-bar" aria-label="Mobile quick input">
+        <input id="mobile-quick-input" type="text" placeholder="Ask Zayvora something..." />
+        <button id="mobile-run-task" type="button">Run</button>
+    </section>
+
+    <script type="module" src="./main.js"></script>
 </body>
 </html>

@@ -1,0 +1,20 @@
+{
+  "name": "Zayvora — Sovereign AI Interface",
+  "short_name": "Zayvora",
+  "description": "Sovereign AI interface by ViaDecide. Local-first, zero dependencies.",
+  "start_url": "/",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "any",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "./icon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

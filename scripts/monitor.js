@@ -5,19 +5,14 @@
 
 import fs from 'fs';
 import os from 'os';
-import db from '../security/initDB.js';
 
 function getMetrics() {
     const memory = process.memoryUsage();
     const load = os.loadavg();
     const uptime = os.uptime();
     
-    // Security Event Stats (last 1 hour)
-    const securityStats = db.prepare(`
-        SELECT COUNT(*) as event_count, SUM(suspicion_delta) as total_suspicion
-        FROM security_events
-        WHERE timestamp > datetime('now', '-1 hour')
-    `).get();
+    // Security stats disabled (legacy auth database removed)
+    const securityStats = { event_count: 0, total_suspicion: 0 };
 
     return {
         timestamp: new Date().toISOString(),

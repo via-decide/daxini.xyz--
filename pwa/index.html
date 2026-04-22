@@ -1,0 +1,2445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Zayvora — Sovereign AI Interface by ViaDecide">
+  <title>Zayvora</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>⚡</text></svg>">
+  <style>
+/* ═══════════════════════════════════════════
+   ZAYVORA PWA — Design Tokens & Base
+   ═══════════════════════════════════════════ */
+:root {
+  color-scheme: dark;
+  --primary: #ff671f;
+  --primary-hover: #ff8c42;
+  --primary-glow: rgba(255, 103, 31, 0.25);
+  --bg: #0a0a0a;
+  --bg-elevated: #111111;
+  --bg-panel: #161616;
+  --bg-input: #1a1a1a;
+  --text: #e0e0e0;
+  --text-muted: #888888;
+  --text-dim: #555555;
+  --success: #4ade80;
+  --error: #f87171;
+  --warning: #fbbf24;
+  --border: #333333;
+  --border-light: #222222;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  --sidebar-width: 280px;
+  --exec-width: 260px;
+  --bottom-nav-height: 64px;
+  --header-height: 56px;
+  --glass: rgba(26, 26, 26, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scan { 0% { top: -100%; } 100% { top: 200%; } }
+@keyframes pulse-glow { 0% { box-shadow: 0 0 5px var(--primary-glow); } 50% { box-shadow: 0 0 20px var(--primary-glow); } 100% { box-shadow: 0 0 5px var(--primary-glow); } }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ═══════════════════════════════════════════
+   Scrollbar
+   ═══════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+/* ═══════════════════════════════════════════
+   App Shell
+   ═══════════════════════════════════════════ */
+#app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.view { display: none; flex: 1; overflow: hidden; }
+.view.active { display: flex; flex-direction: column; }
+
+/* ═══════════════════════════════════════════
+   AUTH VIEWS (Login / Signup / Recovery)
+   ═══════════════════════════════════════════ */
+.auth-view {
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(ellipse at 50% 30%, rgba(255,103,31,0.08) 0%, var(--bg) 70%);
+}
+
+.auth-card {
+  width: min(400px, 90vw);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+}
+
+.auth-card .brand {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-card .brand h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+}
+
+.auth-card .brand p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 6px;
+}
+
+.auth-form { display: flex; flex-direction: column; gap: 14px; }
+
+.auth-form label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: -8px;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.auth-form input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.auth-form input::placeholder { color: var(--text-dim); }
+
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.auth-footer {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.auth-footer a {
+  color: var(--primary);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.auth-footer a:hover { text-decoration: underline; }
+
+.auth-error {
+  min-height: 20px;
+  font-size: 0.85rem;
+  color: var(--error);
+  text-align: center;
+}
+
+.auth-success {
+  font-size: 0.85rem;
+  color: var(--success);
+  text-align: center;
+}
+
+.recovery-codes {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.8;
+  text-align: center;
+  color: var(--warning);
+  margin: 8px 0;
+  user-select: all;
+}
+
+/* ═══════════════════════════════════════════
+   CHAT VIEW — Desktop 3-Column Layout
+   ═══════════════════════════════════════════ */
+.chat-view { flex-direction: row; }
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.btn-new-chat {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.btn-new-chat:hover { background: var(--border); }
+
+.sidebar-search {
+  padding: 8px 16px;
+}
+
+.sidebar-search input {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xs);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: var(--font);
+  outline: none;
+}
+
+.sidebar-search input:focus { border-color: var(--border); }
+
+.conversation-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.conversation-item {
+  padding: 10px 12px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-bottom: 2px;
+}
+
+.conversation-item:hover { background: var(--bg-input); }
+.conversation-item.active { background: rgba(255,103,31,0.1); border-left: 2px solid var(--primary); }
+
+.conversation-item .conv-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conversation-item .conv-time {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.sidebar-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  gap: 8px;
+}
+
+.sidebar-footer button {
+  flex: 1;
+  padding: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xs);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.sidebar-footer button:hover { color: var(--text); border-color: var(--border); }
+
+/* Main Chat Area */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chat-header {
+  height: var(--header-height);
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.chat-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.connection-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--error);
+}
+
+.connection-pill.connected .connection-dot { background: var(--success); }
+.connection-pill.connecting .connection-dot {
+  background: var(--warning);
+  animation: pulse-glow 1.4s infinite;
+}
+
+.connection-banner {
+  margin: 10px 20px 0;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.08);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 0.82rem;
+}
+
+.connection-banner.hidden { display: none; }
+.connection-banner-title { font-weight: 600; margin-bottom: 6px; color: var(--warning); }
+.connection-banner ul { margin-left: 16px; color: var(--text-muted); }
+.connection-banner li { margin: 4px 0; }
+.connection-banner-actions { margin-top: 8px; display: flex; gap: 8px; }
+.connection-banner-actions button {
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: var(--radius-xs);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.connection-banner-actions button:hover { border-color: var(--primary); }
+.connection-help-note {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.chat-header-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.btn-hamburger {
+  display: none;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-messages:empty::after {
+  content: 'Start a conversation with Zayvora';
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  text-align: center;
+  margin: auto;
+}
+
+.message {
+  max-width: 720px;
+  width: 100%;
+  display: flex;
+  gap: 12px;
+}
+
+.message.user { align-self: flex-end; flex-direction: row-reverse; }
+.message.assistant { align-self: flex-start; }
+
+.message-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.message.user .message-avatar {
+  background: var(--primary);
+  color: #fff;
+}
+
+.message.assistant .message-avatar {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--primary);
+}
+
+.message-body {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message.user .message-body {
+  background: var(--primary);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.message.assistant .message-body {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-light);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.message-meta {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+  text-align: right;
+}
+
+.message.assistant .message-meta { text-align: left; }
+
+.typing-indicator {
+  display: none;
+  align-self: flex-start;
+  padding: 12px 16px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  gap: 4px;
+}
+
+.typing-indicator.active { display: flex; }
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+  animation: typing 1.2s infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+  30% { opacity: 1; transform: scale(1); }
+}
+
+/* Chat Input */
+.chat-input-area {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.chat-input-wrap {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.chat-input-wrap textarea {
+  flex: 1;
+  padding: 12px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: var(--font);
+  resize: none;
+  min-height: 44px;
+  max-height: 160px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.chat-input-wrap textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.btn-send {
+  width: 44px;
+  height: 44px;
+  background: var(--primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-send:hover { background: var(--primary-hover); }
+.btn-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-stop {
+  width: 44px;
+  height: 44px;
+  background: var(--error);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Execution Panel */
+.exec-panel {
+  width: var(--exec-width);
+  background: var(--bg-elevated);
+  border-left: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.exec-panel::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; height: 100px;
+  background: linear-gradient(to bottom, transparent, var(--primary-glow), transparent);
+  opacity: 0.1;
+  animation: scan 4s linear infinite;
+  pointer-events: none;
+}
+
+.exec-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.exec-stages {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.exec-stage .stage-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.exec-stage .stage-bar {
+  height: 6px;
+  background: var(--bg-input);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.exec-stage .stage-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+.exec-stage[data-stage="planning"] .stage-fill { background: var(--primary); }
+.exec-stage[data-stage="synthesizing"] .stage-fill { background: var(--primary-hover); }
+.exec-stage[data-stage="validating"] .stage-fill { background: var(--warning); }
+.exec-stage[data-stage="executing"] .stage-fill { background: var(--success); }
+
+.exec-stage.idle .stage-label { color: var(--text-dim); }
+.exec-stage.active .stage-label { color: var(--primary); }
+.exec-stage.done .stage-label { color: var(--success); }
+
+.exec-meta {
+  padding: 16px;
+  border-top: 1px solid var(--border-light);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+/* ═══════════════════════════════════════════
+   GLOBAL HEADER & FOOTER
+   ═══════════════════════════════════════════ */
+.app-header {
+  height: var(--header-height);
+  padding: 0 20px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 110;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+}
+
+.app-brand span {
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--primary);
+}
+
+.app-footer {
+  padding: 12px 20px;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border-light);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+}
+
+.footer-links {
+  display: flex;
+  gap: 12px;
+}
+
+.footer-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.footer-links a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════
+   SETTINGS VIEW
+   ═══════════════════════════════════════════ */
+.settings-view {
+  flex-direction: column;
+}
+
+.settings-header {
+  height: var(--header-height);
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.settings-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.settings-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  max-width: 520px;
+}
+
+.settings-section {
+  margin-bottom: 24px;
+}
+
+.settings-section h3 {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.settings-row label {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.settings-row select, .settings-row input[type="text"] {
+  padding: 6px 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.85rem;
+}
+
+.btn-danger {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--error);
+  color: var(--error);
+  border-radius: var(--radius-xs);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-danger:hover { background: rgba(248,113,113,0.1); }
+
+/* ═══════════════════════════════════════════
+   MOBILE BOTTOM NAV
+   ═══════════════════════════════════════════ */
+.bottom-nav {
+  display: none;
+  height: var(--bottom-nav-height);
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.bottom-nav-inner {
+  display: flex;
+  height: 100%;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.bottom-nav-item .nav-icon { font-size: 1.2rem; }
+.bottom-nav-item.active { color: var(--primary); }
+
+/* ═══════════════════════════════════════════
+   MOBILE SIDEBAR OVERLAY
+   ═══════════════════════════════════════════ */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 90;
+}
+
+.sidebar-overlay.active { display: block; }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — Mobile
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  .sidebar.open { transform: translateX(0); }
+
+  .exec-panel { display: none; }
+
+  .btn-hamburger { display: flex; }
+
+  .bottom-nav { display: block; }
+
+  .chat-view { flex-direction: column; }
+
+  .chat-messages { padding: 16px; }
+  .connection-banner { margin: 8px 12px 0; font-size: 0.78rem; }
+  .connection-pill { padding: 4px 8px; font-size: 0.7rem; }
+  .chat-header { padding: 0 12px; }
+  .chat-header-title {
+    max-width: 36vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chat-input-area { padding: 10px 12px 10px; }
+
+  .message { max-width: 100%; }
+
+  .settings-body { max-width: 100%; }
+  .settings-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .settings-row select, .settings-row input[type="text"], .settings-row .btn-danger, .settings-row span {
+    width: 100%;
+    text-align: left;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   ABOUT VIEW
+   ═══════════════════════════════════════════ */
+.about-view {
+  flex-direction: column;
+}
+
+.about-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 20px;
+  max-width: 520px;
+}
+
+.about-body h2 {
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.about-body p {
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.about-body .version {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+/* ═══════════════════════════════════════════
+   UTILITY
+   ═══════════════════════════════════════════ */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+.hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div id="app">
+
+  <header class="app-header" id="app-header">
+    <div class="app-brand">
+      <img src="icon.png" alt="Zayvora Logo">
+      <span>ZAYVORA</span>
+    </div>
+    <div style="font-size: 0.8rem; color: var(--text-dim); font-weight: 500;">Sovereign AI</div>
+  </header>
+
+  <!-- ═══════════ LOGIN VIEW ═══════════ -->
+  <div id="view-login" class="view auth-view active">
+    <div class="auth-card">
+      <div class="brand">
+        <h1>Zayvora</h1>
+        <p>Sovereign AI Interface</p>
+      </div>
+      <form class="auth-form" id="login-form" autocomplete="off">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
+        <div class="auth-error" id="login-error"></div>
+        <button type="submit" class="btn-primary">Sign In</button>
+      </form>
+      <div class="auth-footer">
+        <a id="goto-signup">Create an account</a> &middot; <a id="goto-recovery">Recover account</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SIGNUP VIEW ═══════════ -->
+  <div id="view-signup" class="view auth-view">
+    <div class="auth-card">
+      <div class="brand">
+        <h1>Zayvora</h1>
+        <p>Create your local account</p>
+      </div>
+      <form class="auth-form" id="signup-form" autocomplete="off">
+        <label for="signup-name">Name</label>
+        <input type="text" id="signup-name" placeholder="Your name" required autocomplete="name">
+        <label for="signup-email">Email</label>
+        <input type="email" id="signup-email" placeholder="you@example.com" required autocomplete="email">
+        <label for="signup-password">Password</label>
+        <input type="password" id="signup-password" placeholder="Min 8 characters" required minlength="8" autocomplete="new-password">
+        <label for="signup-password-confirm">Confirm Password</label>
+        <input type="password" id="signup-password-confirm" placeholder="Confirm password" required minlength="8" autocomplete="new-password">
+        <div class="auth-error" id="signup-error"></div>
+        <div class="auth-success hidden" id="signup-success">
+          <p>Account created. Save your recovery code:</p>
+          <div class="recovery-codes" id="signup-recovery-codes"></div>
+          <p style="margin-top:8px;color:var(--text-muted);font-size:0.8rem">Write these down. They cannot be shown again.</p>
+        </div>
+        <button type="submit" class="btn-primary" id="signup-btn">Create Account</button>
+      </form>
+      <div class="auth-footer">
+        Already have an account? <a id="goto-login-from-signup">Sign in</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ RECOVERY VIEW ═══════════ -->
+  <div id="view-recovery" class="view auth-view">
+    <div class="auth-card">
+      <div class="brand">
+        <h1>Zayvora</h1>
+        <p>Recover your account</p>
+      </div>
+      <form class="auth-form" id="recovery-form" autocomplete="off">
+        <label for="recovery-email">Email</label>
+        <input type="email" id="recovery-email" placeholder="you@example.com" required>
+        <label for="recovery-code">Recovery Code</label>
+        <input type="text" id="recovery-code" placeholder="Enter one of your recovery codes" required>
+        <label for="recovery-newpass">New Password</label>
+        <input type="password" id="recovery-newpass" placeholder="New password (min 8 chars)" required minlength="8">
+        <div class="auth-error" id="recovery-error"></div>
+        <button type="submit" class="btn-primary">Reset Password</button>
+      </form>
+      <div class="auth-footer">
+        <a id="goto-login-from-recovery">Back to sign in</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ CHAT VIEW ═══════════ -->
+  <div id="view-chat" class="view chat-view">
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Conversations">
+      <div class="sidebar-header">
+        <h2>Zayvora</h2>
+        <button class="btn-new-chat" id="btn-new-chat" title="New conversation" aria-label="New conversation">+</button>
+      </div>
+      <div class="sidebar-search">
+        <input type="text" id="search-conversations" placeholder="Search conversations..." aria-label="Search conversations">
+      </div>
+      <div class="conversation-list" id="conversation-list" role="list"></div>
+      <div class="sidebar-footer">
+        <button id="btn-settings" aria-label="Settings">Settings</button>
+        <button id="btn-logout" aria-label="Logout">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Chat -->
+    <main class="chat-main">
+      <div class="chat-header">
+        <button class="btn-hamburger" id="btn-hamburger" aria-label="Open sidebar">&#9776;</button>
+        <span class="chat-header-title" id="chat-header-title">New Conversation</span>
+        <div class="chat-header-right">
+          <div class="connection-pill disconnected" id="connection-pill" role="status" aria-live="polite">
+            <span class="connection-dot" aria-hidden="true"></span>
+            <span id="connection-pill-text">Disconnected</span>
+          </div>
+        </div>
+      </div>
+      <div class="connection-banner hidden" id="connection-banner" aria-live="polite">
+        <div class="connection-banner-title">⚠️ Zayvora backend unavailable</div>
+        <ul>
+          <li>Is Zayvora running? (<span id="connection-endpoint-label">localhost:11434</span>)</li>
+          <li>Your message will be queued and sent when connection restores.</li>
+          <li id="retry-next-attempt">Retrying... (Next attempt in 5s)</li>
+        </ul>
+        <div class="connection-banner-actions">
+          <button id="btn-connection-retry" type="button">Retry Now</button>
+          <button id="btn-manual-instructions" type="button">Connection Help</button>
+        </div>
+        <div class="connection-help-note hidden" id="connection-help-note">
+          Open <strong>Settings → Inference</strong> to verify your endpoint and model. Messages remain queued until reconnection.
+        </div>
+      </div>
+      <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
+        <div class="typing-indicator" id="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <div class="chat-input-wrap">
+          <textarea id="chat-input" rows="1" placeholder="Message Zayvora..." aria-label="Message input"></textarea>
+          <button class="btn-send" id="btn-send" aria-label="Send message">&#9654;</button>
+          <button class="btn-stop hidden" id="btn-stop" aria-label="Stop generation">&#9632;</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Execution Panel -->
+    <aside class="exec-panel" id="exec-panel" aria-label="Execution status">
+      <div class="exec-header">Reasoning</div>
+      <div class="exec-stages" id="exec-stages">
+        <div class="exec-stage idle" data-stage="planning">
+          <div class="stage-label"><span>Planning</span><span class="stage-pct">0%</span></div>
+          <div class="stage-bar"><div class="stage-fill"></div></div>
+        </div>
+        <div class="exec-stage idle" data-stage="synthesizing">
+          <div class="stage-label"><span>Synthesizing</span><span class="stage-pct">0%</span></div>
+          <div class="stage-bar"><div class="stage-fill"></div></div>
+        </div>
+        <div class="exec-stage idle" data-stage="validating">
+          <div class="stage-label"><span>Validating</span><span class="stage-pct">0%</span></div>
+          <div class="stage-bar"><div class="stage-fill"></div></div>
+        </div>
+        <div class="exec-stage idle" data-stage="executing">
+          <div class="stage-label"><span>Executing</span><span class="stage-pct">0%</span></div>
+          <div class="stage-bar"><div class="stage-fill"></div></div>
+        </div>
+      </div>
+      <div class="exec-meta" id="exec-meta">Idle</div>
+    </aside>
+  </div>
+
+  <!-- ═══════════ SETTINGS VIEW ═══════════ -->
+  <div id="view-settings" class="view settings-view">
+    <div class="settings-header">
+      <button class="btn-back" id="btn-back-settings" aria-label="Back">&larr;</button>
+      <h2>Settings</h2>
+    </div>
+    <div class="settings-body">
+      <div class="settings-section">
+        <h3>Inference</h3>
+        <div class="settings-row">
+          <label for="setting-endpoint">Zayvora Endpoint</label>
+          <input type="text" id="setting-endpoint" placeholder="Local service URL">
+        </div>
+        <div class="settings-row">
+          <label for="setting-model">Model</label>
+          <input type="text" id="setting-model" placeholder="zayvora-engineer">
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Account</h3>
+        <div class="settings-row">
+          <label>Install app</label>
+          <button class="btn-danger" id="btn-install-pwa" style="border-color:var(--success);color:var(--success)" disabled>Install Unavailable</button>
+        </div>
+        <div class="settings-row">
+          <label>Logged in as</label>
+          <span id="settings-email" style="color:var(--text-muted);font-size:0.85rem">—</span>
+        </div>
+        <div class="settings-row">
+          <label>Export conversations</label>
+          <button class="btn-danger" id="btn-export" style="border-color:var(--primary);color:var(--primary)">Export JSON</button>
+        </div>
+        <div class="settings-row">
+          <label>Delete all data</label>
+          <button class="btn-danger" id="btn-delete-all">Delete Everything</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ABOUT VIEW ═══════════ -->
+  <div id="view-about" class="view about-view">
+    <div class="settings-header">
+      <button class="btn-back" id="btn-back-about" aria-label="Back">&larr;</button>
+      <h2>About</h2>
+    </div>
+    <div class="about-body">
+      <h2>Zayvora</h2>
+      <p>Sovereign AI interface built by ViaDecide. No external dependencies. No cloud auth. Everything runs locally. Everything is owned.</p>
+      <p>Zayvora is a reasoning engine designed for deep, auditable, multi-layer thinking. This PWA connects to your local Zayvora inference server.</p>
+      <p class="version">v1.0.0 &middot; Built sovereign &middot; daxini.xyz</p>
+    </div>
+  </div>
+
+  <!-- ═══════════ MOBILE BOTTOM NAV ═══════════ -->
+  <nav class="bottom-nav" id="bottom-nav" aria-label="Navigation">
+    <div class="bottom-nav-inner">
+      <button class="bottom-nav-item active" data-nav="chat" aria-label="Conversations">
+        <span class="nav-icon">&#128172;</span>
+        <span>Chat</span>
+      </button>
+      <button class="bottom-nav-item" data-nav="settings" aria-label="Settings">
+        <span class="nav-icon">&#9881;</span>
+        <span>Settings</span>
+      </button>
+      <button class="bottom-nav-item" data-nav="about" aria-label="About">
+        <span class="nav-icon">&#8505;</span>
+        <span>About</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════ TERMS VIEW ═══════════ -->
+  <div id="view-terms" class="view settings-view">
+    <div class="settings-header">
+      <button class="btn-back" id="btn-back-terms" aria-label="Back">&larr;</button>
+      <h2>Terms of Sovereignty</h2>
+    </div>
+    <div class="settings-body">
+      <div class="settings-section">
+        <h3>1. Direct Ownership</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px;">The user maintains absolute ownership of ALL data generated, retrieved, or processed within this interface. Zayvora is a local-first portal; no data is harvested, analyzed, or stored by any central authority.</p>
+      </div>
+      <div class="settings-section">
+        <h3>2. Local Autonomy</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px;">By using Zayvora, you agree to manage your own compute environment. All inference occurs on local hardware or user-controlled API endpoints. There is no cloud fallback, and thus no middle-man.</p>
+      </div>
+      <div class="settings-section">
+        <h3>3. Irrevocable Encryption</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">Your communication history is protected by AES-GCM 256-bit encryption. The decryption key is derived strictly from your local password. If the password is lost, the data is mathematically unrecoverable.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PRIVACY VIEW ═══════════ -->
+  <div id="view-privacy" class="view settings-view">
+    <div class="settings-header">
+      <button class="btn-back" id="btn-back-privacy" aria-label="Back">&larr;</button>
+      <h2>Privacy Policy</h2>
+    </div>
+    <div class="settings-body">
+      <div class="settings-section">
+        <h3>Zero Telemetry</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px;">We do not track. There are no analytics pings, no diagnostic reports, and no heartbeat signals sent to external servers. Your instance of Zayvora is a dark node on the network.</p>
+      </div>
+      <div class="settings-section">
+        <h3>No Third-Party Scripts</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px;">This application uses zero external libraries or CDNs. Every line of code runs from your local shell, preventing cross-site tracking and script injection.</p>
+      </div>
+      <div class="settings-section">
+        <h3>Permanent Local Storage</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">Logs and preferences reside only in your browser's IndexedDB. We have no access to this data. Privacy is enforced by physical isolation.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer" id="app-footer">
+    <div>v1.2.0 &middot; Built Sovereign</div>
+    <div class="footer-links">
+      <a id="link-terms">Terms</a>
+      <a id="link-privacy">Privacy</a>
+      <a href="https://github.com/via-decide" target="_blank">GitHub</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   ZAYVORA PWA — Complete Sovereign Application
+   Zero dependencies. Local-first. Auditable.
+   ═══════════════════════════════════════════════════════════════ */
+'use strict';
+
+(function() {
+
+/* ─── IndexedDB Storage Layer ─── */
+const DB_NAME = 'zayvora-auth';
+const DB_VERSION = 3;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('users')) {
+        const userStore = db.createObjectStore('users', { keyPath: 'email' });
+        userStore.createIndex('email', 'email', { unique: true });
+      } else {
+        const userStore = req.transaction.objectStore('users');
+        if (!userStore.indexNames.contains('email')) {
+          userStore.createIndex('email', 'email', { unique: true });
+        }
+      }
+      if (!db.objectStoreNames.contains('conversations')) {
+        const convStore = db.createObjectStore('conversations', { keyPath: 'id' });
+        convStore.createIndex('timestamp', 'timestamp', { unique: false });
+      }
+      if (db.objectStoreNames.contains('tokens')) {
+        db.deleteObjectStore('tokens');
+      }
+      const tokenStore = db.createObjectStore('tokens', { keyPath: 'id' });
+      tokenStore.createIndex('email', 'email', { unique: false });
+      if (!db.objectStoreNames.contains('sessions')) {
+        db.createObjectStore('sessions', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('preferences')) {
+        db.createObjectStore('preferences', { keyPath: 'key' });
+      }
+      if (!db.objectStoreNames.contains('pendingMessages')) {
+        const pendingStore = db.createObjectStore('pendingMessages', { keyPath: 'id' });
+        pendingStore.createIndex('timestamp', 'timestamp', { unique: false });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbPut(storeName, data) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    tx.objectStore(storeName).put(data);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function dbGet(storeName, key) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const req = tx.objectStore(storeName).get(key);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbGetAll(storeName) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const req = tx.objectStore(storeName).getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbDelete(storeName, key) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    tx.objectStore(storeName).delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function dbClear(storeName) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    tx.objectStore(storeName).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/* ─── Auth Utilities (local-only, no external deps) ─── */
+
+async function deriveKey(password, saltHex) {
+  const encoder = new TextEncoder();
+  const salt = saltHex ? new Uint8Array(saltHex.match(/.{2}/g).map(b => parseInt(b, 16))) : crypto.getRandomValues(new Uint8Array(16));
+  const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits', 'deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
+async function encryptData(data, key) {
+  const encoder = new TextEncoder();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encrypted = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    encoder.encode(JSON.stringify(data))
+  );
+  return {
+    iv: Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join(''),
+    data: Array.from(new Uint8Array(encrypted)).map(b => b.toString(16).padStart(2, '0')).join('')
+  };
+}
+
+async function decryptData(encryptedObj, key) {
+  const iv = new Uint8Array(encryptedObj.iv.match(/.{2}/g).map(b => parseInt(b, 16)));
+  const encrypted = new Uint8Array(encryptedObj.data.match(/.{2}/g).map(b => parseInt(b, 16)));
+  const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted);
+  return JSON.parse(new TextDecoder().decode(decrypted));
+}
+
+function hashPassword(password) {
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const char = password.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36);
+}
+
+function verifyPassword(password, storedHash) {
+  return hashPassword(password) === storedHash;
+}
+
+function generateRecoveryCode() {
+  return Math.random().toString(36).substring(2, 10).toUpperCase();
+}
+
+function generateToken(email) {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const now = Math.floor(Date.now() / 1000);
+  const payload = btoa(JSON.stringify({ email, iat: now, exp: now + 86400 }));
+  const sig = btoa(email + 'secret-key');
+  return header + '.' + payload + '.' + sig;
+}
+
+function verifyToken(token) {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    const payload = JSON.parse(atob(parts[1]));
+    return payload.exp > Math.floor(Date.now() / 1000);
+  } catch {
+    return false;
+  }
+}
+
+function getDeviceFingerprint() {
+  return [
+    navigator.userAgent,
+    screen.width + 'x' + screen.height,
+    Intl.DateTimeFormat().resolvedOptions().timeZone
+  ].join('|');
+}
+
+function generateId() {
+  return Date.now().toString(36) + '-' + crypto.randomUUID().slice(0, 8);
+}
+
+/* ─── App State ─── */
+const state = {
+  currentUser: null,
+  encryptionKey: null,
+  currentConversationId: null,
+  conversations: [],
+  isStreaming: false,
+  deferredInstallPrompt: null,
+  abortController: null,
+  inactivityTimer: null,
+  connection: {
+    status: 'connecting',
+    nextRetryAt: null,
+    checkInterval: null,
+    countdownInterval: null,
+    lastChecked: null
+  },
+  settings: {
+    endpoint: '',
+    model: 'zayvora-engineer'
+  }
+};
+
+/* ─── DOM References ─── */
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function updateInstallButton() {
+  const btn = $('#btn-install-pwa');
+  if (!btn) return;
+  if (isStandaloneMode()) {
+    btn.textContent = 'Installed';
+    btn.disabled = true;
+    return;
+  }
+  btn.textContent = state.deferredInstallPrompt ? 'Install App' : 'Install Unavailable';
+  btn.disabled = !state.deferredInstallPrompt;
+}
+
+function getConfiguredEndpoint() {
+  return (state.settings.endpoint || '').trim() || 'http://localhost:11434';
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 5000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function fetchWithRetry(url, options = {}, maxRetries = 3, timeoutMs = 5000) {
+  let lastError = null;
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetchWithTimeout(url, options, timeoutMs);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (i < maxRetries - 1) await sleep(Math.pow(2, i) * 1000);
+    }
+  }
+  throw lastError;
+}
+
+function setConnectionStatus(status) {
+  state.connection.status = status;
+  state.connection.lastChecked = Date.now();
+
+  const pill = $('#connection-pill');
+  const pillText = $('#connection-pill-text');
+  const banner = $('#connection-banner');
+  if (!pill || !pillText || !banner) return;
+
+  pill.classList.remove('connected', 'connecting', 'disconnected');
+  pill.classList.add(status);
+
+  if (status === 'connected') {
+    pillText.textContent = 'Connected';
+    banner.classList.add('hidden');
+  } else if (status === 'connecting') {
+    pillText.textContent = 'Reconnecting...';
+    banner.classList.remove('hidden');
+  } else {
+    pillText.textContent = 'Disconnected';
+    banner.classList.remove('hidden');
+  }
+}
+
+function updateRetryCountdown() {
+  const label = $('#retry-next-attempt');
+  if (!label) return;
+  if (!state.connection.nextRetryAt) {
+    label.textContent = 'Retrying... (Next attempt in 5s)';
+    return;
+  }
+  const remainingMs = Math.max(0, state.connection.nextRetryAt - Date.now());
+  const seconds = Math.ceil(remainingMs / 1000);
+  label.textContent = `Retrying... (Next attempt in ${seconds}s)`;
+}
+
+async function checkConnection(silent = false) {
+  if (!silent) setConnectionStatus('connecting');
+  const endpoint = getConfiguredEndpoint().replace(/\/$/, '');
+  const hostLabel = endpoint.replace(/^https?:\/\//, '') || 'localhost:11434';
+  const endpointLabel = $('#connection-endpoint-label');
+  if (endpointLabel) endpointLabel.textContent = hostLabel;
+
+  try {
+    await fetchWithRetry(`${endpoint}/health`, { method: 'GET' }, 2, 3000);
+    const wasDisconnected = state.connection.status !== 'connected';
+    setConnectionStatus('connected');
+    if (wasDisconnected) await flushQueuedMessages();
+    return true;
+  } catch {
+    setConnectionStatus('disconnected');
+    state.connection.nextRetryAt = Date.now() + 5000;
+    updateRetryCountdown();
+    return false;
+  }
+}
+
+function startConnectionMonitor() {
+  stopConnectionMonitor();
+  state.connection.checkInterval = setInterval(() => {
+    checkConnection();
+  }, 5000);
+  state.connection.countdownInterval = setInterval(updateRetryCountdown, 1000);
+}
+
+function stopConnectionMonitor() {
+  clearInterval(state.connection.checkInterval);
+  clearInterval(state.connection.countdownInterval);
+  state.connection.checkInterval = null;
+  state.connection.countdownInterval = null;
+}
+
+async function queuePendingMessage(conversationId, text) {
+  await dbPut('pendingMessages', {
+    id: generateId(),
+    conversationId,
+    text,
+    timestamp: Date.now(),
+    status: 'pending'
+  });
+}
+
+async function flushQueuedMessages() {
+  const pending = await dbGetAll('pendingMessages');
+  for (const item of pending.sort((a, b) => a.timestamp - b.timestamp)) {
+    try {
+      await streamResponseByConversationId(item.conversationId, item.text, true);
+      await dbDelete('pendingMessages', item.id);
+    } catch {
+      break;
+    }
+  }
+}
+
+/* ─── View Navigation ─── */
+function showView(viewId) {
+  $$('.view').forEach(v => v.classList.remove('active'));
+  const view = $(`#view-${viewId}`);
+  if (view) view.classList.add('active');
+
+  // Update bottom nav
+  $$('.bottom-nav-item').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.nav === viewId);
+  });
+
+  // Close sidebar on mobile
+  $('#sidebar').classList.remove('open');
+  $('#sidebar-overlay').classList.remove('active');
+}
+
+/* ─── Auth: Login ─── */
+$('#login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = $('#login-email').value.trim();
+  const password = $('#login-password').value;
+  const errEl = $('#login-error');
+  errEl.textContent = '';
+
+  const user = await dbGet('users', email);
+  if (!user || !verifyPassword(password, user.passwordHash)) {
+    errEl.textContent = 'Invalid email or password';
+    return;
+  }
+
+  const token = generateToken(email);
+  const now = Date.now();
+  await dbClear('tokens');
+  await dbPut('tokens', {
+    id: 'session',
+    token,
+    email,
+    expiresAt: now + (24 * 60 * 60 * 1000),
+    deviceFingerprint: getDeviceFingerprint()
+  });
+  await dbPut('sessions', {
+    id: 'current',
+    email,
+    loginTime: now,
+    lastActivityTime: now
+  });
+  sessionStorage.setItem('zayvora_token', token);
+  sessionStorage.setItem('zayvora_email', email);
+
+  state.currentUser = user;
+  state.encryptionKey = await deriveKey(password, hashPassword(password));
+
+  await enterApp();
+});
+
+/* ─── Auth: Signup ─── */
+$('#signup-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = $('#signup-name').value.trim();
+  const email = $('#signup-email').value.trim();
+  const password = $('#signup-password').value;
+  const confirmPassword = $('#signup-password-confirm').value;
+  const errEl = $('#signup-error');
+  const successEl = $('#signup-success');
+  errEl.textContent = '';
+  successEl.classList.add('hidden');
+
+  const existing = await dbGet('users', email);
+  if (existing) { errEl.textContent = 'Account already exists.'; return; }
+  if (password.length < 8) { errEl.textContent = 'Password must be at least 8 characters.'; return; }
+  if (password !== confirmPassword) { errEl.textContent = 'Passwords do not match.'; return; }
+
+  const passwordHash = hashPassword(password);
+  const recoveryCode = generateRecoveryCode();
+
+  await dbPut('users', {
+    email,
+    name,
+    passwordHash,
+    recoveryCode,
+    createdAt: Date.now()
+  });
+
+  $('#signup-recovery-codes').textContent = recoveryCode;
+  successEl.classList.remove('hidden');
+  await sleep(1400);
+  const loginResult = await (async () => {
+    const userRecord = await dbGet('users', email);
+    if (!userRecord || !verifyPassword(password, userRecord.passwordHash)) return false;
+    return true;
+  })();
+  if (!loginResult) { errEl.textContent = 'Auto-login failed. Please sign in manually.'; return; }
+  $('#login-email').value = email;
+  $('#login-password').value = password;
+  document.getElementById('login-form').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+});
+
+/* ─── Auth: Recovery ─── */
+$('#recovery-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = $('#recovery-email').value.trim();
+  const code = $('#recovery-code').value.trim().toUpperCase();
+  const newPass = $('#recovery-newpass').value;
+  const errEl = $('#recovery-error');
+  errEl.textContent = '';
+
+  const user = await dbGet('users', email);
+  if (!user) { errEl.textContent = 'No account found.'; return; }
+
+  if (newPass.length < 8) { errEl.textContent = 'Password must be at least 8 characters.'; return; }
+  if (user.recoveryCode !== code) { errEl.textContent = 'Invalid recovery code.'; return; }
+  user.passwordHash = hashPassword(newPass);
+  user.recoveryCode = generateRecoveryCode();
+  await dbPut('users', user);
+
+  errEl.textContent = '';
+  alert('Password reset successful. Save this new recovery code: ' + user.recoveryCode);
+  showView('login');
+});
+
+/* ─── Auth: Navigation links ─── */
+$('#goto-signup').addEventListener('click', () => showView('signup'));
+$('#goto-recovery').addEventListener('click', () => showView('recovery'));
+$('#goto-login-from-signup').addEventListener('click', () => showView('login'));
+$('#goto-login-from-recovery').addEventListener('click', () => showView('login'));
+
+/* ─── Auth: Auto-login check ─── */
+async function checkExistingSession() {
+  const token = sessionStorage.getItem('zayvora_token');
+  const email = sessionStorage.getItem('zayvora_email');
+  if (!token || !email || !verifyToken(token)) {
+    sessionStorage.removeItem('zayvora_token');
+    sessionStorage.removeItem('zayvora_email');
+    return false;
+  }
+
+  const stored = await dbGet('tokens', 'session');
+  if (!stored || stored.token !== token || stored.email !== email) {
+    return false;
+  }
+
+  if (stored.deviceFingerprint !== getDeviceFingerprint()) {
+    return false;
+  }
+
+  const user = await dbGet('users', email);
+  if (!user) {
+    return false;
+  }
+
+  state.currentUser = user;
+  return true;
+}
+
+/* ─── Auth: Logout ─── */
+async function logout() {
+  await dbClear('tokens');
+  await dbClear('sessions');
+  sessionStorage.clear();
+  state.currentUser = null;
+  state.currentConversationId = null;
+  clearInactivityTimer();
+  stopConnectionMonitor();
+  showView('login');
+}
+
+$('#btn-logout').addEventListener('click', logout);
+
+/* ─── Inactivity Auto-Logout (30 min) ─── */
+function resetInactivityTimer() {
+  clearTimeout(state.inactivityTimer);
+  state.inactivityTimer = setTimeout(() => logout(), 30 * 60 * 1000);
+}
+
+function clearInactivityTimer() {
+  clearTimeout(state.inactivityTimer);
+}
+
+['click', 'keydown', 'touchstart'].forEach(evt => {
+  document.addEventListener(evt, resetInactivityTimer, { passive: true });
+});
+
+/* ─── Enter App ─── */
+async function enterApp() {
+  showView('chat');
+  resetInactivityTimer();
+  setConnectionStatus('connecting');
+
+  // Load settings
+  const prefs = await dbGet('preferences', 'settings');
+  if (prefs) {
+    state.settings = { ...state.settings, ...prefs.value };
+  }
+  $('#setting-endpoint').value = state.settings.endpoint === 'http://localhost:11434' ? '' : state.settings.endpoint;
+  $('#setting-model').value = state.settings.model;
+  $('#settings-email').textContent = state.currentUser.email;
+  updateInstallButton();
+
+  // Load conversations
+  await loadConversations();
+
+  // Start new conversation if none
+  if (state.conversations.length === 0) {
+    newConversation();
+  } else {
+    selectConversation(state.conversations[0].id);
+  }
+
+  startConnectionMonitor();
+  checkConnection();
+}
+
+/* ─── Conversation Management ─── */
+async function loadConversations() {
+  const all = await dbGetAll('conversations');
+  // Decrypt conversations if they are encrypted
+  const decrypted = [];
+  for (const c of all) {
+    if (c.userEmail === state.currentUser.email) {
+      if (c.encrypted && state.encryptionKey) {
+        try {
+          const content = await decryptData(c.encrypted, state.encryptionKey);
+          decrypted.push({ ...c, messages: content.messages, title: content.title });
+        } catch (e) { console.error('Failed to decrypt conversation', c.id); }
+      } else {
+        decrypted.push(c);
+      }
+    }
+  }
+  state.conversations = decrypted.sort((a, b) => b.timestamp - a.timestamp);
+  renderConversationList();
+}
+
+function renderConversationList(filter) {
+  const list = $('#conversation-list');
+  list.innerHTML = '';
+
+  let convs = state.conversations;
+  if (filter) {
+    const q = filter.toLowerCase();
+    convs = convs.filter(c =>
+      (c.title || '').toLowerCase().includes(q) ||
+      (c.messages || []).some(m => m.content.toLowerCase().includes(q))
+    );
+  }
+
+  for (const conv of convs) {
+    const div = document.createElement('div');
+    div.className = 'conversation-item' + (conv.id === state.currentConversationId ? ' active' : '');
+    div.setAttribute('role', 'listitem');
+    div.setAttribute('tabindex', '0');
+
+    const title = document.createElement('div');
+    title.className = 'conv-title';
+    title.textContent = conv.title || 'New Conversation';
+
+    const time = document.createElement('div');
+    time.className = 'conv-time';
+    time.textContent = formatTime(conv.timestamp);
+
+    div.appendChild(title);
+    div.appendChild(time);
+
+    div.addEventListener('click', () => selectConversation(conv.id));
+    div.addEventListener('keydown', (e) => { if (e.key === 'Enter') selectConversation(conv.id); });
+    list.appendChild(div);
+  }
+}
+
+$('#search-conversations').addEventListener('input', (e) => {
+  renderConversationList(e.target.value);
+});
+
+function newConversation() {
+  const conv = {
+    id: generateId(),
+    userEmail: state.currentUser.email,
+    title: 'New Conversation',
+    messages: [],
+    timestamp: Date.now()
+  };
+  state.conversations.unshift(conv);
+  dbPut('conversations', conv);
+  selectConversation(conv.id);
+  renderConversationList();
+}
+
+function selectConversation(id) {
+  state.currentConversationId = id;
+  renderConversationList();
+  renderMessages();
+
+  const conv = state.conversations.find(c => c.id === id);
+  $('#chat-header-title').textContent = conv ? (conv.title || 'New Conversation') : 'New Conversation';
+
+  // Close sidebar on mobile
+  $('#sidebar').classList.remove('open');
+  $('#sidebar-overlay').classList.remove('active');
+}
+
+$('#btn-new-chat').addEventListener('click', newConversation);
+
+/* ─── Message Rendering ─── */
+function renderMessages() {
+  const container = $('#chat-messages');
+  const typing = $('#typing-indicator');
+
+  // Remove all children except typing indicator
+  while (container.firstChild && container.firstChild !== typing) {
+    container.removeChild(container.firstChild);
+  }
+
+  const conv = state.conversations.find(c => c.id === state.currentConversationId);
+  if (!conv) return;
+
+  for (const msg of conv.messages) {
+    const el = createMessageElement(msg);
+    container.insertBefore(el, typing);
+  }
+
+  container.scrollTop = container.scrollHeight;
+}
+
+function createMessageElement(msg) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message ' + msg.role;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'message-avatar';
+  avatar.textContent = msg.role === 'user' ? 'U' : 'Z';
+
+  const bodyWrap = document.createElement('div');
+
+  const body = document.createElement('div');
+  body.className = 'message-body';
+  body.textContent = msg.content;
+
+  const meta = document.createElement('div');
+  meta.className = 'message-meta';
+  meta.textContent = formatTime(msg.timestamp);
+
+  bodyWrap.appendChild(body);
+  bodyWrap.appendChild(meta);
+
+  wrapper.appendChild(avatar);
+  wrapper.appendChild(bodyWrap);
+
+  return wrapper;
+}
+
+function appendStreamingMessage() {
+  const container = $('#chat-messages');
+  const typing = $('#typing-indicator');
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message assistant';
+  wrapper.id = 'streaming-msg';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'message-avatar';
+  avatar.textContent = 'Z';
+
+  const bodyWrap = document.createElement('div');
+
+  const body = document.createElement('div');
+  body.className = 'message-body';
+  body.id = 'streaming-body';
+  body.textContent = '';
+
+  bodyWrap.appendChild(body);
+  wrapper.appendChild(avatar);
+  wrapper.appendChild(bodyWrap);
+
+  container.insertBefore(wrapper, typing);
+  return body;
+}
+
+function formatTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) {
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' +
+         d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+/* ─── Execution Visualization ─── */
+const execStages = ['planning', 'synthesizing', 'validating', 'executing'];
+
+function resetExecViz() {
+  for (const stage of execStages) {
+    const el = $(`.exec-stage[data-stage="${stage}"]`);
+    el.className = 'exec-stage idle';
+    el.querySelector('.stage-fill').style.width = '0%';
+    el.querySelector('.stage-pct').textContent = '0%';
+  }
+  $('#exec-meta').textContent = 'Idle';
+}
+
+function animateExecViz() {
+  resetExecViz();
+  $('#exec-meta').textContent = 'Processing...';
+
+  let stageIndex = 0;
+  const interval = setInterval(() => {
+    if (!state.isStreaming) {
+      // Complete all remaining
+      for (let i = stageIndex; i < execStages.length; i++) {
+        const el = $(`.exec-stage[data-stage="${execStages[i]}"]`);
+        el.className = 'exec-stage done';
+        el.querySelector('.stage-fill').style.width = '100%';
+        el.querySelector('.stage-pct').textContent = '100%';
+      }
+      $('#exec-meta').textContent = 'Complete';
+      clearInterval(interval);
+      return;
+    }
+
+    if (stageIndex >= execStages.length) {
+      clearInterval(interval);
+      return;
+    }
+
+    const stageName = execStages[stageIndex];
+    const el = $(`.exec-stage[data-stage="${stageName}"]`);
+    el.className = 'exec-stage active';
+
+    let pct = 0;
+    const fill = setInterval(() => {
+      pct += Math.random() * 15 + 5;
+      if (pct >= 100) {
+        pct = 100;
+        el.className = 'exec-stage done';
+        clearInterval(fill);
+        stageIndex++;
+      }
+      el.querySelector('.stage-fill').style.width = pct + '%';
+      el.querySelector('.stage-pct').textContent = Math.round(pct) + '%';
+    }, 200);
+  }, 800);
+}
+
+function updateExecStage(stageName, pctIncrement) {
+  const el = $(`.exec-stage[data-stage="${stageName}"]`);
+  if (!el) return;
+  el.className = 'exec-stage active';
+  const bar = el.querySelector('.stage-fill');
+  const pctEl = el.querySelector('.stage-pct');
+  let currentPct = parseInt(pctEl.textContent) || 0;
+  currentPct = Math.min(100, currentPct + pctIncrement);
+  bar.style.width = currentPct + '%';
+  pctEl.textContent = currentPct + '%';
+  if (currentPct === 100) el.className = 'exec-stage done';
+  $('#exec-meta').textContent = `Active: ${stageName}...`;
+}
+
+/* ─── Chat: Send Message ─── */
+async function sendMessage() {
+  const input = $('#chat-input');
+  const text = input.value.trim();
+  if (!text || state.isStreaming) return;
+
+  const conv = state.conversations.find(c => c.id === state.currentConversationId);
+  if (!conv) return;
+
+  // Add user message
+  const userMsg = { role: 'user', content: text, timestamp: Date.now() };
+  conv.messages.push(userMsg);
+  conv.timestamp = Date.now();
+
+  // Update title from first message
+  if (conv.messages.filter(m => m.role === 'user').length === 1) {
+    conv.title = text.slice(0, 50) + (text.length > 50 ? '...' : '');
+    $('#chat-header-title').textContent = conv.title;
+  }
+
+  input.value = '';
+  autoResizeInput();
+  renderMessages();
+  renderConversationList();
+  renderConversationList();
+
+  // Encrypt and save
+  if (state.encryptionKey) {
+    const encrypted = await encryptData({ messages: conv.messages, title: conv.title }, state.encryptionKey);
+    await dbPut('conversations', { ...conv, messages: [], title: '', encrypted });
+  } else {
+    await dbPut('conversations', conv);
+  }
+
+  // Start streaming response
+  if (state.connection.status !== 'connected') {
+    await queuePendingMessage(conv.id, text);
+    conv.messages.push({
+      role: 'assistant',
+      content: '⚠️ Connection unavailable\n\n• We can’t reach your local AI service right now.\n• Your message has been queued and will auto-send when connection restores.\n• Retrying every 5 seconds.',
+      content: '⚠️ Zayvora backend unavailable\n\n• Is your local Zayvora service running?\n• Your message has been queued and will auto-send when connection restores.\n• Retrying every 5 seconds.',
+      content: '⚠️ Zayvora backend unavailable\n\n• Is Zayvora running? (' + state.settings.endpoint + ')\n• Your message has been queued and will auto-send when connection restores.\n• Retrying every 5 seconds.',
+      timestamp: Date.now()
+    });
+    await dbPut('conversations', conv);
+    renderMessages();
+    await checkConnection();
+    return;
+  }
+
+  await streamResponse(conv, text);
+}
+
+async function streamResponseByConversationId(conversationId, prompt, isQueueFlush) {
+  const conv = state.conversations.find(c => c.id === conversationId);
+  if (!conv) return;
+  if (isQueueFlush) {
+    conv.messages.push({ role: 'user', content: prompt, timestamp: Date.now() });
+    conv.timestamp = Date.now();
+    await dbPut('conversations', conv);
+    renderMessages();
+    renderConversationList();
+  }
+  return streamResponse(conv, prompt);
+}
+
+async function streamResponse(conv, prompt) {
+  state.isStreaming = true;
+  state.abortController = new AbortController();
+
+  $('#btn-send').classList.add('hidden');
+  $('#btn-stop').classList.remove('hidden');
+  $('#typing-indicator').classList.add('active');
+  animateExecViz();
+
+  const streamBody = appendStreamingMessage();
+  let fullResponse = '';
+
+  try {
+    const endpoint = getConfiguredEndpoint();
+    const model = state.settings.model;
+
+    // Build message history for context
+    const messages = conv.messages.map(m => ({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: m.content
+    }));
+
+    const response = await fetch(`${endpoint}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages,
+        stream: true
+      }),
+      signal: state.abortController.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n').filter(l => l.trim());
+
+      for (const line of lines) {
+        try {
+          const json = JSON.parse(line);
+          const content = json.message?.content || json.response || '';
+          
+          if (content) {
+            // Detect reasoning/thinking phases
+            if (content.includes('<thought>') || content.includes('[planning]')) updateExecStage('planning', 50);
+            if (content.includes('<synthesizing>') || content.includes('[synthesizing]')) updateExecStage('synthesizing', 50);
+            if (content.includes('<validating>') || content.includes('[validating]')) updateExecStage('validating', 50);
+            if (content.includes('<executing>') || content.includes('[executing]')) updateExecStage('executing', 50);
+
+            fullResponse += content;
+            streamBody.textContent = fullResponse.replace(/<thought>|<\/thought>|<synthesizing>|<\/synthesizing>|<validating>|<\/validating>|<executing>|<\/executing>/g, '');
+            $('#chat-messages').scrollTop = $('#chat-messages').scrollHeight;
+          }
+        } catch { /* skip malformed lines */ }
+      }
+    }
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      fullResponse += '\n\n[Generation stopped]';
+    } else {
+      setConnectionStatus('disconnected');
+      state.connection.nextRetryAt = Date.now() + 5000;
+      updateRetryCountdown();
+      fullResponse = fullResponse || '⚠️ Connection unavailable\n\n• We can’t reach your local AI service right now.\n• Your message will be queued and sent when connection restores\n• Retrying... (Next attempt in 5s)\n\nUse [Connect Now] from the status banner for immediate retry.';
+      fullResponse = fullResponse || '⚠️ Zayvora backend unavailable\n\n• Is your local Zayvora service running?\n• Your message will be queued and sent when connection restores\n• Retrying... (Next attempt in 5s)\n\nUse [Retry Now] from the status banner for immediate retry.';
+      fullResponse = fullResponse || `⚠️ Zayvora backend unavailable\n\n• Is Zayvora running? (${state.settings.endpoint})\n• Your message will be queued and sent when connection restores\n• Retrying... (Next attempt in 5s)\n\nUse [Retry Now] from the status banner for immediate retry.`;
+    }
+    streamBody.textContent = fullResponse;
+  }
+
+  // Save assistant message
+  if (fullResponse) {
+    conv.messages.push({ role: 'assistant', content: fullResponse, timestamp: Date.now() });
+    conv.timestamp = Date.now();
+    if (state.encryptionKey) {
+      const encrypted = await encryptData({ messages: conv.messages, title: conv.title }, state.encryptionKey);
+      await dbPut('conversations', { ...conv, messages: [], title: '', encrypted });
+    } else {
+      await dbPut('conversations', conv);
+    }
+  }
+
+  // Cleanup
+  state.isStreaming = false;
+  state.abortController = null;
+  $('#btn-send').classList.remove('hidden');
+  $('#btn-stop').classList.add('hidden');
+  $('#typing-indicator').classList.remove('active');
+
+  // Remove streaming el & re-render
+  const streamEl = $('#streaming-msg');
+  if (streamEl) streamEl.remove();
+  renderMessages();
+}
+
+$('#btn-stop').addEventListener('click', () => {
+  if (state.abortController) state.abortController.abort();
+});
+
+/* ─── Chat Input ─── */
+$('#btn-send').addEventListener('click', sendMessage);
+
+$('#chat-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+$('#chat-input').addEventListener('input', autoResizeInput);
+
+function autoResizeInput() {
+  const textarea = $('#chat-input');
+  textarea.style.height = 'auto';
+  textarea.style.height = Math.min(textarea.scrollHeight, 160) + 'px';
+}
+
+/* ─── Sidebar Toggle (Mobile) ─── */
+$('#btn-hamburger').addEventListener('click', () => {
+  $('#sidebar').classList.add('open');
+  $('#sidebar-overlay').classList.add('active');
+});
+
+$('#sidebar-overlay').addEventListener('click', () => {
+  $('#sidebar').classList.remove('open');
+  $('#sidebar-overlay').classList.remove('active');
+});
+
+/* ─── Settings ─── */
+$('#btn-settings').addEventListener('click', () => showView('settings'));
+$('#btn-back-settings').addEventListener('click', () => showView('chat'));
+$('#btn-back-about').addEventListener('click', () => showView('chat'));
+$('#btn-back-terms').addEventListener('click', () => showView('about'));
+$('#btn-back-privacy').addEventListener('click', () => showView('about'));
+
+$('#link-terms').addEventListener('click', () => showView('terms'));
+$('#link-privacy').addEventListener('click', () => showView('privacy'));
+
+$('#setting-endpoint').addEventListener('change', async (e) => {
+  state.settings.endpoint = e.target.value.trim();
+  await saveSettings();
+  await checkConnection();
+});
+
+$('#setting-model').addEventListener('change', async (e) => {
+  state.settings.model = e.target.value.trim();
+  await saveSettings();
+});
+
+async function saveSettings() {
+  await dbPut('preferences', { key: 'settings', value: state.settings });
+}
+
+$('#btn-export').addEventListener('click', async () => {
+  const convs = state.conversations;
+  const blob = new Blob([JSON.stringify(convs, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'zayvora-conversations-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+const installBtn = $('#btn-install-pwa');
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (!state.deferredInstallPrompt) return;
+    const promptEvent = state.deferredInstallPrompt;
+    promptEvent.prompt();
+    const choice = await promptEvent.userChoice;
+    if (choice && choice.outcome !== 'accepted') {
+      updateInstallButton();
+      return;
+    }
+    state.deferredInstallPrompt = null;
+    updateInstallButton();
+  });
+}
+$('#btn-install-pwa').addEventListener('click', async () => {
+  if (!state.deferredInstallPrompt) return;
+  const promptEvent = state.deferredInstallPrompt;
+  promptEvent.prompt();
+  const choice = await promptEvent.userChoice;
+  if (choice && choice.outcome !== 'accepted') {
+    updateInstallButton();
+    return;
+  }
+  state.deferredInstallPrompt = null;
+  updateInstallButton();
+});
+
+$('#btn-delete-all').addEventListener('click', async () => {
+  if (!confirm('This will permanently delete all conversations, preferences, and account data. Continue?')) return;
+  await dbClear('conversations');
+  await dbClear('preferences');
+  await dbClear('users');
+  await dbClear('tokens');
+  sessionStorage.clear();
+  location.reload();
+});
+
+const retryBtn = $('#btn-connection-retry');
+if (retryBtn) {
+  retryBtn.addEventListener('click', () => {
+    checkConnection();
+  });
+}
+
+$('#btn-manual-instructions').addEventListener('click', () => {
+  $('#connection-help-note').classList.toggle('hidden');
+  alert(
+    'Start Zayvora backend:\n\n' +
+    'python3 -m zayvora.server --host localhost --port 11434\n' +
+    'or\n' +
+    'python3 api/main.py --host localhost --port 11434\n\n' +
+    'Then verify:\n' +
+    'curl http://localhost:11434/health'
+  );
+});
+
+/* ─── Bottom Nav (Mobile) ─── */
+$$('.bottom-nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.nav;
+    if (target === 'chat') {
+      showView('chat');
+    } else if (target === 'settings') {
+      showView('settings');
+    } else if (target === 'about') {
+      showView('about');
+    }
+  });
+});
+
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  state.deferredInstallPrompt = event;
+  updateInstallButton();
+});
+
+window.addEventListener('appinstalled', () => {
+  state.deferredInstallPrompt = null;
+  updateInstallButton();
+});
+
+/* ─── Init ─── */
+async function init() {
+  updateInstallButton();
+  const hasSession = await checkExistingSession();
+  if (hasSession) {
+    await enterApp();
+  } else {
+    showView('login');
+  }
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+}
+
+init();
+
+})();
+</script>
+
+</body>
+</html>

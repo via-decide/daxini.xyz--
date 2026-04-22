@@ -17,9 +17,13 @@ export class WorkspaceManager {
     }
 
     setupObservers() {
+        let resizeTimeout;
         window.addEventListener('resize', () => {
-            const isMobile = window.innerWidth <= 1000;
-            document.body.classList.toggle('layout-stacked', isMobile);
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const isMobile = window.innerWidth <= 1000;
+                document.body.classList.toggle('layout-stacked', isMobile);
+            }, 150);
         });
     }
 

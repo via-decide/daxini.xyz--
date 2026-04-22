@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0b0c0f"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <title>Zayvora — Sovereign Orchestration Dashboard</title>
+  <meta name="description" content="Zayvora Orchestration Dashboard. Real-time code synthesis, GitHub integration, and task management powered by the Antigravity Beast-Mode engine."/>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json"/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>⚡</text></svg>"/>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="./assets/css/base.css"/>
+  <link rel="stylesheet" href="./assets/css/layout.css"/>
+  <link rel="stylesheet" href="./assets/css/components.css"/>
+  <link rel="stylesheet" href="./assets/css/zayvora.css"/>
+</head>
+<body class="unauthorized">
+
+<!-- Noise texture -->
+<div class="noise" aria-hidden="true"></div>
+
+<!-- ═══════ AUTH OVERLAY ═══════════════════════════════════ -->
+<div id="zv-auth-root" class="zv-auth-root" role="dialog" aria-modal="true" aria-labelledby="zv-auth-title">
+
+  <!-- Login -->
+  <section id="zv-view-login" class="zv-auth-view active">
+    <div class="zv-auth-card">
+      <div class="zv-auth-brand">
+        <h1 id="zv-auth-title">Zayvora</h1>
+        <p>Sovereign Orchestration Dashboard</p>
+      </div>
+      <form id="zv-login-form" class="zv-auth-form" autocomplete="off">
+        <label for="zv-login-email">Email</label>
+        <input id="zv-login-email" type="email" placeholder="you@example.com" required autocomplete="email"/>
+        <label for="zv-login-password">Password</label>
+        <input id="zv-login-password" type="password" placeholder="Password" required autocomplete="current-password"/>
+        <div class="zv-auth-error" id="zv-login-error" role="alert"></div>
+        <button id="zv-login-btn" type="submit" class="zv-auth-btn">Sign In</button>
+      </form>
+      <div class="zv-auth-footer">
+        <a id="zv-goto-signup" href="#">Create account</a>
+        <span aria-hidden="true">·</span>
+        <a id="zv-goto-recovery" href="#">Recover account</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Signup -->
+  <section id="zv-view-signup" class="zv-auth-view">
+    <div class="zv-auth-card">
+      <div class="zv-auth-brand">
+        <h1>Zayvora</h1>
+        <p>Create a local account</p>
+      </div>
+      <form id="zv-signup-form" class="zv-auth-form" autocomplete="off">
+        <label for="zv-signup-name">Name</label>
+        <input id="zv-signup-name" type="text" placeholder="Your name" required autocomplete="name"/>
+        <label for="zv-signup-email">Email</label>
+        <input id="zv-signup-email" type="email" placeholder="you@example.com" required autocomplete="email"/>
+        <label for="zv-signup-password">Password</label>
+        <input id="zv-signup-password" type="password" placeholder="Min 8 characters" minlength="8" required autocomplete="new-password"/>
+        <label for="zv-signup-confirm">Confirm Password</label>
+        <input id="zv-signup-confirm" type="password" placeholder="Confirm password" minlength="8" required autocomplete="new-password"/>
+        <div class="zv-auth-error" id="zv-signup-error" role="alert"></div>
+        <div class="zv-auth-success hidden" id="zv-signup-success">
+          <p>Account created. Save your recovery code:</p>
+          <div class="zv-recovery-code" id="zv-signup-code"></div>
+          <p class="zv-auth-note">Write it down. It cannot be shown again.</p>
+        </div>
+        <button id="zv-signup-btn" type="submit" class="zv-auth-btn">Create Account</button>
+      </form>
+      <div class="zv-auth-footer">
+        Already have an account? <a href="#" class="zv-goto-login">Sign in</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recovery -->
+  <section id="zv-view-recovery" class="zv-auth-view">
+    <div class="zv-auth-card">
+      <div class="zv-auth-brand">
+        <h1>Zayvora</h1>
+        <p>Recover your account</p>
+      </div>
+      <form id="zv-recovery-form" class="zv-auth-form" autocomplete="off">
+        <label for="zv-recovery-email">Email</label>
+        <input id="zv-recovery-email" type="email" placeholder="you@example.com" required/>
+        <label for="zv-recovery-code">Recovery Code</label>
+        <input id="zv-recovery-code" type="text" placeholder="Your recovery code" required/>
+        <label for="zv-recovery-newpass">New Password</label>
+        <input id="zv-recovery-newpass" type="password" placeholder="New password (min 8)" minlength="8" required/>
+        <div class="zv-auth-error" id="zv-recovery-error" role="alert"></div>
+        <button type="submit" class="zv-auth-btn">Reset Password</button>
+      </form>
+      <div class="zv-auth-footer">
+        <a href="#" class="zv-goto-login">Back to sign in</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ═══════ NAV ═══════════════════════════════════════════ -->
+<nav class="site-nav" role="navigation" aria-label="Main navigation">
+  <a href="/" class="nav-brand">
+    <div class="nav-pulse" aria-hidden="true"></div>
+    DAXINI
+  </a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/#stack">Stack</a>
+    <a href="/zayvora" style="color:var(--accent);">Zayvora</a>
+    <a href="https://github.com/via-decide" target="_blank" rel="noopener noreferrer">GitHub</a>
+  </div>
+  <div class="zv-nav-pwa">
+    <div id="zv-connection-pill" class="zv-connection-pill connecting" role="status" aria-live="polite" title="Inference endpoint status">
+      <span class="zv-connection-dot" aria-hidden="true"></span>
+      <span id="zv-connection-text">Checking…</span>
+    </div>
+    <button id="zv-install-btn" class="zv-nav-btn" type="button" hidden>Install</button>
+    <span class="zv-user-chip" id="zv-user-email" aria-live="polite"></span>
+    <button id="zv-logout-btn" class="zv-nav-btn" type="button" aria-label="Sign out">Sign out</button>
+  </div>
+</nav>
+
+<!-- ═══════ CONNECTION BANNER ══════════════════════════════ -->
+<div id="zv-connection-banner" class="zv-connection-banner hidden" role="status" aria-live="polite">
+  <div class="zv-connection-banner-inner">
+    <div class="zv-connection-banner-title">⚠ Local inference endpoint unavailable</div>
+    <ul>
+      <li>Is Zayvora running on <span id="zv-connection-endpoint">localhost:11434</span>?</li>
+      <li id="zv-retry-countdown">Retrying automatically…</li>
+    </ul>
+    <div class="zv-connection-banner-actions">
+      <button id="zv-connection-retry" type="button" class="zv-nav-btn">Retry now</button>
+      <button id="zv-connection-help" type="button" class="zv-nav-btn">How to start</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ DASHBOARD ════════════════════════════════════ -->
+<div class="zv-page">
+  <div class="zv-layout">
+
+    <!-- ── Panel 1: Command Input ──────────────────────── -->
+    <div class="zv-panel mobile-active" id="zv-panel-input">
+      <div class="zv-panel-header">
+        <div class="zv-panel-title">Command</div>
+        <div class="zv-panel-badge">Sovereign</div>
+      </div>
+
+      <div class="zv-input-area">
+        <div class="zv-input-wrapper">
+          <textarea
+            class="zv-textarea"
+            id="zv-command"
+            placeholder="Describe your task...&#10;&#10;Example: Build a cognitive bias detector module for the ViaDecide reasoning pipeline with 20+ bias patterns, severity scoring, and CLI."
+            aria-label="Task description"
+            spellcheck="false"
+          ></textarea>
+          <div class="zv-input-footer">
+            <span class="zv-char-count" id="zv-char-count">0 / 2000</span>
+            <div class="zv-input-actions">
+              <button class="zv-voice-btn" id="zv-voice" aria-label="Use voice input" title="Voice input">🎙</button>
+              <button class="zv-submit-btn" id="zv-submit" aria-label="Submit task">
+                Execute <span class="zv-submit-kbd">⌘↵</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="zv-panel-body">
+        <div class="zv-recent-header">Recent Commands</div>
+        <div class="zv-recent-list" id="zv-recent-list"></div>
+
+        <!-- Inference endpoint setting -->
+        <div class="zv-recent-header" style="margin-top:1.5rem;">Inference</div>
+        <div class="zv-endpoint-row">
+          <label for="zv-endpoint-input">Endpoint</label>
+          <input id="zv-endpoint-input" type="text" placeholder="http://localhost:11434" spellcheck="false"/>
+        </div>
+
+        <!-- Quick task templates -->
+        <div class="zv-recent-header" style="margin-top:1.5rem;">Quick Tasks</div>
+        <div class="zv-recent-list" id="zv-quick-tasks">
+          <div class="zv-recent-item" title="Build a cognitive bias detector for solo founders with 20+ bias patterns, severity scoring, Socratic counter-questions, and full CLI.">
+            🧠 Cognitive Bias Detector
+          </div>
+          <div class="zv-recent-item" title="Create a decision journal analyzer that tracks decision patterns over time, identifies recurring biases, and generates weekly insight reports.">
+            📓 Decision Journal Analyzer
+          </div>
+          <div class="zv-recent-item" title="Build a competitive intelligence parser that extracts market signals from competitor announcements, press releases, and product updates.">
+            📊 Competitive Intel Parser
+          </div>
+          <div class="zv-recent-item" title="Create a technical debt scanner that analyzes Python codebases for anti-patterns, code smells, and maintainability risks with severity scoring.">
+            🔧 Tech Debt Scanner
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Panel 2: Execution Visualization ─────────────── -->
+    <div class="zv-panel" id="zv-panel-exec">
+      <div class="zv-panel-header">
+        <div class="zv-panel-title">Execution</div>
+        <div class="zv-panel-badge" id="zv-model-badge">zayvora:latest</div>
+      </div>
+
+      <!-- Stage Pipeline -->
+      <div class="zv-stages" id="zv-stages" aria-label="Pipeline stages"></div>
+
+      <!-- Progress -->
+      <div class="zv-progress"><div class="zv-progress-bar"></div></div>
+
+      <!-- Log Feed -->
+      <div class="zv-logs" id="zv-logs" role="log" aria-label="Execution logs" aria-live="polite"></div>
+
+      <!-- Controls -->
+      <div class="zv-controls">
+        <button class="zv-ctrl-btn danger" id="zv-cancel" aria-label="Cancel execution">Cancel</button>
+        <button class="zv-ctrl-btn" id="zv-clear" aria-label="Clear logs">Clear</button>
+        <div class="zv-token-chip" id="zv-token-usage" aria-live="polite">Tokens: 0</div>
+        <div class="zv-exec-status">Idle</div>
+      </div>
+    </div>
+
+    <!-- ── Panel 3: Tasks + Output ──────────────────────── -->
+    <div class="zv-panel" id="zv-panel-tasks">
+      <div class="zv-panel-header">
+        <div class="zv-panel-title">Tasks</div>
+        <div class="zv-panel-badge" id="zv-task-count">0</div>
+      </div>
+
+      <div class="zv-panel-body">
+        <!-- Task List -->
+        <div class="zv-task-toolbar" aria-label="Task filters">
+          <button type="button" class="zv-task-filter active" data-filter="all">All</button>
+          <button type="button" class="zv-task-filter" data-filter="running">Running</button>
+          <button type="button" class="zv-task-filter" data-filter="success">Done</button>
+          <button type="button" class="zv-task-filter" data-filter="failed">Failed</button>
+        </div>
+        <div id="zv-task-list"></div>
+
+        <!-- Output Preview -->
+        <div id="zv-output"></div>
+      </div>
+    </div>
+
+  </div><!-- /zv-layout -->
+</div><!-- /zv-page -->
+
+<!-- ═══════ MOBILE BOTTOM NAV ════════════════════════════ -->
+<nav class="zv-mobile-nav" aria-label="Mobile navigation">
+  <div class="zv-mobile-tabs">
+    <button class="zv-mobile-tab active" data-tab="input" aria-label="Command input">
+      <span class="zv-mobile-tab-icon">💬</span>
+      Input
+    </button>
+    <button class="zv-mobile-tab" data-tab="exec" aria-label="Execution">
+      <span class="zv-mobile-tab-icon">🔄</span>
+      Running
+    </button>
+    <button class="zv-mobile-tab" data-tab="tasks" aria-label="Tasks">
+      <span class="zv-mobile-tab-icon">📋</span>
+      Tasks
+    </button>
+    <button class="zv-mobile-tab" data-tab="output" aria-label="Output">
+      <span class="zv-mobile-tab-icon">📄</span>
+      Output
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════ SCRIPTS ═══════════════════════════════════════ -->
+<script src="./assets/js/zayvora-auth.js"></script>
+<script src="./assets/js/zayvora-pwa.js"></script>
+<script src="./assets/js/zayvora-app.js"></script>
+
+</body>
+</html>

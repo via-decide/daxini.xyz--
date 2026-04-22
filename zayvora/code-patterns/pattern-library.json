@@ -1,0 +1,8 @@
+{
+  "patterns": [
+    { "name": "game-loops", "tags": ["game", "loop", "render", "frame"], "description": "Continuous update-render loop with bounded state." },
+    { "name": "api-handlers", "tags": ["api", "handler", "request", "response"], "description": "Input validation plus response mapping for HTTP endpoints." },
+    { "name": "data-pipelines", "tags": ["pipeline", "transform", "normalize", "verify"], "description": "Staged ingestion, transformation, and verification." },
+    { "name": "simulation-engines", "tags": ["simulation", "terrain", "voxel", "noise"], "description": "Stateful simulation and deterministic generation patterns." }
+  ]
+}
