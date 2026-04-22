@@ -5,9 +5,14 @@
 
 import crypto from 'crypto';
 
-const DEFAULT_TTL_SECONDS = parseInt(process.env.WORKSPACE_SESSION_TTL || '3600', 10); // 1 hour
-// True sovereignty requires a local secret or a strong hardcoded fallback if missing
-const SESSION_SECRET = process.env.SECURITY_SECRET || 'zx-sovereign-node-alpha-key-938204';
+const DEFAULT_TTL_SECONDS = parseInt(process.env.WORKSPACE_SESSION_TTL || '1200', 10); // 20 minutes
+const SESSION_SECRET = process.env.SECURITY_SECRET || (() => {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('[FATAL] SECURITY_SECRET env var is required in production. Cannot use fallback.');
+  }
+  console.warn('[SECURITY] WARNING: Using dev-only fallback secret. Set SECURITY_SECRET in .env for production.');
+  return 'dev-only-fallback-' + require('os').hostname();
+})();
 
 function toBase64Url(value) {
   return Buffer.from(value)

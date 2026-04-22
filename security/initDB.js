@@ -66,6 +66,7 @@ export async function getDB() {
             owner_name TEXT,
             nfc_tag_id TEXT UNIQUE,
             pin_hash TEXT,
+            recovery_key_hash TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`
     ];

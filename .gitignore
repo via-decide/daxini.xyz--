@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Data (SQLite, backups — NEVER commit)
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Encrypted backups (sensitive — on Mac Mini only)
+*.enc
+
+# Logs (privacy-first, auto-rotated)
+logs/
+
+# Environment secrets
+.env
+.env.local
+.env.production
+
+# Vercel
+.vercel/
+
+# Cloudflare
+cloudflared
+cloudflared.tgz
+tunnel.log
+server.log
+
+# OS
+.DS_Store
+Thumbs.db

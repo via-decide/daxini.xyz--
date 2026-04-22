@@ -1,11 +1,18 @@
 /*
-  api/index.js — Daxini Systems API Gateway (Hardened & Resilient)
+  api/index.js — Daxini Systems API Gateway (v4.0 Security Hardened)
   MISSION: BEAST-MODE SOVEREIGNTY
+  LAYERS: Auth (L2) + API (L6) + AI Guard (L7) + Input (L8)
 */
 
 import crypto from 'crypto';
 import { generateCodeStream } from './llm/sovereign_engine.js';
 import { issueSessionToken } from '../security/sessionToken.js';
+import { guardPrompt, getBlockedResponse } from '../security/promptGuard.js';
+import { requestExecution, completeExecution } from '../security/runtimeGuard.js';
+import { checkAttemptStatus, recordFailedAttempt, recordSuccessfulAttempt } from '../security/patternAuth.js';
+import { validateRequestBody, sanitizeHTML, escapeHTML } from '../security/inputSanitizer.js';
+import { logLoginAttempt, logPromptInjection, logRateLimitHit, logRuntimeKill, logUnusualActivity } from '../security/securityLogger.js';
+import { generateRecoveryKey, hashRecoveryKey, verifyRecoveryKey, backupPassport, restorePassport, createFullBackup, getBackupStatus } from '../security/sovereignBackup.js';
 
 const passportRegistry = new Map([
   ['UID-0001', { passport_id: 'PPT-AXIOM-0001', serial: 'ZX-93A7', owner: 'Sovereign Node Alpha', status: 'active' }],
@@ -36,6 +43,10 @@ async function loadSecurityKit() {
             { analyzeActorRelationships },
             { updateReputation, isBlacklisted, scoreIpByBehavior },
             { logThreatEvent },
+            { evaluateMirrorThreat },
+            { serveMirroredResponse, routeToHoneypot },
+            { mutateHoneypotResponse },
+            { suspicionTracker },
             dbModule
         ] = await Promise.all([
             import('../security/browserFingerprint.js'),
@@ -45,6 +56,10 @@ async function loadSecurityKit() {
             import('../security/networkGraphAnalyzer.js'),
             import('../security/reputationEngine.js'),
             import('../security/threatTelemetry.js'),
+            import('../security/honeypotRouter.js'),
+            import('../security/mirrorRouter.js'),
+            import('../security/honeypotMutator.js'),
+            import('../security/suspicionScore.js'),
             import('../security/initDB.js')
         ]);
 
@@ -60,6 +75,11 @@ async function loadSecurityKit() {
             isBlacklisted,
             scoreIpByBehavior,
             logThreatEvent,
+            evaluateMirrorThreat,
+            serveMirroredResponse,
+            routeToHoneypot,
+            mutateHoneypotResponse,
+            suspicionTracker,
             db,
             active: true
         };
@@ -101,6 +121,50 @@ export default async function handler(req, res) {
             kit.updateReputation(ip, 'ip', (totalThreatScore > 0.4 ? 0.05 : -0.01), 'GA_SCORE');
             kit.scoreIpByBehavior(ip, behavior);
             if (totalThreatScore > 0.1) kit.logThreatEvent({ ip, fingerprint_id: fingerprint, threat_score: totalThreatScore, classification: behavior.classification, path_accessed: path, agent: ua });
+
+            // ── Cloudflare Tunnel Enrichment ─────────────────────
+            const cfCountry = req.headers['cf-ipcountry'] || null;
+            const cfRay = req.headers['cf-ray'] || null;
+            const isCloudflareTunnel = !!cfRay;
+
+            // Boost suspicion for non-Cloudflare traffic if tunnel is expected
+            if (!isCloudflareTunnel && process.env.REQUIRE_CF_TUNNEL === 'true') {
+                kit.suspicionTracker.increment(ip, 30, 'BYPASS_CF_TUNNEL');
+            }
+
+            // Feed Cloudflare signals into suspicion tracker
+            if (totalThreatScore > 0.3) {
+                kit.suspicionTracker.increment(ip, Math.round(totalThreatScore * 50), `THREAT_SCORE_${totalThreatScore.toFixed(2)}`);
+            }
+
+            // ── Mirror v3: Deception Routing ─────────────────────
+            const mirrorDecision = kit.evaluateMirrorThreat({
+                ip, path, botSignals, behavior, threatScore: totalThreatScore
+            });
+
+            if (mirrorDecision.action === 'redirect_honeypot') {
+                logUnusualActivity({ ip, fingerprint, activity: 'honeypot_redirect', details: mirrorDecision.reason });
+                return kit.routeToHoneypot(req, res);
+            }
+
+            if (mirrorDecision.action === 'mirror_response') {
+                logUnusualActivity({ ip, fingerprint, activity: 'mirror_served', details: mirrorDecision.reason });
+                return kit.serveMirroredResponse(res);
+            }
+
+            // Check if IP is blacklisted (reputation engine)
+            if (kit.isBlacklisted(ip)) {
+                logUnusualActivity({ ip, fingerprint, activity: 'blacklisted_ip', details: 'Reputation score >= 0.95' });
+                const mutated = kit.mutateHoneypotResponse({ status: 'blocked', ip_class: 'restricted' });
+                return res.status(403).json(mutated);
+            }
+
+            // Check suspicion threshold
+            if (kit.suspicionTracker.isCompromised(ip)) {
+                logUnusualActivity({ ip, fingerprint, activity: 'suspicion_threshold', details: 'Score >= 100' });
+                return kit.routeToHoneypot(req, res);
+            }
+
         } catch (e) { console.warn("[SECURITY] Run-time skip:", e.message); }
     }
 
@@ -109,6 +173,14 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     if (req.method === 'OPTIONS') return res.status(200).end();
+
+    // ── Layer 6: Request Body Validation ─────────────────────
+    if (req.method === 'POST' && req.body) {
+      const bodyCheck = validateRequestBody(req);
+      if (!bodyCheck.valid) {
+        return res.status(400).json({ error: 'Invalid request body', details: bodyCheck.error });
+      }
+    }
 
     // ── Specialized Routes ──────────────────────────────────
     
@@ -128,18 +200,35 @@ export default async function handler(req, res) {
             const pinHash = crypto.createHash('sha256').update(pin).digest('hex');
             const uid = `UID-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
+            // Generate recovery key (shown ONCE to user, stored hashed)
+            const recoveryKey = generateRecoveryKey();
+            const recoveryKeyHash = hashRecoveryKey(recoveryKey);
+
             if (kit.active && kit.db) {
+                // Add recovery_key_hash column if missing
+                try {
+                    kit.db.prepare('ALTER TABLE sovereign_passports ADD COLUMN recovery_key_hash TEXT').run();
+                } catch { /* column already exists */ }
+
                 kit.db.prepare(`
-                    INSERT INTO sovereign_passports (uid, owner_name, nfc_tag_id, pin_hash)
-                    VALUES (?, ?, ?, ?)
-                `).run(uid, owner_name, nfc_tag_id, pinHash);
+                    INSERT INTO sovereign_passports (uid, owner_name, nfc_tag_id, pin_hash, recovery_key_hash)
+                    VALUES (?, ?, ?, ?, ?)
+                `).run(uid, owner_name, nfc_tag_id, pinHash, recoveryKeyHash);
+
+                // Backup to encrypted file on Mac Mini
+                backupPassport({ uid, owner_name, nfc_tag_id, pin_hash: pinHash, recovery_key_hash: recoveryKeyHash });
             } else {
                 return res.status(503).json({ error: 'Database offline. Provisioning must happen on local Node server.' });
             }
 
-            return res.status(200).json({ status: 'success', message: 'Sovereign Passport Forged', uid: uid });
+            return res.status(200).json({
+                status: 'success',
+                message: 'Sovereign Passport Forged',
+                uid,
+                recovery_key: recoveryKey,
+                warning: 'SAVE YOUR RECOVERY KEY. It will NOT be shown again. Required for account recovery.',
+            });
         } catch (dbErr) {
-            // Check for UNIQUE constraint failure
             if (dbErr.message.includes('UNIQUE constraint failed')) {
                 return res.status(409).json({ error: 'This Physical NFC Tag is already bound to a Sovereign Passport.' });
             }
@@ -151,29 +240,51 @@ export default async function handler(req, res) {
     if (path === '/api/passport/verify') {
         const nfc_tag_id = url.searchParams.get('nfc_tag_id');
         const pin = url.searchParams.get('pin');
-        
+
+        // ── Layer 2: Brute-force protection ──
+        const attemptKey = `verify:${ip}:${fingerprint}`;
+        const attemptStatus = checkAttemptStatus(attemptKey);
+        if (!attemptStatus.allowed) {
+            logLoginAttempt({ ip, fingerprint, success: false, identity: nfc_tag_id, method: 'nfc_pin' });
+            const retrySeconds = Math.ceil(attemptStatus.retryAfterMs / 1000);
+            return res.status(429).json({
+              error: attemptStatus.reason === 'temporary_lock'
+                ? `Account temporarily locked. Try again in ${retrySeconds}s.`
+                : `Too many attempts. Cooldown: ${retrySeconds}s.`,
+              retry_after: retrySeconds,
+              failed_attempts: attemptStatus.failedAttempts,
+            });
+        }
+
         // 1. Try checking the Local SQLite DB First (if active)
         if (nfc_tag_id && pin && kit.active && kit.db) {
             const pinHash = crypto.createHash('sha256').update(pin).digest('hex');
             const row = kit.db.prepare('SELECT * FROM sovereign_passports WHERE nfc_tag_id = ? AND pin_hash = ?').get(nfc_tag_id, pinHash);
             
             if (row) {
+                recordSuccessfulAttempt(attemptKey);
+                logLoginAttempt({ ip, fingerprint, success: true, identity: row.uid, method: 'nfc_pin' });
                 const session = issueSessionToken({ uid: row.uid, owner: row.owner_name, nfcTagId: row.nfc_tag_id });
                 return res.status(200).json({ uid: row.uid, owner: row.owner_name, jwt: session.jwt, passport_id: `PPT-${row.uid}` });
             }
         }
         
-        // 2. Fallback to Hardcoded Registry ONLY if the DB query fails or DB is mocked
+        // 2. Fallback to Hardcoded Registry
         const fallbackUid = url.searchParams.get('uid');
         const fallbackSerial = url.searchParams.get('serial');
         if (fallbackUid && passportRegistry.has(fallbackUid)) {
             const record = passportRegistry.get(fallbackUid);
             if (fallbackSerial && record.serial === fallbackSerial) {
+                recordSuccessfulAttempt(attemptKey);
+                logLoginAttempt({ ip, fingerprint, success: true, identity: fallbackUid, method: 'fallback' });
                 const session = issueSessionToken({ uid: fallbackUid, owner: record.owner, nfcTagId: 'FALLBACK-USB-TOKEN' });
                 return res.status(200).json({ uid: fallbackUid, owner: record.owner, jwt: session.jwt, passport_id: record.passport_id });
             }
         }
         
+        // Failed — record attempt
+        recordFailedAttempt(attemptKey);
+        logLoginAttempt({ ip, fingerprint, success: false, identity: nfc_tag_id || fallbackUid, method: 'nfc_pin' });
         return res.status(403).json({ error: 'Sovereign Protocol Violation: Authentication Failed' });
     }
 
@@ -186,6 +297,7 @@ export default async function handler(req, res) {
             return res.status(401).json({ error: 'Sovereign Passport Required' });
         }
 
+        const identity = auth.replace('Bearer ', '');
         const prompt = req.body ? req.body.prompt : null;
         const githubToken = req.body ? req.body.github_token : null;
         const performanceMode = req.body ? req.body.performance_mode || 'full' : 'full';
@@ -193,20 +305,163 @@ export default async function handler(req, res) {
 
         if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
 
+        // ── Layer 7: Prompt Injection Guard ──
+        const promptCheck = guardPrompt(prompt);
+        if (!promptCheck.safe) {
+            logPromptInjection({ ip, fingerprint, threats: promptCheck.threats, score: promptCheck.score });
+            return res.status(400).json(getBlockedResponse(promptCheck));
+        }
+
+        // ── Runtime Guard: Check execution limits ──
+        const execRequest = requestExecution(identity);
+        if (!execRequest.allowed) {
+            return res.status(429).json({ error: execRequest.message, reason: execRequest.reason });
+        }
+
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
         
+        const execContext = execRequest.context;
         await generateCodeStream(
-            prompt,
-            (chunk) => res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`),
-            (err) => { res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`); res.end(); },
-            () => { res.write(`data: [DONE]\n\n`); res.end(); },
+            promptCheck.sanitized,
+            (chunk) => {
+              if (execContext.signal.aborted) return;
+              res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+            },
+            (err) => {
+              completeExecution(identity, execContext.id);
+              res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`); res.end();
+            },
+            () => {
+              completeExecution(identity, execContext.id);
+              res.write(`data: [DONE]\n\n`); res.end();
+            },
             githubToken,
             performanceMode,
             runtimeMode
         );
         return;
+    }
+
+    // ── Account Recovery ──────────────────────────────────────
+    if (path === '/api/passport/recover') {
+        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+        // Brute-force protection on recovery (stricter: 3 attempts before lockout)
+        const recoveryKey_attempt = `recover:${ip}:${fingerprint}`;
+        const recoveryStatus = checkAttemptStatus(recoveryKey_attempt);
+        if (!recoveryStatus.allowed) {
+            logUnusualActivity({ ip, fingerprint, activity: 'recovery_brute_force', details: `${recoveryStatus.failedAttempts} failed recovery attempts` });
+            return res.status(429).json({ error: 'Recovery temporarily locked. Too many failed attempts.', retry_after: Math.ceil(recoveryStatus.retryAfterMs / 1000) });
+        }
+
+        const { nfc_tag_id, recovery_key, new_pin } = req.body || {};
+        if (!nfc_tag_id || !recovery_key || !new_pin) {
+            return res.status(400).json({ error: 'NFC Tag ID, Recovery Key, and New PIN are all required.' });
+        }
+
+        // Step 1: Find backup by NFC tag
+        // Check DB first (if available), then check encrypted backup files
+        let passportData = null;
+
+        if (kit.active && kit.db) {
+            try {
+                passportData = kit.db.prepare('SELECT * FROM sovereign_passports WHERE nfc_tag_id = ?').get(nfc_tag_id);
+            } catch { /* DB may be corrupted, try backup */ }
+        }
+
+        // If not in DB, try restore from encrypted backup
+        if (!passportData) {
+            // Scan all passport backup files for matching NFC tag
+            const fs = await import('fs');
+            const pathMod = await import('path');
+            const { fileURLToPath: fu } = await import('url');
+            const backupDir = pathMod.default.join(pathMod.default.dirname(fu(import.meta.url)), '../data/backups');
+
+            if (fs.default.existsSync(backupDir)) {
+                const files = fs.default.readdirSync(backupDir).filter(f => f.startsWith('passport_'));
+                for (const file of files) {
+                    try {
+                        const restored = restorePassport(file.replace('passport_', '').replace('.enc', ''));
+                        if (restored.success && restored.passport.nfc_tag_id === nfc_tag_id) {
+                            passportData = restored.passport;
+                            break;
+                        }
+                    } catch { /* skip corrupted backups */ }
+                }
+            }
+        }
+
+        if (!passportData) {
+            recordFailedAttempt(recoveryKey_attempt);
+            logLoginAttempt({ ip, fingerprint, success: false, identity: nfc_tag_id, method: 'recovery' });
+            return res.status(404).json({ error: 'No identity found for this NFC Tag.' });
+        }
+
+        // Step 2: Verify recovery key
+        if (!passportData.recovery_key_hash || !verifyRecoveryKey(recovery_key, passportData.recovery_key_hash)) {
+            recordFailedAttempt(recoveryKey_attempt);
+            logLoginAttempt({ ip, fingerprint, success: false, identity: passportData.uid, method: 'recovery' });
+            return res.status(403).json({ error: 'Recovery key does not match. Check your saved recovery key.' });
+        }
+
+        // Step 3: Reset PIN and re-provision
+        const newPinHash = crypto.createHash('sha256').update(new_pin).digest('hex');
+
+        if (kit.active && kit.db) {
+            try {
+                kit.db.prepare('UPDATE sovereign_passports SET pin_hash = ? WHERE uid = ?').run(newPinHash, passportData.uid);
+            } catch {
+                // If DB is dead, re-insert
+                try {
+                    kit.db.prepare(`INSERT OR REPLACE INTO sovereign_passports (uid, owner_name, nfc_tag_id, pin_hash, recovery_key_hash) VALUES (?, ?, ?, ?, ?)`)
+                      .run(passportData.uid, passportData.owner_name, passportData.nfc_tag_id, newPinHash, passportData.recovery_key_hash);
+                } catch (e) {
+                    return res.status(500).json({ error: 'Database restore failed. Contact system administrator.' });
+                }
+            }
+
+            // Update backup with new PIN hash
+            backupPassport({ ...passportData, pin_hash: newPinHash });
+        }
+
+        recordSuccessfulAttempt(recoveryKey_attempt);
+        logLoginAttempt({ ip, fingerprint, success: true, identity: passportData.uid, method: 'recovery' });
+
+        // Issue new session
+        const session = issueSessionToken({ uid: passportData.uid, owner: passportData.owner_name, nfcTagId: passportData.nfc_tag_id });
+
+        return res.status(200).json({
+            status: 'recovered',
+            message: 'Account recovered successfully. PIN has been reset.',
+            uid: passportData.uid,
+            owner: passportData.owner_name,
+            jwt: session.jwt,
+        });
+    }
+
+    // ── Backup Status (admin only — requires sovereign token) ──
+    if (path === '/api/backup/status') {
+        const auth = req.headers['authorization'];
+        if (!auth || !auth.startsWith('Bearer UID-')) {
+            return res.status(401).json({ error: 'Sovereign Passport Required' });
+        }
+        return res.status(200).json(getBackupStatus());
+    }
+
+    // ── Trigger Full Backup (admin only) ──
+    if (path === '/api/backup/create') {
+        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+        const auth = req.headers['authorization'];
+        if (!auth || !auth.startsWith('Bearer UID-')) {
+            return res.status(401).json({ error: 'Sovereign Passport Required' });
+        }
+        if (kit.active && kit.db) {
+            const success = createFullBackup(kit.db);
+            return res.status(success ? 200 : 500).json({ status: success ? 'backup_created' : 'backup_failed' });
+        }
+        return res.status(503).json({ error: 'Database offline.' });
     }
 
     if (path === '/api/check' || path === '/api') {

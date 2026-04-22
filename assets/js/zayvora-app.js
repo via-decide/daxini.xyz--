@@ -305,7 +305,7 @@
     addLog('GENERATE', '⚙️ BEAST-MODE: Synthesizing natively via local Zayvora:latest...', 'accent');
 
     try {
-      const auth = JSON.parse(localStorage.getItem('zv_passport') || '{}');
+      const auth = JSON.parse(sessionStorage.getItem('zv_passport') || '{}');
       const runtimeMode = document.getElementById('zv-runtime-mode')?.value || 'local';
       const perfMode = document.getElementById('zv-perf-mode')?.value || 'full';
       

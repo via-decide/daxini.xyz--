@@ -21,6 +21,7 @@
   "homepage": "https://github.com/via-decide/daxini.xyz#readme",
   "dependencies": {
     "better-sqlite3": "^12.9.0",
+    "dotenv": "^17.4.2",
     "fs-extra": "^11.3.4",
     "ws": "^8.20.0"
   }

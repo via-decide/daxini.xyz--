@@ -1,6 +1,8 @@
 /**
  * zayvora-auth.js
  * Handles Sovereign Hardware Authorization via WebNFC or local input fallback.
+ * Security: Sessions stored in sessionStorage (NOT localStorage).
+ * UI Feedback: Secure session indicator, attempt warnings, expiry notice.
  */
 
 (function () {
@@ -8,18 +10,24 @@
 
     const $ = (sel) => document.querySelector(sel);
 
+    let expiryTimer = null;
+
     function initAuth() {
-        const session = localStorage.getItem('zv_passport');
+        // Security: Use sessionStorage, not localStorage
+        const session = sessionStorage.getItem('zv_passport');
         if (session) {
             try {
                 const auth = JSON.parse(session);
                 const now = Math.floor(Date.now() / 1000);
                 if (auth.jwt && auth.expiresAt && auth.expiresAt > now) {
                     unlockDashboard(auth);
+                    startExpiryWatch(auth.expiresAt);
                 } else {
-                    throw new Error('Session Expired');
+                    sessionStorage.removeItem('zv_passport');
+                    showAuthOverlay();
                 }
             } catch (e) {
+                sessionStorage.removeItem('zv_passport');
                 showAuthOverlay();
             }
         } else {
@@ -28,6 +36,7 @@
 
         bindAuthEvents();
         initWebNFC();
+        injectSecurityHUD();
     }
 
     function showAuthOverlay() {
@@ -44,6 +53,7 @@
         window.zv_auth = auth;
         hideAuthOverlay();
         document.body.classList.add('authorized');
+        updateSecurityIndicator('active');
         console.log(`[AUTH] Welcome, ${auth.owner}. Hardware Identity Verified.`);
     }
 
@@ -67,7 +77,8 @@
                 const decodedPayload = JSON.parse(atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/')));
                 
                 const ghToken = ($('#zv-gh-token') || {}).value || '';
-                localStorage.setItem('zv_passport', JSON.stringify({ 
+                // Security: sessionStorage, not localStorage
+                sessionStorage.setItem('zv_passport', JSON.stringify({ 
                     uid: data.uid, 
                     owner: data.owner, 
                     passport_id: data.passport_id,
@@ -76,6 +87,12 @@
                     ghToken: ghToken.trim()
                 }));
                 unlockDashboard({ uid: data.uid, owner: data.owner, jwt: data.jwt, ghToken: ghToken.trim() });
+                startExpiryWatch(decodedPayload.exp);
+            } else if (res.status === 429) {
+                // Rate limited / locked out
+                const retryMsg = data.retry_after ? ` Retry in ${data.retry_after}s.` : '';
+                const attemptsMsg = data.failed_attempts ? ` (${data.failed_attempts} failed attempts)` : '';
+                throw new Error((data.error || 'Too many attempts.') + retryMsg + attemptsMsg);
             } else {
                 throw new Error(data.error || 'Identity Rejected');
             }
@@ -137,10 +154,64 @@
         const logoutBtn = $('#zv-logout-btn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
-                localStorage.removeItem('zv_passport');
+                sessionStorage.removeItem('zv_passport');
+                if (expiryTimer) clearInterval(expiryTimer);
+                updateSecurityIndicator('inactive');
                 location.reload();
             });
         }
+    }
+
+    // ── Security HUD ─────────────────────────────────────
+    function injectSecurityHUD() {
+        if ($('#zv-security-hud')) return;
+        const hud = document.createElement('div');
+        hud.id = 'zv-security-hud';
+        hud.innerHTML = `<span id="zv-sec-dot"></span><span id="zv-sec-label">Session Inactive</span>`;
+        hud.style.cssText = 'position:fixed;bottom:16px;left:16px;z-index:9999;display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;background:rgba(11,12,15,0.85);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.06);font-size:0.68rem;font-family:"JetBrains Mono",monospace;color:rgba(255,255,255,0.5);pointer-events:none;';
+        const dot = hud.querySelector('#zv-sec-dot');
+        dot.style.cssText = 'width:6px;height:6px;border-radius:50%;background:#555;';
+        document.body.appendChild(hud);
+    }
+
+    function updateSecurityIndicator(state) {
+        const dot = $('#zv-sec-dot');
+        const label = $('#zv-sec-label');
+        if (!dot || !label) return;
+        if (state === 'active') {
+            dot.style.background = '#34d399';
+            dot.style.boxShadow = '0 0 6px #34d399';
+            label.textContent = 'Secure session active';
+            label.style.color = '#34d399';
+        } else if (state === 'expiring') {
+            dot.style.background = '#fbbf24';
+            dot.style.boxShadow = '0 0 6px #fbbf24';
+            label.textContent = 'Session expiring soon';
+            label.style.color = '#fbbf24';
+        } else {
+            dot.style.background = '#555';
+            dot.style.boxShadow = 'none';
+            label.textContent = 'Session inactive';
+            label.style.color = 'rgba(255,255,255,0.5)';
+        }
+    }
+
+    function startExpiryWatch(expiresAtUnix) {
+        if (expiryTimer) clearInterval(expiryTimer);
+        expiryTimer = setInterval(() => {
+            const now = Math.floor(Date.now() / 1000);
+            const remaining = expiresAtUnix - now;
+            if (remaining <= 0) {
+                clearInterval(expiryTimer);
+                sessionStorage.removeItem('zv_passport');
+                updateSecurityIndicator('inactive');
+                showAuthOverlay();
+                const status = $('#zv-login-status');
+                if (status) { status.textContent = 'Session expired. Please re-authenticate.'; status.className = 'zv-auth-status error'; }
+            } else if (remaining < 300) {
+                updateSecurityIndicator('expiring');
+            }
+        }, 15000);
     }
 
     document.addEventListener('DOMContentLoaded', initAuth);
