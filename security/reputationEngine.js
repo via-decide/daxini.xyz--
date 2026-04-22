@@ -10,6 +10,13 @@ export function getReputation(targetId) {
     return scoreMap.get(targetId) || { score: 0.0, trust_flags: '[]' };
 }
 
+export function getTopRisks() {
+    return Array.from(scoreMap.values())
+        .filter(r => r.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 10);
+}
+
 export function updateReputation(targetId, targetType, delta, reason) {
     const current = getReputation(targetId);
     let newScore = Math.max(0, Math.min(1.0, (current.score || 0) + delta));

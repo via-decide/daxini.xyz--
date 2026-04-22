@@ -1,1 +1,29 @@
-[]
+[
+  {
+    "timestamp": "2026-04-22T17:07:33.470Z",
+    "ip": "0.0.0.0",
+    "fingerprint_id": "f74ef8971ef2dbed",
+    "threat_score": 0.7,
+    "classification": "normal",
+    "path_accessed": "/api/security/stats",
+    "agent": "curl/8.7.1"
+  },
+  {
+    "timestamp": "2026-04-22T17:12:39.011Z",
+    "ip": "0.0.0.0",
+    "fingerprint_id": "d8976329303972a0",
+    "threat_score": 0.3,
+    "classification": "normal",
+    "path_accessed": "/api/security/stats",
+    "agent": "Mozilla/5.0"
+  },
+  {
+    "timestamp": "2026-04-22T17:16:54.494Z",
+    "ip": "0.0.0.0",
+    "fingerprint_id": "d8976329303972a0",
+    "threat_score": 0.3,
+    "classification": "normal",
+    "path_accessed": "/api/foo",
+    "agent": "Mozilla/5.0"
+  }
+]

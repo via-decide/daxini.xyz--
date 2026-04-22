@@ -58,6 +58,17 @@
     </div>
 
     <script>
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            document.body.innerHTML = `
+                <div style="display:flex; height:100vh; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding: 2rem;">
+                    <div style="font-size:3rem; margin-bottom:1rem;">🛡️</div>
+                    <h1 style="font-family:var(--font-mono); font-size:1.5rem; margin-bottom:0.5rem; color:var(--text-primary);">DASHBOARD RESTRICTED</h1>
+                    <p style="color:var(--text-secondary); max-width:400px; line-height:1.5;">Per SPE guidelines, deep observability tools and security panels are restricted to localhost environments to preserve the production deployable surface.</p>
+                </div>
+            `;
+            throw new Error("Dashboard restricted to localhost.");
+        }
+
         async function fetchIntelligence() {
             const secret = localStorage.getItem('security_secret');
             const intelligenceRes = await fetch('/api/security/stats', {

@@ -41,7 +41,7 @@ async function loadSecurityKit() {
             { analyzeBehavior },
             { analyzeTrafficAnomaly },
             { analyzeActorRelationships },
-            { updateReputation, isBlacklisted, scoreIpByBehavior },
+            { updateReputation, isBlacklisted, scoreIpByBehavior, getTopRisks },
             { logThreatEvent },
             { evaluateMirrorThreat },
             { serveMirroredResponse, routeToHoneypot },
@@ -74,6 +74,7 @@ async function loadSecurityKit() {
             updateReputation,
             isBlacklisted,
             scoreIpByBehavior,
+            getTopRisks,
             logThreatEvent,
             evaluateMirrorThreat,
             serveMirroredResponse,
@@ -462,6 +463,19 @@ export default async function handler(req, res) {
             return res.status(success ? 200 : 500).json({ status: success ? 'backup_created' : 'backup_failed' });
         }
         return res.status(503).json({ error: 'Database offline.' });
+    }
+
+    // ── Security Dashboard Endpoints (Localhost Only) ──
+    if (path === '/api/security/stats') {
+        const topRisks = (kit.active && kit.getTopRisks) ? kit.getTopRisks() : [];
+        return res.status(200).json({ topRisks, threatGraph: [] });
+    }
+
+    if (path === '/api/security/telemetry/dashboard') {
+        return res.status(200).json({
+            summary: { total_events: 0, attacks_blocked: 0, by_region: {}, by_threat_type: {}, by_target_domain: {} },
+            recent: []
+        });
     }
 
     if (path === '/api/check' || path === '/api') {

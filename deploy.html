@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0c0f">
+  <title>Daxini // Deployable Surface</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="./assets/css/base.css">
+  <link rel="stylesheet" href="./assets/css/layout.css">
+  
+  <style>
+    :root {
+      --bg: #0b0c0f;
+      --panel-bg: rgba(20, 22, 28, 0.6);
+      --border: rgba(255, 255, 255, 0.08);
+      --accent: #5b8cff;
+      --success: #34d399;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+    }
+    
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; }
+    
+    .ds-nav { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .ds-brand { font-family: 'JetBrains Mono', monospace; font-weight: 600; letter-spacing: 1px; }
+    .ds-brand-badge { background: rgba(91, 140, 255, 0.1); color: var(--accent); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem; }
+    
+    .ds-container { padding: 2rem; flex: 1; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+    
+    .ds-panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; }
+    .ds-panel-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+    .ds-panel-title { font-size: 1.1rem; font-weight: 600; margin: 0; }
+    
+    /* Status Panel */
+    .status-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .status-log { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-muted); background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 6px; flex: 1; overflow-y: auto; border: 1px solid var(--border); }
+    
+    /* Projects Panel */
+    .project-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .project-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid transparent; transition: 0.2s; }
+    .project-item:hover { border-color: var(--border); background: rgba(255,255,255,0.05); }
+    .project-info h4 { margin: 0 0 0.3rem 0; font-size: 0.95rem; }
+    .project-info p { margin: 0; font-size: 0.8rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+    
+    /* Deploy Panel */
+    .deploy-action { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 1px dashed var(--border); border-radius: 8px; padding: 2rem; background: rgba(0,0,0,0.2); }
+    .deploy-btn { background: var(--text); color: var(--bg); border: none; padding: 0.8rem 2rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 1.5rem; font-family: 'Inter', sans-serif; }
+    .deploy-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    
+    /* Domain Panel */
+    .domain-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .domain-item { display: flex; align-items: center; gap: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; padding: 0.8rem; border-bottom: 1px solid var(--border); }
+    .domain-tag { background: rgba(52, 211, 153, 0.1); color: var(--success); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="ds-nav">
+    <div class="ds-brand">DAXINI <span class="ds-brand-badge">DEPLOYABLE SURFACE</span></div>
+    <a href="/" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">Exit to System</a>
+  </nav>
+
+  <div class="ds-container">
+    
+    <!-- Status Panel -->
+    <div class="ds-panel">
+      <div class="ds-panel-header">
+        <h2 class="ds-panel-title">System Status</h2>
+        <div class="status-indicator"><div class="status-dot"></div> OPERATIONAL</div>
+      </div>
+      <div class="status-log" id="status-log">
+        [SYS] Edge Routing: Active<br>
+        [SYS] Cloudflare Tunnel: Connected<br>
+        [SYS] Zayvora Runtime: Idle<br>
+        <br>
+        Waiting for deployment triggers...
+      </div>
+    </div>
+
+    <!-- Deploy Panel -->
+    <div class="ds-panel">
+      <div class="ds-panel-header">
+        <h2 class="ds-panel-title">Deployment Hub</h2>
+      </div>
+      <div class="deploy-action">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted); margin-bottom:1rem;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        <p style="margin:0; color:var(--text-muted); font-size:0.9rem;">Trigger an immutable build to Daxini Space or your connected Cloudflare Pages instance.</p>
+        <button class="deploy-btn" onclick="simulateDeploy()">Deploy Production</button>
+      </div>
+    </div>
+
+    <!-- Projects List Panel -->
+    <div class="ds-panel">
+      <div class="ds-panel-header">
+        <h2 class="ds-panel-title">Active Surfaces</h2>
+      </div>
+      <div class="project-list">
+        <div class="project-item">
+          <div class="project-info">
+            <h4>Zayvora OS</h4>
+            <p>daxini.xyz/zayvora</p>
+          </div>
+          <span style="font-size:0.8rem; color:var(--text-muted);">Production</span>
+        </div>
+        <div class="project-item">
+          <div class="project-info">
+            <h4>LogicHub Engine</h4>
+            <p>logichub.app</p>
+          </div>
+          <span style="font-size:0.8rem; color:var(--text-muted);">Edge</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Domain Connect Panel -->
+    <div class="ds-panel">
+      <div class="ds-panel-header">
+        <h2 class="ds-panel-title">Domain Mapping</h2>
+      </div>
+      <div class="domain-list">
+        <div class="domain-item">
+          <div class="domain-tag">ACTIVE</div>
+          daxini.xyz
+        </div>
+        <div class="domain-item">
+          <div class="domain-tag">ACTIVE</div>
+          daxini.space
+        </div>
+        <div class="domain-item" style="color:var(--text-muted);">
+          <div class="domain-tag" style="background:rgba(255,255,255,0.05); color:var(--text-muted);">PENDING</div>
+          zayvora.com
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function simulateDeploy() {
+      const log = document.getElementById('status-log');
+      const time = new Date().toLocaleTimeString();
+      log.innerHTML += `<br><span style="color:var(--accent);">[${time}] Initiating deployment pipeline...</span>`;
+      log.innerHTML += `<br>[${time}] Validating SPE constraints... OK`;
+      
+      setTimeout(() => {
+        log.innerHTML += `<br>[${new Date().toLocaleTimeString()}] Push to Cloudflare Edge successful.`;
+        log.scrollTop = log.scrollHeight;
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
