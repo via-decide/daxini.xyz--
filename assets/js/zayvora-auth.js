@@ -68,7 +68,13 @@
         }
 
         try {
-            const res = await fetch(`/api/passport/verify?nfc_tag_id=${encodeURIComponent(nfcTagId)}&pin=${encodeURIComponent(pin)}`);
+            // Sovereign Architecture: Route auth logic to local gateway if hosted on static Cloudflare edge
+            const isLive = window.location.hostname === 'daxini.xyz' || window.location.hostname === 'www.daxini.xyz' || window.location.hostname === 'daxini.space';
+            const authEndpoint = isLive 
+                ? `http://127.0.0.1:3000/api/passport/verify?nfc_tag_id=${encodeURIComponent(nfcTagId)}&pin=${encodeURIComponent(pin)}`
+                : `/api/passport/verify?nfc_tag_id=${encodeURIComponent(nfcTagId)}&pin=${encodeURIComponent(pin)}`;
+                
+            const res = await fetch(authEndpoint);
             const data = await res.json();
 
             if (res.ok) {

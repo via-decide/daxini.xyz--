@@ -309,7 +309,11 @@
       const runtimeMode = document.getElementById('zv-runtime-mode')?.value || 'local';
       const perfMode = document.getElementById('zv-perf-mode')?.value || 'full';
       
-      const response = await fetch('/api/zayvora/execute', {
+      // Sovereign Architecture: If hosted on static Cloudflare edge, route execution to local gateway
+      const isLive = window.location.hostname === 'daxini.xyz' || window.location.hostname === 'www.daxini.xyz' || window.location.hostname === 'daxini.space';
+      const apiEndpoint = (isLive) ? 'http://127.0.0.1:3000/api/zayvora/execute' : '/api/zayvora/execute';
+      
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',

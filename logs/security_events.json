@@ -52,5 +52,14 @@
     "classification": "normal",
     "path_accessed": "/api/deploy/register",
     "agent": "Mozilla/5.0"
+  },
+  {
+    "timestamp": "2026-04-22T18:39:12.302Z",
+    "ip": "0.0.0.0",
+    "fingerprint_id": "d8976329303972a0",
+    "threat_score": 0.3,
+    "classification": "normal",
+    "path_accessed": "/api/zayvora/execute",
+    "agent": "Mozilla/5.0"
   }
 ]
