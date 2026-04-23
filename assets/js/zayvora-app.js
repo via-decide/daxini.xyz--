@@ -15,6 +15,18 @@
     recentCommands: JSON.parse(localStorage.getItem('zv_recent') || '[]'),
     activeMobileTab: 'input',
     cancelRequested: false,
+    endpoint: localStorage.getItem('zv_endpoint') || 'http://localhost:8000'
+  };
+
+  // ANTIGRAVITY AUDIT: Expose state for inspection
+  window.appState = state;
+  window.debugZayvora = {
+    getSnapshot: () => ({
+      timestamp: new Date().toISOString(),
+      state: { ...state },
+      storage: { ...localStorage }
+    }),
+    clearTasks: () => { localStorage.removeItem('zv_tasks'); state.tasks = []; renderTasks(); }
   };
 
   const STAGES = [
@@ -311,7 +323,11 @@
       
       // Sovereign Architecture: If hosted on static Cloudflare edge, route execution to local gateway
       const isLive = window.location.hostname === 'daxini.xyz' || window.location.hostname === 'www.daxini.xyz' || window.location.hostname === 'daxini.space';
-      const apiEndpoint = (isLive) ? 'http://127.0.0.1:3000/api/zayvora/execute' : '/api/zayvora/execute';
+      
+      // ANTIGRAVITY DIRECTIVE: Default to local inference gateway
+      const apiEndpoint = (isLive) ? 'https://www.daxini.xyz/api/zayvora/execute' : '/api/zayvora/execute';
+      
+      console.log(`[API] Executing pipeline via: ${apiEndpoint}`);
       
       const response = await fetch(apiEndpoint, {
         method: 'POST',
@@ -414,7 +430,8 @@
       showRealOutput(task, fullCode);
 
     } catch (err) {
-      addLog('ERROR', 'Failed to execute: ' + err.message, 'error');
+      console.error('[API] Execution failed:', err);
+      addLog('ERROR', 'System offline or Zayvora node unreachable. Check local connection.', 'error');
       finishTask(task, 'failed');
     }
   }

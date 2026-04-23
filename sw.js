@@ -11,11 +11,14 @@ const STATIC_ASSETS = [
   '/assets/css/layout.css',
   '/assets/css/components.css',
   '/assets/css/modules.css',
+  '/assets/css/zayvora.css',
   '/assets/js/app.js',
   '/assets/js/stack.js',
   '/assets/js/reasoning.js',
   '/assets/js/graph.js',
   '/assets/js/github.js',
+  '/assets/js/zayvora-auth.js',
+  '/assets/js/zayvora-app.js',
   '/manifest.json',
   '/offline.html'
 ];
