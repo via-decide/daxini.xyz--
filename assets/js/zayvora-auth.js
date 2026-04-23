@@ -68,13 +68,17 @@
         }
 
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
             // Sovereign Architecture: Route auth logic to local gateway if hosted on static Cloudflare edge
             const isLive = window.location.hostname === 'daxini.xyz' || window.location.hostname === 'www.daxini.xyz' || window.location.hostname === 'daxini.space';
             const authEndpoint = isLive 
                 ? `http://127.0.0.1:3000/api/passport/verify?nfc_tag_id=${encodeURIComponent(nfcTagId)}&pin=${encodeURIComponent(pin)}`
                 : `/api/passport/verify?nfc_tag_id=${encodeURIComponent(nfcTagId)}&pin=${encodeURIComponent(pin)}`;
                 
-            const res = await fetch(authEndpoint);
+            const res = await fetch(authEndpoint, { signal: controller.signal });
+            clearTimeout(timeoutId);
             const data = await res.json();
 
             if (res.ok) {
@@ -103,6 +107,9 @@
                 throw new Error(data.error || 'Identity Rejected');
             }
         } catch (err) {
+            if (err.name === 'AbortError') {
+                err.message = 'Authorization Timeout. Backend node unreachable.';
+            }
             if (status) {
                 status.textContent = err.message;
                 status.className = 'zv-auth-status error';
@@ -143,6 +150,16 @@
                 const nfcId = $('#zv-nfc-input').value.trim();
                 const pin = $('#zv-pin-input').value.trim();
                 if (nfcId && pin) verifyPassport(nfcId, pin);
+            });
+
+            // FIX 2: Keyboard Auto-Scroll for Mobile
+            const inputs = form.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    setTimeout(() => {
+                        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 350); // Delay for keyboard expansion
+                });
             });
 
             // Show token status indicator after login

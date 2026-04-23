@@ -9,6 +9,7 @@
   display: flex;
   flex-direction: column;
   padding-top: 52px; /* nav height */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .zv-layout {
@@ -160,6 +161,23 @@
   background: rgba(255,255,255,.15);
 }
 
+/* ── Mobile Form Stacking Fix ───────────────────────────── */
+.zv-auth-modal {
+  max-height: 90vh;
+  overflow-y: auto;
+  padding-bottom: 2rem;
+}
+
+@media (max-width: 480px) {
+  .zv-auth-modal {
+    padding: 1.5rem 1rem;
+    width: 95%;
+  }
+  .zv-auth-group label {
+    font-size: .55rem;
+  }
+}
+
 /* ── Recent Commands ───────────────────────────────────── */
 .zv-recent-header {
   font-size: .6rem;
@@ -210,13 +228,26 @@
 
 /* ── Execution Visualization ───────────────────────────── */
 .zv-stages {
-  display: flex;
-  gap: 2px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
   padding: 1rem 1.25rem;
   flex-shrink: 0;
   border-bottom: 1px solid var(--bd);
   background: var(--bg1);
-  overflow-x: auto;
+}
+
+@media (max-width: 1024px) {
+  .zv-stages {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .zv-stages {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0.75rem;
+  }
 }
 
 .zv-stage {
@@ -648,6 +679,10 @@
   gap: .5rem;
   flex-shrink: 0;
   background: var(--bg1);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
 }
 
 .zv-ctrl-btn {
