@@ -321,6 +321,7 @@
       const auth = JSON.parse(sessionStorage.getItem('zv_passport') || '{/* ignore */}');
       const runtimeMode = document.getElementById('zv-runtime-mode')?.value || 'local';
       const perfMode = document.getElementById('zv-perf-mode')?.value || 'full';
+      const modelVariant = document.getElementById('zv-model-variant')?.value || 'zayvora:latest';
       
       // Sovereign Architecture: If hosted on static Cloudflare edge, route execution to local gateway
       const isLive = window.location.hostname === 'daxini.xyz' || window.location.hostname === 'www.daxini.xyz' || window.location.hostname === 'daxini.space';
@@ -340,7 +341,8 @@
           prompt: description,
           github_token: auth.ghToken || null,
           runtime_mode: runtimeMode,
-          performance_mode: perfMode
+          performance_mode: perfMode,
+          model: modelVariant
         })
       });
 

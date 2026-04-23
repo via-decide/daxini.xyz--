@@ -306,6 +306,7 @@ export default async function handler(req, res) {
         const githubToken = req.body ? req.body.github_token : null;
         const performanceMode = req.body ? req.body.performance_mode || 'full' : 'full';
         const runtimeMode = req.body ? req.body.runtime_mode || 'local' : 'local';
+        const model = req.body ? req.body.model || 'zayvora:latest' : 'zayvora:latest';
 
         if (!prompt) {return res.status(400).json({ error: 'Prompt is required' });}
 
@@ -343,7 +344,8 @@ export default async function handler(req, res) {
             },
             githubToken,
             performanceMode,
-            runtimeMode
+            runtimeMode,
+            model
         );
         return;
     }
