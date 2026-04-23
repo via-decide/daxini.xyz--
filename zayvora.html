@@ -55,11 +55,11 @@
         <form id="zv-auth-form" class="zv-auth-form">
           <div class="zv-auth-group">
             <label for="zv-nfc-input">PHYSICAL NFC TAG ID</label>
-            <input type="text" id="zv-nfc-input" placeholder="Tap NFC or Paste Hardware ID..." required autofocus>
+            <input type="text" id="zv-nfc-input" placeholder="Tap NFC or Paste Hardware ID..." required autofocus autocomplete="off">
           </div>
           <div class="zv-auth-group">
             <label for="zv-pin-input">SECURE PIN</label>
-            <input type="password" id="zv-pin-input" placeholder="••••••••" required>
+            <input type="password" id="zv-pin-input" placeholder="••••••••" required inputmode="numeric" pattern="[0-9]*" maxlength="12">
           </div>
           <div class="zv-auth-group" style="border-top: 1px solid var(--bd); padding-top: 1rem; margin-top: 0.5rem;">
             <label for="zv-gh-token" style="opacity: 0.6;">GITHUB TOKEN <span style="font-size: 0.6rem; opacity: 0.5;">(OPTIONAL — USE YOUR OWN REPOS)</span></label>
