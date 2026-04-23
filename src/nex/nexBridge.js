@@ -1,20 +1,20 @@
-import { routeAction } from '../router/actions/router.js';
+import { logHarness } from '../zayvora/harness.js';
+
 export async function runResearch(query) {
+  logHarness('Research Task', query, { view: 'research' });
   const res = await fetch('https://logichub.app/api/research', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({ query })
-import { addJob } from '../../infra/jobs/jobQueue.js';
-import { incrementMetric } from '../../infra/observability/metrics.js';
-import { logHarness } from '../zayvora/harness.js';
+  });
 
-export async function runResearch(query) {
-  return routeAction('research', query);
+  const result = await res.json();
+  logHarness('Research Result', result, { view: 'research' });
+  return result;
 }
 
 export function queueResearchJob(query) {
   return runResearch(query);
-  return res.json();
 }

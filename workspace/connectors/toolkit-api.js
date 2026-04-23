@@ -8,15 +8,15 @@ function buildCacheKey(endpoint, payload) {
 }
 
 async function readCachedJson(endpoint, payload) {
-  if (typeof caches === 'undefined') return null;
+  if (typeof caches === 'undefined') {return null;}
   const cache = await caches.open(CACHE_NAME);
   const match = await cache.match(buildCacheKey(endpoint, payload));
-  if (!match) return null;
+  if (!match) {return null;}
   return match.json();
 }
 
 async function writeCachedJson(endpoint, payload, data) {
-  if (typeof caches === 'undefined') return;
+  if (typeof caches === 'undefined') {return;}
   const cache = await caches.open(CACHE_NAME);
   await cache.put(
     buildCacheKey(endpoint, payload),
@@ -51,7 +51,7 @@ async function requestToolkit(endpoint, payload) {
       const data = await postJson(target, payload);
       await writeCachedJson(endpoint, payload, data);
       return data;
-    } catch (error) {
+    } catch (_error) {
       // Try next target before falling back to cache.
     }
   }

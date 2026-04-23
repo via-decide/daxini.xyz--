@@ -1,3 +1,5 @@
+import { logHarness } from '../zayvora/harness.js';
+
 export async function executeAction(task) {
   const res = await fetch('https://logichub.app/api/execute', {
     method: 'POST',
@@ -8,7 +10,7 @@ export async function executeAction(task) {
   });
 
   return res.json();
-import { logHarness } from '../zayvora/harness.js';
+}
 
 export async function runExecutionTask(task, executeTask) {
   logHarness('Execution Task', task, { view: 'execution' });

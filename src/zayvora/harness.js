@@ -33,9 +33,9 @@ export function getHarnessView(step) {
 }
 
 export function logHarness(step, data, options = {}) {
-  if (typeof document === 'undefined') return;
+  if (typeof document === 'undefined') {return;}
   const panel = document.getElementById('zayvora-harness');
-  if (!panel) return;
+  if (!panel) {return;}
 
   const entry = document.createElement('div');
   const view = options.view || getHarnessView(step);

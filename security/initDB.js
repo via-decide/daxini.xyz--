@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 // Internal state
 let cachedDB = null;
-let isMock = false;
+let _isMock = false;
 
 /**
  * Mock Database to keep the system alive if better-sqlite3 vanishes
@@ -20,7 +20,7 @@ let isMock = false;
 class MockDatabase {
     constructor() {
         console.warn("[SECURITY] WARNING: Native DB driver unavailable. Using In-Memory Mock.");
-        isMock = true;
+        _isMock = true;
     }
     prepare() {
         return {
@@ -38,7 +38,7 @@ class MockDatabase {
  * Guarantees a valid object (Mock or SQLite) is always returned.
  */
 export async function getDB() {
-    if (cachedDB) return cachedDB;
+    if (cachedDB) {return cachedDB;}
 
     try {
         // Dynamic import isolates the library crash
@@ -47,11 +47,11 @@ export async function getDB() {
         try {
             const dbPath = path.join(__dirname, '../data/telemetry.db');
             cachedDB = new Database(dbPath);
-        } catch (e) {
+        } catch (_e) {
             // Rollback to in-memory if disk-write is forbidden (Vercel)
             cachedDB = new Database(':memory:');
         }
-    } catch (criticalErr) {
+    } catch (_criticalErr) {
         // Ultimate fallback
         cachedDB = new MockDatabase();
     }
@@ -72,7 +72,7 @@ export async function getDB() {
     ];
 
     schema.forEach(sql => {
-        try { cachedDB.prepare(sql).run(); } catch(err) { /* ignore schema noise */ }
+        try { cachedDB.prepare(sql).run(); } catch(_err) { /* ignore schema noise */ }
     });
 
     return cachedDB;

@@ -46,13 +46,13 @@ export class SystemMetrics {
 
     updateValue(id, val) {
         const el = document.getElementById(id);
-        if (el) el.innerText = val;
+        if (el) {el.innerText = val;}
     }
 
     reset() {
         ['met-latency', 'met-steps', 'met-hits', 'met-tokens'].forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.innerText = id.includes('latency') ? '0 ms' : '0';
+            if (el) {el.innerText = id.includes('latency') ? '0 ms' : '0';}
         });
     }
 }

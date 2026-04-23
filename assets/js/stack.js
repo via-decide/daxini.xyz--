@@ -60,11 +60,11 @@
   function init() {
     const visual = document.getElementById('stack-visual');
     const detail = document.getElementById('stack-detail');
-    if (!visual || !detail) return;
+    if (!visual || !detail) {return;}
 
     // Build stack layers
     LAYERS.forEach(function (layer, i) {
-      var el = document.createElement('button');
+      const el = document.createElement('button');
       el.className = 'stack-layer' + (i === 0 ? ' active' : '');
       el.setAttribute('data-index', i);
       el.setAttribute('aria-label', 'Select ' + layer.name + ' layer');
@@ -79,10 +79,10 @@
   }
 
   function selectLayer(index) {
-    if (index === activeIndex) return;
+    if (index === activeIndex) {return;}
     activeIndex = index;
 
-    var layers = document.querySelectorAll('.stack-layer');
+    const layers = document.querySelectorAll('.stack-layer');
     layers.forEach(function (el, i) {
       el.classList.toggle('active', i === index);
     });
@@ -91,11 +91,11 @@
   }
 
   function renderDetail(index) {
-    var panel = document.getElementById('stack-detail');
-    if (!panel) return;
-    var layer = LAYERS[index];
+    const panel = document.getElementById('stack-detail');
+    if (!panel) {return;}
+    const layer = LAYERS[index];
 
-    var featuresHTML = layer.features.map(function (f) {
+    const featuresHTML = layer.features.map(function (f) {
       return '<div class="stack-feat"><span class="stack-feat-icon">→</span>' + f + '</div>';
     }).join('');
 

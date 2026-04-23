@@ -24,7 +24,7 @@ export class PromptConsole {
 
   async handleRun() {
     const prompt = this.input.value.trim();
-    if (!prompt || this.manager.isProcessing) return;
+    if (!prompt || this.manager.isProcessing) {return;}
 
     this.manager.startExecution(prompt);
   }

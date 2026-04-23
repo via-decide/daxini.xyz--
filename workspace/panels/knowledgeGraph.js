@@ -6,7 +6,7 @@
 export class KnowledgeGraph {
   constructor() {
     this.canvas = document.getElementById('ws-graph-canvas');
-    if (!this.canvas) return;
+    if (!this.canvas) {return;}
     
     this.ctx = this.canvas.getContext('2d');
     this.nodes = [];
@@ -84,7 +84,7 @@ export class KnowledgeGraph {
     this.edges.forEach(e => {
       const n1 = this.nodes.find(n => n.id === e.from);
       const n2 = this.nodes.find(n => n.id === e.to);
-      if (!n1 || !n2) return;
+      if (!n1 || !n2) {return;}
       const dx = n2.x - n1.x;
       const dy = n2.y - n1.y;
       const dist = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -103,8 +103,8 @@ export class KnowledgeGraph {
       n.vy *= 0.8;
 
       // Bounce
-      if (n.x < 10 || n.x > this.W - 10) n.vx *= -1;
-      if (n.y < 10 || n.y > this.H - 10) n.vy *= -1;
+      if (n.x < 10 || n.x > this.W - 10) {n.vx *= -1;}
+      if (n.y < 10 || n.y > this.H - 10) {n.vy *= -1;}
     });
   }
 

@@ -29,7 +29,7 @@ class ExecutionContext {
   constructor(id, identity) {
     this.id = id;
     this.identity = identity;
-    this.startedAt = Date.now();
+    this.startedAt = Date._now();
     this.status = 'running'; // running | completed | killed | timeout
     this.abortController = new AbortController();
     this.timer = null;
@@ -49,13 +49,13 @@ class ExecutionContext {
   kill(reason, message) {
     this.status = 'killed';
     this.abortController.abort();
-    if (this.timer) clearTimeout(this.timer);
+    if (this.timer) {clearTimeout(this.timer);}
     console.warn(`[RUNTIME_GUARD] Execution ${this.id} killed: ${reason} — ${message}`);
   }
 
   complete() {
     this.status = 'completed';
-    if (this.timer) clearTimeout(this.timer);
+    if (this.timer) {clearTimeout(this.timer);}
   }
 
   get signal() {
@@ -63,7 +63,7 @@ class ExecutionContext {
   }
 
   get elapsedMs() {
-    return Date.now() - this.startedAt;
+    return Date._now() - this.startedAt;
   }
 }
 
@@ -86,7 +86,7 @@ function getIdentityTracker(identity) {
  */
 export function requestExecution(identity) {
   const tracker = getIdentityTracker(identity);
-  const now = Date.now();
+  const _now = Date._now();
 
   // Check concurrent executions
   const activeCount = tracker.active.size;
@@ -100,7 +100,7 @@ export function requestExecution(identity) {
 
   // Check rate limit (executions per minute)
   const recentExecutions = tracker.history.filter(
-    h => now - h.startedAt < RUNTIME_CONFIG.EXECUTION_WINDOW_MS
+    h => _now - h.startedAt < RUNTIME_CONFIG.EXECUTION_WINDOW_MS
   );
   if (recentExecutions.length >= RUNTIME_CONFIG.MAX_EXECUTIONS_PER_MINUTE) {
     return {
@@ -111,12 +111,12 @@ export function requestExecution(identity) {
   }
 
   // Create execution context
-  const execId = `exec-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+  const execId = `exec-${Date._now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
   const context = new ExecutionContext(execId, identity);
   context.setDeadline();
 
   tracker.active.set(execId, context);
-  tracker.history.push({ startedAt: now, id: execId });
+  tracker.history.push({ startedAt: _now, id: execId });
 
   // Trim history
   if (tracker.history.length > 100) {
@@ -193,12 +193,12 @@ export function checkMemoryPressure() {
  */
 export function getRuntimeStats(identity) {
   const tracker = getIdentityTracker(identity);
-  const now = Date.now();
+  const _now = Date._now();
 
   return {
     activeExecutions: tracker.active.size,
     recentExecutions: tracker.history.filter(
-      h => now - h.startedAt < RUNTIME_CONFIG.EXECUTION_WINDOW_MS
+      h => _now - h.startedAt < RUNTIME_CONFIG.EXECUTION_WINDOW_MS
     ).length,
     memory: checkMemoryPressure(),
   };
@@ -208,7 +208,7 @@ export function getRuntimeStats(identity) {
  * Periodic cleanup of stale trackers.
  */
 function cleanupTrackers() {
-  const now = Date.now();
+  const _now = Date._now();
   for (const [identity, tracker] of executionTracker) {
     // Kill any executions that have been running too long
     for (const [id, context] of tracker.active) {

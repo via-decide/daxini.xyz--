@@ -62,7 +62,7 @@ const SAFE_ATTRIBUTES = new Set([
  * Returns clean text safe for rendering.
  */
 export function sanitizeHTML(input) {
-  if (!input || typeof input !== 'string') return '';
+  if (!input || typeof input !== 'string') {return '';}
 
   let clean = input;
 
@@ -96,7 +96,7 @@ export function sanitizeHTML(input) {
  * Escape all HTML entities — use when you want NO HTML at all.
  */
 export function escapeHTML(input) {
-  if (!input || typeof input !== 'string') return '';
+  if (!input || typeof input !== 'string') {return '';}
   return input
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -133,7 +133,7 @@ export function validateJSON(input, maxDepth = MAX_JSON_DEPTH) {
 }
 
 function measureJSONDepth(obj, currentDepth = 0) {
-  if (obj === null || typeof obj !== 'object') return currentDepth;
+  if (obj === null || typeof obj !== 'object') {return currentDepth;}
   let maxDepth = currentDepth;
   for (const value of Object.values(obj)) {
     maxDepth = Math.max(maxDepth, measureJSONDepth(value, currentDepth + 1));

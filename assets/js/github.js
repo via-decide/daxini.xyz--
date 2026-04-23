@@ -5,17 +5,17 @@
 (function () {
   'use strict';
 
-  var API_URL = 'https://api.github.com/orgs/via-decide/repos?sort=updated&per_page=6';
+  const API_URL = 'https://api.github.com/orgs/via-decide/repos?sort=updated&per_page=6';
 
   function init() {
-    var grid = document.getElementById('gh-grid');
-    if (!grid) return;
+    const grid = document.getElementById('gh-grid');
+    if (!grid) {return;}
 
     grid.innerHTML = '<div class="gh-loading" style="color:var(--tx3);font-size:.8rem;padding:2rem;">Loading repositories…</div>';
 
     fetch(API_URL)
       .then(function (r) {
-        if (!r.ok) throw new Error('GitHub API: ' + r.status);
+        if (!r.ok) {throw new Error('GitHub API: ' + r.status);}
         return r.json();
       })
       .then(function (repos) { renderRepos(grid, repos); })
@@ -29,15 +29,15 @@
     grid.innerHTML = '';
 
     repos.slice(0, 6).forEach(function (repo) {
-      var card = document.createElement('a');
+      const card = document.createElement('a');
       card.className = 'gh-card';
       card.href = repo.html_url;
       card.target = '_blank';
       card.rel = 'noopener noreferrer';
 
-      var lang = repo.language || 'N/A';
-      var stars = repo.stargazers_count || 0;
-      var updated = new Date(repo.updated_at).toLocaleDateString('en-GB', {
+      const lang = repo.language || 'N/A';
+      const stars = repo.stargazers_count || 0;
+      const updated = new Date(repo.updated_at).toLocaleDateString('en-GB', {
         day: 'numeric', month: 'short', year: 'numeric'
       });
 
@@ -59,7 +59,7 @@
   }
 
   function renderFallback(grid) {
-    var fallback = [
+    const fallback = [
       { name: 'VIA', desc: 'ViaDecide platform — 68+ interactive decision tools', lang: 'HTML' },
       { name: 'decide.engine-tools', desc: 'Decide engine tool ecosystem', lang: 'JavaScript' },
       { name: 'fixed-main-3', desc: 'Production build with full tool pages', lang: 'HTML' },
@@ -70,7 +70,7 @@
 
     grid.innerHTML = '';
     fallback.forEach(function (repo) {
-      var card = document.createElement('div');
+      const card = document.createElement('div');
       card.className = 'gh-card';
       card.innerHTML =
         '<div class="gh-card-header">' +
@@ -87,7 +87,7 @@
   }
 
   function escapeHTML(str) {
-    var div = document.createElement('div');
+    const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
   }

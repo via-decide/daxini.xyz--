@@ -26,7 +26,7 @@ async function fetchPRs(repo) {
             }
         });
         
-        if (!response.ok) throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+        if (!response.ok) {throw new Error(`HTTP ${response.status}: ${await response.text()}`);}
         
         const prs = await response.json();
         

@@ -80,7 +80,7 @@ export function createEdgeRuntime({ rootDir, config = {}, logger = console }) {
 
       const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
       const parts = url.pathname.split('/').filter(Boolean);
-      if (parts[0] !== 'apps' || !parts[1]) return false;
+      if (parts[0] !== 'apps' || !parts[1]) {return false;}
 
       const appName = parts[1];
       const app = getApp(appName);
@@ -148,7 +148,7 @@ export function createEdgeRuntime({ rootDir, config = {}, logger = console }) {
         const status = Number(response.status) || 200;
         const headers = response.headers || { 'content-type': 'application/json; charset=utf-8' };
         const body = typeof response.body === 'string' ? response.body : JSON.stringify(response.body ?? {});
-        if (req.method === 'GET' && status < 400) cacheSet(execKey, { status, headers, body }, runtimeConfig.cacheTtlMs);
+        if (req.method === 'GET' && status < 400) {cacheSet(execKey, { status, headers, body }, runtimeConfig.cacheTtlMs);}
         res.writeHead(status, headers);
         res.end(body);
       } catch (error) {
@@ -162,7 +162,7 @@ export function createEdgeRuntime({ rootDir, config = {}, logger = console }) {
     invalidate(appName) {
       apps.delete(appName);
       for (const key of responseCache.keys()) {
-        if (key.includes(`:${appName}`) || key.endsWith(appName)) responseCache.delete(key);
+        if (key.includes(`:${appName}`) || key.endsWith(appName)) {responseCache.delete(key);}
       }
     },
     async close() {

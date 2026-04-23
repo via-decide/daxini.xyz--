@@ -1,13 +1,12 @@
 import { routeAction } from '../router/actions/router.js';
+import { logHarness } from './harness.js';
 
 export async function handleZayvoraQuery(query) {
   return routeAction('reason', query);
 }
+
 export async function runZayvoraQuery(query) {
-  console.log('Zayvora query:', query);
-import { logEvent } from '../../infra/observability/logger.js';
-import { incrementMetric } from '../../infra/observability/metrics.js';
-import { logHarness } from './harness.js';
+  logHarness('Decompose', query, { view: 'reasoning' });
 
   const response = await fetch('https://logichub.app/api/reason', {
     method: 'POST',
@@ -17,10 +16,7 @@ import { logHarness } from './harness.js';
     body: JSON.stringify({ query })
   });
 
-  return response.json();
-  logHarness('Decompose', query, { view: 'reasoning' });
-
-  const result = await runQuery(query);
+  const result = await response.json();
 
   logHarness('Retrieve Context', result?.context ?? result, { view: 'reasoning' });
   logHarness('Synthesize', result?.analysis ?? result, { view: 'reasoning' });
@@ -28,6 +24,5 @@ import { logHarness } from './harness.js';
   logHarness('Verify', result?.checks ?? result, { view: 'reasoning' });
   logHarness('Execute', result?.action ?? result, { view: 'execution' });
 
-export async function runZayvoraQuery(query) {
-  return handleZayvoraQuery(query);
+  return result;
 }

@@ -33,7 +33,7 @@ export class WorkspaceManager {
 
     broadcast(event, data) {
         this.panels.forEach(p => {
-            if (p.onEvent) p.onEvent(event, data);
+            if (p.onEvent) {p.onEvent(event, data);}
         });
     }
 

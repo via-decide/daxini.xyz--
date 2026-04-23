@@ -64,9 +64,9 @@ export async function generateCodeStream(prompt, onChunk, onError, onComplete, g
 
   // Determine fallback endpoint if runtime mode dictates
   let targetEndpoint = OLLAMA_ENDPOINT;
-  if (runtimeMode === 'local') targetEndpoint = 'http://localhost:11434/api/generate';
-  else if (runtimeMode === 'hybrid') targetEndpoint = OLLAMA_ENDPOINT; // Local fallback proxy
-  else if (runtimeMode === 'cloud') targetEndpoint = OLLAMA_ENDPOINT;
+  if (runtimeMode === 'local') {targetEndpoint = 'http://localhost:11434/api/generate';}
+  else if (runtimeMode === 'hybrid') {targetEndpoint = OLLAMA_ENDPOINT;} // Local fallback proxy
+  else if (runtimeMode === 'cloud') {targetEndpoint = OLLAMA_ENDPOINT;}
 
   // Optimize context size based on device constraint mode
   const ctxSize = performanceMode === 'lite' ? 4096 : (performanceMode === 'balanced' ? 8192 : 16384);

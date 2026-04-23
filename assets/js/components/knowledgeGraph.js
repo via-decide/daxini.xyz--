@@ -79,7 +79,7 @@ export class KnowledgeGraph {
         });
 
         function dragstarted(event) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
+            if (!event.active) {simulation.alphaTarget(0.3).restart();}
             event.subject.fx = event.subject.x;
             event.subject.fy = event.subject.y;
         }
@@ -90,7 +90,7 @@ export class KnowledgeGraph {
         }
 
         function dragended(event) {
-            if (!event.active) simulation.alphaTarget(0);
+            if (!event.active) {simulation.alphaTarget(0);}
             event.subject.fx = null;
             event.subject.fy = null;
         }

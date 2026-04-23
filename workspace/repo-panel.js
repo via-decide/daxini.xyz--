@@ -7,7 +7,7 @@ export function initRepoPanel({ onLog } = {}) {
   const status = document.getElementById('repo-status');
   const summaryNode = document.getElementById('repo-summary');
 
-  if (!button || !input || !status || !summaryNode) return;
+  if (!button || !input || !status || !summaryNode) {return;}
 
   button.addEventListener('click', async () => {
     const repoUrl = input.value.trim();

@@ -8,7 +8,7 @@ function extractBearerToken(req) {
 
 function authGuard(req, res, next) {
   const token = extractBearerToken(req);
-  if (!token) return res.status(401).json({ message: 'Missing bearer token.' });
+  if (!token) {return res.status(401).json({ message: 'Missing bearer token.' });}
 
   try {
     const payload = verifyToken(token);
@@ -21,7 +21,7 @@ function authGuard(req, res, next) {
 
 function verifyPassportToken(req, res, next) {
   const token = extractBearerToken(req);
-  if (!token) return res.status(401).json({ message: 'Missing bearer token.' });
+  if (!token) {return res.status(401).json({ message: 'Missing bearer token.' });}
 
   try {
     req.authPassport = verifyToken(token);

@@ -112,7 +112,7 @@ export function guardPrompt(rawPrompt) {
   }
 
   // ── Check for excessive special characters (encoding evasion) ──
-  const specialCharRatio = (prompt.match(/[^\w\s.,!?;:'"()\-]/g) || []).length / Math.max(prompt.length, 1);
+  const specialCharRatio = (prompt.match(/[^\w\s.,!?;:'"() -]/g) || []).length / Math.max(prompt.length, 1);
   if (specialCharRatio > 0.3) {
     threats.push('high_special_char_ratio');
     threatScore += 0.15;

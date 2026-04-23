@@ -41,9 +41,9 @@ export function createSandbox({ code, request, timeoutMs }) {
     async run() {
       script.runInContext(context, { timeout: timeoutMs });
       const handler = context.__edgeHandler;
-      if (typeof handler !== 'function') throw new Error('app-missing-handleRequest');
+      if (typeof handler !== 'function') {throw new Error('app-missing-handleRequest');}
       const result = await Promise.resolve(handler(context.request));
-      if (result && typeof result === 'object' && 'status' in result && 'body' in result) return result;
+      if (result && typeof result === 'object' && 'status' in result && 'body' in result) {return result;}
       return { status: 200, headers: { 'content-type': 'application/json; charset=utf-8' }, body: JSON.stringify(result ?? {}) };
     }
   };

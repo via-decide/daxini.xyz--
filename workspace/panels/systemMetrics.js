@@ -37,10 +37,10 @@ export class SystemMetrics {
   }
 
   updateMetrics(data) {
-    if (data.tokens) this.updateMetric('tokens', data.tokens);
-    if (data.steps) this.updateMetric('steps', data.steps);
-    if (data.latency) this.updateMetric('latency', data.latency + 'ms');
-    if (data.retrieval) this.updateMetric('retrieval', data.retrieval + 'ms');
+    if (data.tokens) {this.updateMetric('tokens', data.tokens);}
+    if (data.steps) {this.updateMetric('steps', data.steps);}
+    if (data.latency) {this.updateMetric('latency', data.latency + 'ms');}
+    if (data.retrieval) {this.updateMetric('retrieval', data.retrieval + 'ms');}
   }
 
   clear() {

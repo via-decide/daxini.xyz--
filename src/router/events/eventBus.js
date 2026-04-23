@@ -14,7 +14,7 @@ export function on(eventName, handler) {
 
   return () => {
     bucket.delete(handler);
-    if (!bucket.size) listeners.delete(eventName);
+    if (!bucket.size) {listeners.delete(eventName);}
   };
 }
 

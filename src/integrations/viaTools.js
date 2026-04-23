@@ -37,18 +37,18 @@ const TEMPLATE_FALLBACK = {
 let templateCache = null;
 
 function normalizeTemplateShape(payload) {
-  if (!payload || typeof payload !== 'object') return TEMPLATE_FALLBACK;
-  if (payload.templates && typeof payload.templates === 'object') return payload.templates;
+  if (!payload || typeof payload !== 'object') {return TEMPLATE_FALLBACK;}
+  if (payload.templates && typeof payload.templates === 'object') {return payload.templates;}
   return payload;
 }
 
 export async function loadTemplates() {
-  if (templateCache) return templateCache;
+  if (templateCache) {return templateCache;}
 
   for (const source of VIA_TEMPLATE_SOURCES) {
     try {
       const response = await fetch(source, { headers: { Accept: 'application/json' } });
-      if (!response.ok) continue;
+      if (!response.ok) {continue;}
       const json = await response.json();
       templateCache = normalizeTemplateShape(json);
       return templateCache;

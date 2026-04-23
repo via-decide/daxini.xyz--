@@ -1,45 +1,40 @@
 export function extractFunctions(source = '', language = 'javascript') {
   const results = [];
   const push = (name, kind, signature) => {
-    if (!name) return;
+    if (!name) {return;}
     results.push({ name, kind, signature: signature || name });
   };
 
+  const lines = source.split('\n');
+
   if (language === 'python') {
-    source.replace(/^\s*def\s+([a-zA-Z_][\w]*)\s*\(([^)]*)\)/gm, (_, name, args) => {
-      push(name, 'function', `${name}(${args})`);
-      return _;
-    });
-    source.replace(/^\s*class\s+([a-zA-Z_][\w]*)\s*(?:\(([^)]*)\))?/gm, (_, name, base) => {
-      push(name, 'class', base ? `${name}(${base})` : name);
-      return _;
+    lines.forEach((line) => {
+      const defMatch = line.match(/^\s*def\s+([a-zA-Z_]\w*)/);
+      if (defMatch) {push(defMatch[1], 'function');}
+      const classMatch = line.match(/^\s*class\s+([a-zA-Z_]\w*)/);
+      if (classMatch) {push(classMatch[1], 'class');}
     });
     return results;
   }
 
   if (language === 'rust') {
-    source.replace(/^\s*(?:pub\s+)?fn\s+([a-zA-Z_][\w]*)\s*\(([^)]*)\)/gm, (_, name, args) => {
-      push(name, 'function', `${name}(${args})`);
-      return _;
-    });
-    source.replace(/^\s*(?:pub\s+)?struct\s+([a-zA-Z_][\w]*)/gm, (_, name) => {
-      push(name, 'struct', name);
-      return _;
+    lines.forEach((line) => {
+      const fnMatch = line.match(/^\s*(?:pub\s+)?fn\s+([a-zA-Z_]\w*)/);
+      if (fnMatch) {push(fnMatch[1], 'function');}
+      const structMatch = line.match(/^\s*(?:pub\s+)?struct\s+([a-zA-Z_]\w*)/);
+      if (structMatch) {push(structMatch[1], 'struct');}
     });
     return results;
   }
 
-  source.replace(/(?:export\s+)?function\s+([a-zA-Z_$][\w$]*)\s*\(([^)]*)\)/g, (_, name, args) => {
-    push(name, 'function', `${name}(${args})`);
-    return _;
+  lines.forEach((line) => {
+    const fnMatch = line.match(/(?:export\s+)?function\s+([a-zA-Z_$][\w$]*)/);
+    if (fnMatch) {push(fnMatch[1], 'function');}
+    const arrowMatch = line.match(/(?:const|let|var)\s+([a-zA-Z_$][\w$]*)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>/);
+    if (arrowMatch) {push(arrowMatch[1], 'arrow');}
+    const classMatch = line.match(/class\s+([a-zA-Z_$][\w$]*)/);
+    if (classMatch) {push(classMatch[1], 'class');}
   });
-  source.replace(/(?:const|let|var)\s+([a-zA-Z_$][\w$]*)\s*=\s*(?:async\s*)?\(([^)]*)\)\s*=>/g, (_, name, args) => {
-    push(name, 'arrow', `${name}(${args})`);
-    return _;
-  });
-  source.replace(/class\s+([a-zA-Z_$][\w$]*)/g, (_, name) => {
-    push(name, 'class', name);
-    return _;
-  });
+
   return results;
 }

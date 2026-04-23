@@ -9,7 +9,7 @@
       const raw = localStorage.getItem(THREAD_INDEX_KEY);
       const data = raw ? JSON.parse(raw) : [];
       return Array.isArray(data) ? data : [];
-    } catch (_) {
+    } catch (_error) {
       return [];
     }
   }
@@ -23,7 +23,7 @@
   }
 
   function saveThread(thread) {
-    if (!thread || !thread.id) return;
+    if (!thread || !thread.id) {return;}
     localStorage.setItem(threadKey(thread.id), JSON.stringify(thread));
 
     const index = readIndex();
@@ -35,7 +35,7 @@
     try {
       const raw = localStorage.getItem(threadKey(taskId));
       return raw ? JSON.parse(raw) : null;
-    } catch (_) {
+    } catch (_error) {
       return null;
     }
   }
@@ -49,7 +49,7 @@
 
   function appendLog(taskId, logEntry) {
     const thread = loadThread(taskId);
-    if (!thread) return;
+    if (!thread) {return;}
     thread.logs = Array.isArray(thread.logs) ? thread.logs : [];
     thread.logs.push(logEntry);
     saveThread(thread);
@@ -57,7 +57,7 @@
 
   function appendArtifact(taskId, artifact) {
     const thread = loadThread(taskId);
-    if (!thread) return;
+    if (!thread) {return;}
     thread.artifacts = Array.isArray(thread.artifacts) ? thread.artifacts : [];
     thread.artifacts.push(artifact);
     saveThread(thread);
@@ -65,7 +65,7 @@
 
   function upsertStep(taskId, stepData) {
     const thread = loadThread(taskId);
-    if (!thread) return;
+    if (!thread) {return;}
 
     thread.reasoning_steps = Array.isArray(thread.reasoning_steps) ? thread.reasoning_steps : [];
     const idx = thread.reasoning_steps.findIndex((s) => s.step === stepData.step);

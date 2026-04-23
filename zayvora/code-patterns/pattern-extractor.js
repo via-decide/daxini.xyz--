@@ -17,7 +17,7 @@ export async function loadPatternLibrary(path = '../zayvora/code-patterns/patter
     if (response.ok) {
       patternLibrary = await response.json();
     }
-  } catch (error) {
+  } catch (_error) {
     patternLibrary = fallbackLibrary;
   }
   return patternLibrary;

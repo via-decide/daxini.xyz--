@@ -18,7 +18,7 @@ window.addEventListener("appinstalled", () => {
 });
 
 export async function triggerInstall() {
-  if (!deferredPrompt) return;
+  if (!deferredPrompt) {return;}
 
   deferredPrompt.prompt();
 

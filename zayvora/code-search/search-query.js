@@ -2,7 +2,7 @@ import { searchCodebase } from './search-index.js';
 
 export function runCodeSearch(query) {
   const input = (query || '').trim();
-  if (!input) return [];
+  if (!input) {return [];}
   return searchCodebase(input, { limit: 12 });
 }
 

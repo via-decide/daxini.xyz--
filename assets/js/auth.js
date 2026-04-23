@@ -8,7 +8,7 @@ function clearToken() { localStorage.removeItem(AUTH_KEY); }
 
 async function apiPost(url, body, token) {
   const headers = { 'Content-Type': 'application/json' };
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (token) {headers.Authorization = `Bearer ${token}`;}
   const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body || {}) });
   const data = await response.json().catch(() => ({}));
   return { response, data };
@@ -16,25 +16,25 @@ async function apiPost(url, body, token) {
 
 async function login(username, password) {
   const { response, data } = await apiPost('/auth/login', { username, password });
-  if (!response.ok || !data.token) throw new Error(data.message || 'Login failed');
+  if (!response.ok || !data.token) {throw new Error(data.message || 'Login failed');}
   setToken(data.token);
 }
 
 async function register(username, password) {
   const { response, data } = await apiPost('/auth/register', { username, password });
-  if (!response.ok) throw new Error(data.message || 'Registration failed');
+  if (!response.ok) {throw new Error(data.message || 'Registration failed');}
   return data;
 }
 
 async function forgotPassword(email) {
   const { response, data } = await apiPost('/api/forgot-password', { email });
-  if (!response.ok) throw new Error(data.message || 'Request failed');
+  if (!response.ok) {throw new Error(data.message || 'Request failed');}
   return data;
 }
 
 async function resetPassword(token, newPassword) {
   const { response, data } = await apiPost('/api/reset-password', { token, newPassword });
-  if (!response.ok) throw new Error(data.message || 'Reset failed');
+  if (!response.ok) {throw new Error(data.message || 'Reset failed');}
   return data;
 }
 
@@ -90,7 +90,7 @@ function openLoginModal() {
 
   document.getElementById('authRegisterBtn').onclick = async () => {
     const username = usernameInput.value.trim().toLowerCase();
-    if (!isValidEmail(username)) return void (msg.textContent = 'Enter a valid email.');
+    if (!isValidEmail(username)) {return void (msg.textContent = 'Enter a valid email.');}
     try {
       const out = await register(username, passwordInput.value);
       msg.textContent = out.message || 'Registered. You can now login.';
@@ -101,7 +101,7 @@ function openLoginModal() {
 
   document.getElementById('authForgotBtn').onclick = async () => {
     const email = usernameInput.value.trim().toLowerCase();
-    if (!isValidEmail(email)) return void (msg.textContent = 'Enter a valid email.');
+    if (!isValidEmail(email)) {return void (msg.textContent = 'Enter a valid email.');}
     try {
       const out = await forgotPassword(email);
       msg.textContent = out._mockToken ? `Reset token: ${out._mockToken}` : 'If that account exists, a reset email has been sent.';

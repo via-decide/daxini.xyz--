@@ -29,11 +29,11 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  if (req.method !== 'GET') return;
+  if (req.method !== 'GET') {return;}
 
   const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return;
-  if (!url.pathname.startsWith('/zayvora/')) return;
+  if (url.origin !== self.location.origin) {return;}
+  if (!url.pathname.startsWith('/zayvora/')) {return;}
 
   // Network-first for navigations — keeps pricing copy fresh.
   if (req.mode === 'navigate') {
@@ -52,7 +52,7 @@ self.addEventListener('fetch', (event) => {
   // Cache-first for static shell assets.
   event.respondWith(
     caches.match(req).then((cached) => {
-      if (cached) return cached;
+      if (cached) {return cached;}
       return fetch(req).then((res) => {
         if (res.ok) {
           const clone = res.clone();

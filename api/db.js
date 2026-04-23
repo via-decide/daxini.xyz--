@@ -16,7 +16,7 @@ let _db = null;
 
 function getDb() {
   if (!_db) {
-    if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
+    if (!fs.existsSync(DB_DIR)) {fs.mkdirSync(DB_DIR, { recursive: true });}
     _db = new Database(DB_PATH);
     _db.pragma('journal_mode = WAL');
   }
@@ -28,7 +28,7 @@ export function sqliteExec(sql, params = []) {
   const stmt = db.prepare(sql);
   if (/^\s*select/i.test(sql)) {
     const row = stmt.get(...params);
-    if (!row) return '';
+    if (!row) {return '';}
     return Object.values(row).join('|');
   }
   stmt.run(...params);

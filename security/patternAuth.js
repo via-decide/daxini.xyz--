@@ -52,10 +52,10 @@ export function hashPattern(rawPattern) {
  * Verify a pattern against a stored hash using timing-safe comparison.
  */
 export function verifyPattern(rawPattern, storedHash) {
-  if (!rawPattern || !storedHash) return false;
+  if (!rawPattern || !storedHash) {return false;}
 
   const parts = String(storedHash).split('$');
-  if (parts[0] !== 'pbkdf2' || parts.length !== 4) return false;
+  if (parts[0] !== 'pbkdf2' || parts.length !== 4) {return false;}
 
   const [, salt, iterations, expectedHash] = parts;
   const computedHash = crypto.pbkdf2Sync(

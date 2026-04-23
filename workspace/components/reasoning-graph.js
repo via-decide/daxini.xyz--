@@ -10,7 +10,7 @@ const TOOLKIT_NODE_MAP = {
 
 export function renderReasoningGraph(targetId = 'reasoning-graph') {
   const root = document.getElementById(targetId);
-  if (!root) return;
+  if (!root) {return;}
 
   root.innerHTML = `
     <svg viewBox="0 0 320 220" class="reasoning-svg" role="img" aria-label="Reasoning flow graph">
@@ -42,12 +42,12 @@ export function activateNode(node) {
   const items = document.querySelectorAll('#reasoning-graph [data-node]');
   items.forEach((item) => item.classList.remove('node-active'));
   const active = document.querySelector(`#reasoning-graph [data-node="${node}"]`);
-  if (active) active.classList.add('node-active');
+  if (active) {active.classList.add('node-active');}
 }
 
 export function activateToolkitStep(step) {
   const node = TOOLKIT_NODE_MAP[step];
-  if (!node) return;
+  if (!node) {return;}
   activateNode(node);
 }
 

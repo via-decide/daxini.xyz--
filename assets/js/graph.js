@@ -5,14 +5,14 @@
 (function () {
   'use strict';
 
-  var nodes = [];
-  var edges = [];
-  var canvas, ctx, W, H;
-  var tooltip;
-  var hoveredNode = null;
-  var animFrame = null;
+  let nodes = [];
+  let edges = [];
+  let canvas, ctx, W, H;
+  let tooltip;
+  let hoveredNode = null;
+  const _animFrame = null;
 
-  var COLORS = {
+  const COLORS = {
     core:     '#5b8cff',
     research: '#a78bfa',
     applied:  '#34d399',
@@ -22,7 +22,7 @@
   function init() {
     canvas = document.getElementById('graph-canvas');
     tooltip = document.getElementById('graph-tooltip');
-    if (!canvas) return;
+    if (!canvas) {return;}
 
     ctx = canvas.getContext('2d');
     resize();
@@ -44,7 +44,7 @@
   }
 
   function resize() {
-    var rect = canvas.parentElement.getBoundingClientRect();
+    const rect = canvas.parentElement.getBoundingClientRect();
     W = rect.width;
     H = rect.height;
     canvas.width = W * (window.devicePixelRatio || 1);
@@ -52,14 +52,14 @@
     canvas.style.width = W + 'px';
     canvas.style.height = H + 'px';
     ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
-    if (nodes.length) layoutNodes(nodes);
+    if (nodes.length) {layoutNodes(nodes);}
   }
 
   function layoutNodes(rawNodes) {
     nodes = rawNodes.map(function (n, i) {
-      var angle = (i / rawNodes.length) * Math.PI * 2 - Math.PI / 2;
-      var isCore = n.group === 'core';
-      var radius = isCore ? Math.min(W, H) * 0.2 : Math.min(W, H) * 0.35;
+      const angle = (i / rawNodes.length) * Math.PI * 2 - Math.PI / 2;
+      const isCore = n.group === 'core';
+      let radius = isCore ? Math.min(W, H) * 0.2 : Math.min(W, H) * 0.35;
       radius += (Math.random() - 0.5) * 30;
       return {
         id: n.id,
@@ -74,16 +74,16 @@
     });
 
     // Simple force simulation (50 iterations)
-    for (var iter = 0; iter < 60; iter++) {
+    for (let iter = 0; iter < 60; iter++) {
       // Repulsion between all nodes
-      for (var i = 0; i < nodes.length; i++) {
-        for (var j = i + 1; j < nodes.length; j++) {
-          var dx = nodes[j].x - nodes[i].x;
-          var dy = nodes[j].y - nodes[i].y;
-          var dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          var force = 800 / (dist * dist);
-          var fx = (dx / dist) * force;
-          var fy = (dy / dist) * force;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[j].x - nodes[i].x;
+          const dy = nodes[j].y - nodes[i].y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          const force = 800 / (dist * dist);
+          const fx = (dx / dist) * force;
+          const fy = (dy / dist) * force;
           nodes[i].vx -= fx;
           nodes[i].vy -= fy;
           nodes[j].vx += fx;
@@ -93,15 +93,15 @@
 
       // Attraction along edges
       edges.forEach(function (e) {
-        var a = nodeById(e.from);
-        var b = nodeById(e.to);
-        if (!a || !b) return;
-        var dx = b.x - a.x;
-        var dy = b.y - a.y;
-        var dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        var force = (dist - 120) * 0.01;
-        var fx = (dx / dist) * force;
-        var fy = (dy / dist) * force;
+        const a = nodeById(e.from);
+        const b = nodeById(e.to);
+        if (!a || !b) {return;}
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const force = (dist - 120) * 0.01;
+        const fx = (dx / dist) * force;
+        const fy = (dy / dist) * force;
         a.vx += fx;
         a.vy += fy;
         b.vx -= fx;
@@ -124,8 +124,8 @@
   }
 
   function nodeById(id) {
-    for (var i = 0; i < nodes.length; i++) {
-      if (nodes[i].id === id) return nodes[i];
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].id === id) {return nodes[i];}
     }
     return null;
   }
@@ -135,11 +135,11 @@
 
     // Edges
     edges.forEach(function (e) {
-      var a = nodeById(e.from);
-      var b = nodeById(e.to);
-      if (!a || !b) return;
+      const a = nodeById(e.from);
+      const b = nodeById(e.to);
+      if (!a || !b) {return;}
 
-      var isHovered = hoveredNode && (hoveredNode.id === a.id || hoveredNode.id === b.id);
+      const isHovered = hoveredNode && (hoveredNode.id === a.id || hoveredNode.id === b.id);
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
       ctx.lineTo(b.x, b.y);
@@ -150,16 +150,16 @@
 
     // Nodes
     nodes.forEach(function (n) {
-      var color = COLORS[n.group] || '#5b8cff';
-      var isHovered = hoveredNode && hoveredNode.id === n.id;
-      var r = isHovered ? n.r + 3 : n.r;
+      const color = COLORS[n.group] || '#5b8cff';
+      const isHovered = hoveredNode && hoveredNode.id === n.id;
+      const r = isHovered ? n.r + 3 : n.r;
 
       // Glow
       ctx.beginPath();
       ctx.arc(n.x, n.y, r + 6, 0, Math.PI * 2);
       ctx.fillStyle = color.replace(')', ',0.08)').replace('rgb', 'rgba').replace('#', '');
       // Use hex to rgba
-      var gc = hexToRGBA(color, isHovered ? 0.2 : 0.08);
+      const gc = hexToRGBA(color, isHovered ? 0.2 : 0.08);
       ctx.fillStyle = gc;
       ctx.fill();
 
@@ -179,21 +179,21 @@
 
   function hexToRGBA(hex, alpha) {
     hex = hex.replace('#', '');
-    var r = parseInt(hex.substring(0, 2), 16);
-    var g = parseInt(hex.substring(2, 4), 16);
-    var b = parseInt(hex.substring(4, 6), 16);
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
     return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
   }
 
   function onMouseMove(e) {
-    var rect = canvas.getBoundingClientRect();
-    var mx = e.clientX - rect.left;
-    var my = e.clientY - rect.top;
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
 
     hoveredNode = null;
-    for (var i = 0; i < nodes.length; i++) {
-      var dx = mx - nodes[i].x;
-      var dy = my - nodes[i].y;
+    for (let i = 0; i < nodes.length; i++) {
+      const dx = mx - nodes[i].x;
+      const dy = my - nodes[i].y;
       if (dx * dx + dy * dy < 400) {
         hoveredNode = nodes[i];
         break;
@@ -215,7 +215,7 @@
 
   function onMouseLeave() {
     hoveredNode = null;
-    if (tooltip) tooltip.classList.remove('show');
+    if (tooltip) {tooltip.classList.remove('show');}
     draw();
   }
 

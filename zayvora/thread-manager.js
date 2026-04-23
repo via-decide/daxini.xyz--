@@ -18,7 +18,7 @@
   }
 
   function pushMemoryEvent(event) {
-    if (typeof global.GlobalMemoryGraphClient === 'undefined') return;
+    if (typeof global.GlobalMemoryGraphClient === 'undefined') {return;}
     global.GlobalMemoryGraphClient.pushEvent({
       source: 'zayvora-thread-manager',
       ...event
@@ -54,7 +54,7 @@
 
   function appendMessage(taskId, message) {
     const thread = loadThread(taskId);
-    if (!thread) return null;
+    if (!thread) {return null;}
 
     thread.messages = Array.isArray(thread.messages) ? thread.messages : [];
     thread.messages.push({
@@ -88,7 +88,7 @@
 
   function updateStatus(taskId, status) {
     const thread = loadThread(taskId);
-    if (!thread) return null;
+    if (!thread) {return null;}
     thread.status = status;
     STORAGE.saveThread(thread);
     pushMemoryEvent({ event: 'thread.status.updated', task_id: taskId, status });
@@ -104,7 +104,7 @@
     async function worker() {
       while (queue.length > 0) {
         const item = queue.shift();
-        if (!item) break;
+        if (!item) {break;}
 
         const startedAt = Date.now();
         try {

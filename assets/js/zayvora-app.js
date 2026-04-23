@@ -56,7 +56,7 @@
   // ── Stages ──────────────────────────────────────────────
   function renderStages() {
     const container = $('#zv-stages');
-    if (!container) return;
+    if (!container) {return;}
     container.innerHTML = STAGES.map((s, i) => `
       <div class="zv-stage" data-stage="${i}" id="zv-stage-${i}">
         <div class="zv-stage-icon">${s.icon}</div>
@@ -68,9 +68,9 @@
   function updateStages(activeIndex, status) {
     STAGES.forEach((_, i) => {
       const el = $(`#zv-stage-${i}`);
-      if (!el) return;
+      if (!el) {return;}
       el.classList.remove('active', 'done', 'failed');
-      if (i < activeIndex) el.classList.add('done');
+      if (i < activeIndex) {el.classList.add('done');}
       else if (i === activeIndex) {
         el.classList.add(status === 'failed' ? 'failed' : 'active');
       }
@@ -85,11 +85,11 @@
     state.logs.push(entry);
 
     const logsEl = $('#zv-logs');
-    if (!logsEl) return;
+    if (!logsEl) {return;}
 
     // Remove idle state if present
     const idle = logsEl.querySelector('.zv-idle');
-    if (idle) idle.remove();
+    if (idle) {idle.remove();}
 
     const div = document.createElement('div');
     div.className = `zv-log-entry ${type}`;
@@ -100,7 +100,7 @@
 
   function showIdleState() {
     const logsEl = $('#zv-logs');
-    if (!logsEl || state.logs.length > 0) return;
+    if (!logsEl || state.logs.length > 0) {return;}
     logsEl.innerHTML = `
       <div class="zv-idle">
         <div class="zv-idle-icon">⚡</div>
@@ -113,14 +113,14 @@
   // ── Progress ────────────────────────────────────────────
   function updateProgress(pct) {
     const bar = $('.zv-progress-bar');
-    if (bar) bar.style.width = `${pct}%`;
+    if (bar) {bar.style.width = `${pct}%`;}
   }
 
   // ── Command Input ───────────────────────────────────────
   function updateCharCount() {
     const textarea = $('#zv-command');
     const counter = $('#zv-char-count');
-    if (!textarea || !counter) return;
+    if (!textarea || !counter) {return;}
     const len = textarea.value.length;
     counter.textContent = `${len} / 2000`;
     counter.className = 'zv-char-count' + (len > 1800 ? ' error' : len > 1500 ? ' warn' : '');
@@ -128,9 +128,9 @@
 
   function submitCommand() {
     const textarea = $('#zv-command');
-    if (!textarea) return;
+    if (!textarea) {return;}
     const text = textarea.value.trim();
-    if (!text || state.executionState === 'running') return;
+    if (!text || state.executionState === 'running') {return;}
 
     // Save to recent
     state.recentCommands = [text, ...state.recentCommands.filter(c => c !== text)].slice(0, 8);
@@ -146,7 +146,7 @@
 
   function renderRecentCommands() {
     const list = $('#zv-recent-list');
-    if (!list) return;
+    if (!list) {return;}
     if (state.recentCommands.length === 0) {
       list.innerHTML = '<div style="font-size:.72rem;color:var(--tx3);padding:.3rem 0;">No recent commands</div>';
       return;
@@ -177,7 +177,7 @@
 
   function updateTask(id, updates) {
     const task = state.tasks.find(t => t.id === id);
-    if (task) Object.assign(task, updates);
+    if (task) {Object.assign(task, updates);}
     saveTasks();
     renderTasks();
   }
@@ -188,7 +188,7 @@
 
   function renderTasks() {
     const container = $('#zv-task-list');
-    if (!container) return;
+    if (!container) {return;}
 
     if (state.tasks.length === 0) {
       container.innerHTML = `
@@ -220,9 +220,9 @@
   }
 
   // ── Output Preview ──────────────────────────────────────
-  function showOutput(task) {
+  function _showOutput(task) {
     const container = $('#zv-output');
-    if (!container) return;
+    if (!container) {return;}
 
     const highlighted = highlightPython(DEMO_CODE);
 
@@ -262,7 +262,7 @@
 
   function clearOutput() {
     const container = $('#zv-output');
-    if (container) container.innerHTML = '';
+    if (container) {container.innerHTML = '';}
   }
 
   // ── Sovereign Pipeline ───────────────────────────────────────
@@ -275,14 +275,14 @@
 
     // Clear previous logs
     const logsEl = $('#zv-logs');
-    if (logsEl) logsEl.innerHTML = '';
+    if (logsEl) {logsEl.innerHTML = '';}
     clearOutput();
 
     updateProgress(0);
     updateExecStatus('Running...');
 
     const task = createTask(description);
-    if (window.innerWidth <= 640) switchMobileTab('exec');
+    if (window.innerWidth <= 640) {switchMobileTab('exec');}
 
     // ── Visual Beast-Mode Orchestration ──
     const preSteps = [
@@ -301,7 +301,7 @@
     ];
 
     for (let sIdx = 0; sIdx < preSteps.length; sIdx++) {
-      if (state.cancelRequested) return handleCancel(task);
+      if (state.cancelRequested) {return handleCancel(task);}
       const step = preSteps[sIdx];
       state.currentStage = sIdx;
       updateStages(sIdx, 'active');
@@ -318,7 +318,7 @@
     addLog('GENERATE', '⚙️ BEAST-MODE: Synthesizing natively via local Zayvora:latest...', 'accent');
 
     try {
-      const auth = JSON.parse(sessionStorage.getItem('zv_passport') || '{}');
+      const auth = JSON.parse(sessionStorage.getItem('zv_passport') || '{/* ignore */}');
       const runtimeMode = document.getElementById('zv-runtime-mode')?.value || 'local';
       const perfMode = document.getElementById('zv-perf-mode')?.value || 'full';
       
@@ -365,7 +365,7 @@
         }
 
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {break;}
 
         const str = decoder.decode(value, { stream: true });
         const lines = str.split('\\n');
@@ -373,7 +373,7 @@
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const dataStr = line.slice(6);
-            if (dataStr === '[DONE]') continue;
+            if (dataStr === '[DONE]') {continue;}
             try {
               const data = JSON.parse(dataStr);
               if (data.error) {
@@ -383,10 +383,10 @@
               if (data.text) {
                 fullCode += data.text;
                 if (fullCode.length % 200 === 0) {
-                    addLog('STREAM', `Synthesizing tokens... (${fullCode.length} bytes)`, 'info');
+                    addLog('STREAM', `Synthesizing _tokens... (${fullCode.length} bytes)`, 'info');
                 }
               }
-            } catch (e) {}
+            } catch (_e) {/* ignore */}
           }
         }
       }
@@ -407,7 +407,7 @@
       ];
 
       for (let sIdx = 0; sIdx < postSteps.length; sIdx++) {
-        if (state.cancelRequested) return handleCancel(task);
+        if (state.cancelRequested) {return handleCancel(task);}
         const step = postSteps[sIdx];
         state.currentStage = 4 + sIdx;
         updateStages(4 + sIdx, 'active');
@@ -464,22 +464,22 @@
 
   function showRealOutput(task, code) {
     const container = $('#zv-output');
-    if (!container) return;
+    if (!container) {return;}
 
     // Simple markdown parser to handle code blocks and multi-agent trace
     const blocks = code.split(/```/);
-    let htmlOutput = '';
+    let _htmlOutput = '';
     
     for (let i = 0; i < blocks.length; i++) {
         if (i % 2 === 0) {
             // Text block
-            htmlOutput += '<div class="zv-agent-trace">' + escapeHtml(blocks[i]).replace(/\\n/g, '<br>') + '</div>';
+            _htmlOutput += '<div class="zv-agent-trace">' + escapeHtml(blocks[i]).replace(/\\n/g, '<br>') + '</div>';
         } else {
             // Code block
             const match = blocks[i].match(/^([a-z]*)\\n([\\s\\S]*)$/);
             const pureCode = match ? match[2] : blocks[i];
             const highlighted = highlightPython(pureCode);
-            htmlOutput += '<div class="zv-code-block">' + highlighted + '</div>';
+            _htmlOutput += '<div class="zv-code-block">' + highlighted + '</div>';
         }
     }
 
@@ -489,7 +489,7 @@
           <div class="zv-output-title">Multi-Agent Synthesis Trace</div>
           <button class="zv-copy-btn" id="zv-copy-code">Copy Full</button>
         </div>
-        <div id="zv-code-content">\${htmlOutput}</div>
+        <div id="zv-code-content">\${_htmlOutput}</div>
       </div>
       <div class="zv-pr-card">
         <div class="zv-pr-header">
@@ -523,7 +523,7 @@
     state.currentStage = -1;
     state.executionState = 'idle';
     const logsEl = $('#zv-logs');
-    if (logsEl) logsEl.innerHTML = '';
+    if (logsEl) {logsEl.innerHTML = '';}
     updateStages(-1, 'idle');
     updateProgress(0);
     showIdleState();
@@ -533,12 +533,12 @@
 
   function updateExecStatus(text) {
     const el = $('.zv-exec-status');
-    if (el) el.textContent = text;
+    if (el) {el.textContent = text;}
   }
 
   // ── Mobile Navigation ───────────────────────────────────
   function initMobileNav() {
-    if (window.innerWidth > 640) return;
+    if (window.innerWidth > 640) {return;}
     switchMobileTab('input');
   }
 
@@ -550,16 +550,16 @@
       t.classList.toggle('active', t.dataset.tab === tab);
     });
 
-    // Update panels
-    const panels = ['input', 'exec', 'tasks', 'output'];
+    // Update _panels
+    const _panels = ['input', 'exec', 'tasks', 'output'];
     const panelMap = { input: 0, exec: 1, tasks: 2, output: 2 };
-    $$('.zv-panel').forEach((p, i) => {
+    $$('.zv-panel').forEach((p, _i) => {
       p.classList.remove('mobile-active');
     });
 
     const idx = panelMap[tab];
     const panel = $$('.zv-panel')[idx];
-    if (panel) panel.classList.add('mobile-active');
+    if (panel) {panel.classList.add('mobile-active');}
   }
 
   // ── Event Binding ───────────────────────────────────────
@@ -578,15 +578,15 @@
 
     // Submit button
     const submitBtn = $('#zv-submit');
-    if (submitBtn) submitBtn.addEventListener('click', submitCommand);
+    if (submitBtn) {submitBtn.addEventListener('click', submitCommand);}
 
     // Cancel button
     const cancelBtn = $('#zv-cancel');
-    if (cancelBtn) cancelBtn.addEventListener('click', cancelPipeline);
+    if (cancelBtn) {cancelBtn.addEventListener('click', cancelPipeline);}
 
     // Clear button
     const clearBtn = $('#zv-clear');
-    if (clearBtn) clearBtn.addEventListener('click', clearLogs);
+    if (clearBtn) {clearBtn.addEventListener('click', clearLogs);}
 
     // Recent commands click
     const recentList = $('#zv-recent-list');
@@ -623,7 +623,7 @@
     document.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        if (textarea) textarea.focus();
+        if (textarea) {textarea.focus();}
       }
     });
   }
@@ -646,7 +646,7 @@
       // Process code part
       let result = '';
       // Tokenize by word boundaries
-      const tokens = codePart.split(/(\b|(?=[@\"\']))/g);
+      const _tokens = codePart.split(/(\b|(?=[@"']))/g);
       let inString = false;
       let stringChar = '';
       let buffer = '';
@@ -666,7 +666,7 @@
 
         if (ch === '"' || ch === "'") {
           // Flush buffer
-          if (buffer) { result += highlightTokens(buffer, KW_SET); buffer = ''; }
+          if (buffer) { result += highlightTokens(buffer, KW_SET);  }
           inString = true;
           stringChar = ch;
           buffer = ch;
@@ -692,7 +692,7 @@
     return text.replace(/(@\w+)/g, (m) => '<span class="zv-tok-dec">' + escapeHtml(m) + '</span>')
                .replace(/\b(\d+\.?\d*)\b/g, (m) => '<span class="zv-tok-num">' + m + '</span>')
                .replace(/\b(\w+)\b/g, (m) => {
-                 if (kwSet.has(m)) return '<span class="zv-tok-kw">' + m + '</span>';
+                 if (kwSet.has(m)) {return '<span class="zv-tok-kw">' + m + '</span>';}
                  return escapeHtml(m);
                });
   }
@@ -711,20 +711,20 @@
   function getTimeAgo(isoStr) {
     const diff = Date.now() - new Date(isoStr).getTime();
     const secs = Math.floor(diff / 1000);
-    if (secs < 60) return 'just now';
+    if (secs < 60) {return 'just now';}
     const mins = Math.floor(secs / 60);
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 60) {return `${mins}m ago`;}
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
+    if (hrs < 24) {return `${hrs}h ago`;}
     return `${Math.floor(hrs / 24)}d ago`;
   }
 
   // ── Demo Code Sample ───────────────────────────────────
   const DEMO_CODE = `#!/usr/bin/env python3
-\"\"\"
+"""
 Cognitive Bias Detector for Solo Founders
 Antigravity Beast-Mode Synthesis (v3.0.0)
-\"\"\"
+"""
 
 import argparse
 import json
@@ -739,7 +739,7 @@ logger = logging.getLogger("BiasDetector")
 
 @dataclass
 class BiasAlert:
-    \"\"\"A detected cognitive bias in a decision narrative.\"\"\"
+    """A detected cognitive bias in a decision narrative."""
     bias_type: str
     severity: float
     evidence: str
@@ -777,7 +777,7 @@ BIAS_TAXONOMY = {
 }
 
 class BiasPatternEngine:
-    \"\"\"Compiled regex-based bias detection engine.\"\"\"
+    """Compiled regex-based bias detection engine."""
 
     def __init__(self):
         self.compiled = {
@@ -805,7 +805,7 @@ class BiasPatternEngine:
         return alerts
 
 class FounderNarrativeAnalyzer:
-    \"\"\"Multi-pass bias detection for founder decision narratives.\"\"\"
+    """Multi-pass bias detection for founder decision narratives."""
 
     def __init__(self):
         self.engine = BiasPatternEngine()

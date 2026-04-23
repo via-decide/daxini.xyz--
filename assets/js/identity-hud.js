@@ -7,7 +7,7 @@ async function bootstrapIdentity() {
     const token = localStorage.getItem('sovereign_token');
     const HUD = document.getElementById('identity-hud');
     
-    if (!HUD) return;
+    if (!HUD) {return;}
 
     if (!token) {
         HUD.innerHTML = `

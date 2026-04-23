@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  var STAGES = [
+  const STAGES = [
     { label: 'DECOMPOSE',  desc: 'Break query into atomic sub-problems' },
     { label: 'RETRIEVE',   desc: 'Fetch relevant knowledge from graph' },
     { label: 'SYNTHESIZE', desc: 'Merge sources into coherent thesis' },
@@ -13,16 +13,16 @@
     { label: 'REVISE',     desc: 'Refine output with feedback loop' }
   ];
 
-  var activeStage = -1;
-  var cycle = 0;
-  var timer = null;
+  let activeStage = -1;
+  let cycle = 0;
+  let _timer = null;
 
   function init() {
-    var ring = document.getElementById('reasoning-ring');
-    if (!ring) return;
+    const ring = document.getElementById('reasoning-ring');
+    if (!ring) {return;}
 
     STAGES.forEach(function (stage, i) {
-      var node = document.createElement('div');
+      const node = document.createElement('div');
       node.className = 'reason-node';
       node.setAttribute('data-stage', i);
       node.innerHTML =
@@ -37,13 +37,13 @@
 
   function advance() {
     activeStage = (activeStage + 1) % STAGES.length;
-    if (activeStage === 0) cycle++;
+    if (activeStage === 0) {cycle++;}
 
-    var nodes = document.querySelectorAll('.reason-node');
+    const nodes = document.querySelectorAll('.reason-node');
     nodes.forEach(function (n, i) {
       n.classList.toggle('active', i === activeStage);
       // Reset bar animation
-      var bar = n.querySelector('.reason-bar');
+      const bar = n.querySelector('.reason-bar');
       if (bar) {
         bar.style.transition = 'none';
         bar.style.width = '0';
@@ -56,12 +56,12 @@
       }
     });
 
-    var cycleEl = document.getElementById('reasoning-cycle');
-    var currentEl = document.getElementById('reasoning-current');
-    if (cycleEl) cycleEl.textContent = 'Cycle ' + cycle + ' · Stage ' + (activeStage + 1) + '/6';
-    if (currentEl) currentEl.textContent = STAGES[activeStage].label;
+    const cycleEl = document.getElementById('reasoning-cycle');
+    const currentEl = document.getElementById('reasoning-current');
+    if (cycleEl) {cycleEl.textContent = 'Cycle ' + cycle + ' · Stage ' + (activeStage + 1) + '/6';}
+    if (currentEl) {currentEl.textContent = STAGES[activeStage].label;}
 
-    timer = setTimeout(advance, 2000);
+    _timer = setTimeout(advance, 2000);
   }
 
   if (document.readyState === 'loading') {

@@ -15,10 +15,10 @@ const __dirname = path.dirname(__filename);
 const LOG_DIR = path.join(__dirname, '../logs');
 const MAX_AGE_DAYS = 7;
 
-if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
+if (!fs.existsSync(LOG_DIR)) {fs.mkdirSync(LOG_DIR, { recursive: true });}
 
 function hashIP(ip) {
-  if (!ip) return 'unknown';
+  if (!ip) {return 'unknown';}
   return crypto.createHash('sha256').update(ip + 'zv-salt').digest('hex').substring(0, 12);
 }
 

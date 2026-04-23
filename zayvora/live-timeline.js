@@ -9,7 +9,7 @@
   };
 
   function pushMemoryEvent(event) {
-    if (typeof global.GlobalMemoryGraphClient === 'undefined') return;
+    if (typeof global.GlobalMemoryGraphClient === 'undefined') {return;}
     global.GlobalMemoryGraphClient.pushEvent({
       source: 'zayvora-live-timeline',
       ...event
@@ -17,7 +17,7 @@
   }
 
   function appendTimelineEvent(taskId, step) {
-    if (!taskId || !step) return;
+    if (!taskId || !step) {return;}
 
     if (global.ZayvoraThreadManager && typeof global.ZayvoraThreadManager.appendStep === 'function') {
       global.ZayvoraThreadManager.appendStep(taskId, step);
@@ -33,7 +33,7 @@
   }
 
   function renderTimeline(container, steps) {
-    if (!container) return;
+    if (!container) {return;}
     if (!Array.isArray(steps) || steps.length === 0) {
       container.innerHTML = '<div class="zv-timeline-empty">Live execution timeline will appear here.</div>';
       return;

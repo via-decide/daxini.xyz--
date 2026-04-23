@@ -19,7 +19,7 @@ export function mutateHoneypotResponse(originalData, seed = Date.now()) {
             }
             break;
         case 1: // Value obfuscation
-            if (mutated.status) mutated.status = "active_mirror_sync";
+            if (mutated.status) {mutated.status = "active_mirror_sync";}
             break;
         case 2: // Structure wrap
             mutated = { data: mutated, metadata: { sync_cycle: cycle } };

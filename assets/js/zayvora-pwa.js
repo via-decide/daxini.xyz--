@@ -36,7 +36,7 @@
 
   function updateInstallButton() {
     const btn = $('#zv-install-btn');
-    if (!btn) return;
+    if (!btn) {return;}
     if (isStandalone()) {
       btn.textContent = 'Installed';
       btn.disabled = true;
@@ -52,11 +52,11 @@
     }
   }
 
-  async function fetchWithTimeout(url, opts = {}, timeoutMs = 3000) {
+  async function fetchWithTimeout(url, opts = {/* ignore */}, timeoutMs = 3000) {
     const ctl = new AbortController();
     const t = setTimeout(() => ctl.abort(), timeoutMs);
     try {
-      return await fetch(url, Object.assign({}, opts, { signal: ctl.signal }));
+      return await fetch(url, Object.assign({/* ignore */}, opts, { signal: ctl.signal }));
     } finally {
       clearTimeout(t);
     }
@@ -83,7 +83,7 @@
 
   function updateCountdown() {
     const label = $('#zv-retry-countdown');
-    if (!label) return;
+    if (!label) {return;}
     if (state.status === 'connected' || !state.nextRetryAt) {
       label.textContent = '';
       return;
@@ -93,15 +93,15 @@
   }
 
   async function checkConnection() {
-    if (state.status !== 'connected') setStatus('connecting');
+    if (state.status !== 'connected') {setStatus('connecting');}
     const endpoint = getEndpoint().replace(/\/$/, '');
     const hostLabel = endpoint.replace(/^https?:\/\//, '');
     const endpointLabel = $('#zv-connection-endpoint');
-    if (endpointLabel) endpointLabel.textContent = hostLabel;
+    if (endpointLabel) {endpointLabel.textContent = hostLabel;}
 
     try {
       const res = await fetchWithTimeout(endpoint + '/health', { method: 'GET' }, 3000);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) {throw new Error('HTTP ' + res.status);}
       setStatus('connected');
       state.nextRetryAt = null;
       updateCountdown();
@@ -115,7 +115,7 @@
   }
 
   function start() {
-    if (state.running) return;
+    if (state.running) {return;}
     state.running = true;
     checkConnection();
     state.checkInterval = setInterval(checkConnection, CHECK_INTERVAL_MS);
@@ -132,7 +132,7 @@
 
   function bindEvents() {
     const retryBtn = $('#zv-connection-retry');
-    if (retryBtn) retryBtn.addEventListener('click', checkConnection);
+    if (retryBtn) {retryBtn.addEventListener('click', checkConnection);}
 
     const helpBtn = $('#zv-connection-help');
     if (helpBtn) {
@@ -158,9 +158,9 @@
     const installBtn = $('#zv-install-btn');
     if (installBtn) {
       installBtn.addEventListener('click', async () => {
-        if (!state.deferredInstallPrompt) return;
+        if (!state.deferredInstallPrompt) {return;}
         state.deferredInstallPrompt.prompt();
-        try { await state.deferredInstallPrompt.userChoice; } catch (_) {}
+        try { await state.deferredInstallPrompt.userChoice; } catch (_) {/* ignore */}
         state.deferredInstallPrompt = null;
         updateInstallButton();
       });

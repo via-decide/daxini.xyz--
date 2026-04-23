@@ -18,7 +18,7 @@ const ZAYVORA_API = (window.location.hostname === 'localhost' || window.location
   : 'https://zayvora.yourdomain.workers.dev';
 
 function ensureServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
+  if (!('serviceWorker' in navigator)) {return;}
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
@@ -27,9 +27,9 @@ function ensureServiceWorker() {
 async function fetchRuntimeSteps() {
   try {
     const response = await fetch('/zayvora/runtime');
-    if (!response.ok) return RUNTIME_FALLBACK;
+    if (!response.ok) {return RUNTIME_FALLBACK;}
     const json = await response.json();
-    if (Array.isArray(json.steps) && json.steps.length) return json.steps;
+    if (Array.isArray(json.steps) && json.steps.length) {return json.steps;}
   } catch (error) {
     console.warn('Runtime endpoint unavailable:', error.message);
   }
@@ -67,12 +67,12 @@ async function streamExecution({ prompt, category, executionPanel }) {
 
     while (true) {
       const { done, value } = await reader.read();
-      if (done) break;
+      if (done) {break;}
       const chunk = decoder.decode(value, { stream: true });
       const parts = chunk.split('\n\n').filter(Boolean);
 
       for (const entry of parts) {
-        if (!entry.startsWith('data:')) continue;
+        if (!entry.startsWith('data:')) {continue;}
         const payload = entry.replace(/^data:\s*/, '').trim();
         if (payload === '[DONE]') {
           executionPanel.appendStep('Task completed.');
@@ -80,8 +80,8 @@ async function streamExecution({ prompt, category, executionPanel }) {
         }
         try {
           const parsed = JSON.parse(payload);
-          if (parsed.text) executionPanel.appendStep(parsed.text);
-          if (parsed.stage) executionPanel.appendReasoningStage(parsed.stage, parsed.detail || '');
+          if (parsed.text) {executionPanel.appendStep(parsed.text);}
+          if (parsed.stage) {executionPanel.appendReasoningStage(parsed.stage, parsed.detail || '');}
         } catch {
           executionPanel.appendStep(payload);
         }
@@ -103,7 +103,7 @@ async function initWorkspace() {
   }
 
   const root = document.getElementById('workspace-app');
-  if (!root) return;
+  if (!root) {return;}
 
   root.innerHTML = '<div class="workspace-shell" id="workspace-shell"></div>';
   const shell = document.getElementById('workspace-shell');

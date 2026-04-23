@@ -9,7 +9,7 @@ function escapeHtml(value) {
 
 export function renderCommitGraph(targetId, graph) {
   const target = document.getElementById(targetId);
-  if (!target) return;
+  if (!target) {return;}
 
   const timelineRows = graph.timeline
     .slice(0, 10)

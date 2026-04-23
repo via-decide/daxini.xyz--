@@ -28,11 +28,11 @@ export function analyzeBehavior(req, fingerprint, identityToken = null) {
 
     // Signal: Path Discovery
     const uniquePaths = new Set(stats.requests.map(r => r.path)).size;
-    if (uniquePaths > 10) behaviorScore += 0.4;
+    if (uniquePaths > 10) {behaviorScore += 0.4;}
 
     // Signal: Aggressive Rate
     const recentReqs = stats.requests.filter(r => now - r.timestamp < 60000);
-    if (recentReqs.length > 50) behaviorScore += 0.3;
+    if (recentReqs.length > 50) {behaviorScore += 0.3;}
 
     // Signal: Sensitive Endpoint Probing
     const traps = ['/admin', '/db_dump', '/config', '/.env', '/internal_metrics'];

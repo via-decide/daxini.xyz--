@@ -5,6 +5,8 @@ export function handlePassportLoginSuccess(userId) {
     user: userId,
     time: Date.now()
   });
+}
+
 export function authenticatePassport(userId) {
   localStorage.setItem('passport_user', userId);
 }

@@ -14,7 +14,7 @@
           events: Array.isArray(parsed.events) ? parsed.events : []
         };
       }
-    } catch (_) {}
+    } catch (_) {/* ignore */}
     return { nodes: [], events: [] };
   }
 
@@ -23,8 +23,8 @@
   }
 
   function registerNode(type, node) {
-    if (ALLOWED_TYPES.indexOf(type) === -1) return null;
-    if (!node || !node.id) return null;
+    if (ALLOWED_TYPES.indexOf(type) === -1) {return null;}
+    if (!node || !node.id) {return null;}
 
     const state = readState();
     const idx = state.nodes.findIndex((n) => n.type === type && n.id === node.id);

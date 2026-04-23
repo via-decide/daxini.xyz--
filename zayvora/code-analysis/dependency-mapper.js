@@ -20,7 +20,7 @@ export function mapDependencies(source = '', language = 'javascript') {
     return imports;
   }
 
-  source.replace(/import\s+(?:[^'";]+\s+from\s+)?["']([^"']+)["']/g, (_, dep) => {
+  source.replace(/import\s+[^'"]*?["']([^"']+)["']/g, (_, dep) => {
     imports.push(dep);
     return _;
   });

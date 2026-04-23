@@ -10,8 +10,8 @@ import { issueSessionToken } from '../security/sessionToken.js';
 import { guardPrompt, getBlockedResponse } from '../security/promptGuard.js';
 import { requestExecution, completeExecution } from '../security/runtimeGuard.js';
 import { checkAttemptStatus, recordFailedAttempt, recordSuccessfulAttempt } from '../security/patternAuth.js';
-import { validateRequestBody, sanitizeHTML, escapeHTML } from '../security/inputSanitizer.js';
-import { logLoginAttempt, logPromptInjection, logRateLimitHit, logRuntimeKill, logUnusualActivity } from '../security/securityLogger.js';
+import { validateRequestBody, _sanitizeHTML, _escapeHTML } from '../security/inputSanitizer.js';
+import { logLoginAttempt, logPromptInjection, _logRateLimitHit, _logRuntimeKill, logUnusualActivity } from '../security/securityLogger.js';
 import { generateRecoveryKey, hashRecoveryKey, verifyRecoveryKey, backupPassport, restorePassport, createFullBackup, getBackupStatus } from '../security/sovereignBackup.js';
 
 const passportRegistry = new Map([
@@ -20,7 +20,7 @@ const passportRegistry = new Map([
   ['UID-0003', { passport_id: 'PPT-AXIOM-0003', serial: 'ZX-93A9', owner: 'Sovereign Node Gamma', status: 'suspended' }]
 ]);
 
-const activePassportSession = {
+const _activePassportSession = {
   session_id: 'sess-zayvora-prime',
   uid: 'UID-0001',
   owner: 'Sovereign Node Alpha',
@@ -102,7 +102,7 @@ export default async function handler(req, res) {
 
     // Normalize body
     if (req.method === 'POST' && typeof req.body === 'string') {
-        try { req.body = JSON.parse(req.body); } catch (e) {}
+        try { req.body = JSON.parse(req.body); } catch (_e) { /* silent parse failure */ }
     }
 
     // ── Resilient Security Core ────────────────────────────
@@ -124,10 +124,10 @@ export default async function handler(req, res) {
 
             kit.updateReputation(ip, 'ip', (totalThreatScore > 0.4 ? 0.05 : -0.01), 'GA_SCORE');
             kit.scoreIpByBehavior(ip, behavior);
-            if (totalThreatScore > 0.1) kit.logThreatEvent({ ip, fingerprint_id: fingerprint, threat_score: totalThreatScore, classification: behavior.classification, path_accessed: path, agent: ua });
+            if (totalThreatScore > 0.1) {kit.logThreatEvent({ ip, fingerprint_id: fingerprint, threat_score: totalThreatScore, classification: behavior.classification, path_accessed: path, agent: ua });}
 
             // ── Cloudflare Tunnel Enrichment ─────────────────────
-            const cfCountry = req.headers['cf-ipcountry'] || null;
+            const _cfCountry = req.headers['cf-ipcountry'] || null;
             const cfRay = req.headers['cf-ray'] || null;
             const isCloudflareTunnel = !!cfRay;
 
@@ -169,14 +169,14 @@ export default async function handler(req, res) {
                 return kit.routeToHoneypot(req, res);
             }
 
-        } catch (e) { console.warn("[SECURITY] Run-time skip:", e.message); }
+        } catch (_e) { console.warn("[SECURITY] Run-time skip:", _e.message); }
     }
 
     // ── Headers ─────────────────────────────────────────────
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method === 'OPTIONS') {return res.status(200).end();}
 
     // ── Layer 6: Request Body Validation ─────────────────────
     if (req.method === 'POST' && req.body) {
@@ -192,7 +192,7 @@ export default async function handler(req, res) {
     
     // Provisioning Endpoint (Mac Mini Database Native)
     if (path === '/api/passport/provision') {
-        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+        if (req.method !== 'POST') {return res.status(405).json({ error: 'Method not allowed' });}
         
         try {
             const { nfc_tag_id, pin, owner_name } = req.body;
@@ -293,7 +293,7 @@ export default async function handler(req, res) {
     }
 
     if (path === '/api/zayvora/execute') {
-        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+        if (req.method !== 'POST') {return res.status(405).json({ error: 'Method not allowed' });}
         
         // Authorization Required for Zayvora Orchestration
         const auth = req.headers['authorization'];
@@ -307,7 +307,7 @@ export default async function handler(req, res) {
         const performanceMode = req.body ? req.body.performance_mode || 'full' : 'full';
         const runtimeMode = req.body ? req.body.runtime_mode || 'local' : 'local';
 
-        if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+        if (!prompt) {return res.status(400).json({ error: 'Prompt is required' });}
 
         // ── Layer 7: Prompt Injection Guard ──
         const promptCheck = guardPrompt(prompt);
@@ -330,7 +330,7 @@ export default async function handler(req, res) {
         await generateCodeStream(
             promptCheck.sanitized,
             (chunk) => {
-              if (execContext.signal.aborted) return;
+              if (execContext.signal.aborted) {return;}
               res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
             },
             (err) => {
@@ -350,7 +350,7 @@ export default async function handler(req, res) {
 
     // ── Account Recovery ──────────────────────────────────────
     if (path === '/api/passport/recover') {
-        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+        if (req.method !== 'POST') {return res.status(405).json({ error: 'Method not allowed' });}
 
         // Brute-force protection on recovery (stricter: 3 attempts before lockout)
         const recoveryKey_attempt = `recover:${ip}:${fingerprint}`;
@@ -421,7 +421,7 @@ export default async function handler(req, res) {
                 try {
                     kit.db.prepare(`INSERT OR REPLACE INTO sovereign_passports (uid, owner_name, nfc_tag_id, pin_hash, recovery_key_hash) VALUES (?, ?, ?, ?, ?)`)
                       .run(passportData.uid, passportData.owner_name, passportData.nfc_tag_id, newPinHash, passportData.recovery_key_hash);
-                } catch (e) {
+                } catch (_e) {
                     return res.status(500).json({ error: 'Database restore failed. Contact system administrator.' });
                 }
             }
@@ -456,7 +456,7 @@ export default async function handler(req, res) {
 
     // ── Trigger Full Backup (admin only) ──
     if (path === '/api/backup/create') {
-        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+        if (req.method !== 'POST') {return res.status(405).json({ error: 'Method not allowed' });}
         const auth = req.headers['authorization'];
         if (!auth || !auth.startsWith('Bearer UID-')) {
             return res.status(401).json({ error: 'Sovereign Passport Required' });
@@ -483,16 +483,16 @@ export default async function handler(req, res) {
 
     // ── Deployment Engine Endpoints ──
     if (path === '/api/deploy/list') {
-        if (!kit.active || !kit.deployEngine) return res.status(503).json({ error: 'Deploy Engine offline.' });
+        if (!kit.active || !kit.deployEngine) {return res.status(503).json({ error: 'Deploy Engine offline.' });}
         return res.status(200).json(kit.deployEngine.getDeployments());
     }
 
     if (path === '/api/deploy/register') {
-        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-        if (!kit.active || !kit.deployEngine) return res.status(503).json({ error: 'Deploy Engine offline.' });
+        if (req.method !== 'POST') {return res.status(405).json({ error: 'Method not allowed' });}
+        if (!kit.active || !kit.deployEngine) {return res.status(503).json({ error: 'Deploy Engine offline.' });}
         
         const { project_id, domain } = req.body || {};
-        if (!project_id) return res.status(400).json({ error: 'project_id is required' });
+        if (!project_id) {return res.status(400).json({ error: 'project_id is required' });}
         
         const result = kit.deployEngine.registerDeployment(project_id, domain);
         return res.status(200).json(result);

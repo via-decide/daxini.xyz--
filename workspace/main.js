@@ -26,7 +26,7 @@ const reasoningStages = ['DECOMPOSE', 'RETRIEVE', 'SYNTHESIZE', 'CALCULATE', 'VE
 function buildTemplates() {
   const container = document.getElementById('task-templates');
   const input = document.getElementById('main-prompt');
-  if (!container || !input) return;
+  if (!container || !input) {return;}
 
   container.innerHTML = '';
   templates.forEach((template) => {
@@ -38,7 +38,7 @@ function buildTemplates() {
     button.addEventListener('click', () => {
       setTemplateByKey(template.key);
       addLog(`[TEMPLATE] Loaded ${template.label}`);
-      if (selectedMode === 'research') addLog('[MODE] NEX Research enabled');
+      if (selectedMode === 'research') {addLog('[MODE] NEX Research enabled');}
     });
     container.appendChild(button);
   });
@@ -46,17 +46,17 @@ function buildTemplates() {
 
 function setProgress(message) {
   const progress = document.getElementById('task-progress');
-  if (progress) progress.textContent = message;
+  if (progress) {progress.textContent = message;}
 }
 
 function setResult(message) {
   const result = document.getElementById('result-output');
-  if (result) result.textContent = message;
+  if (result) {result.textContent = message;}
 }
 
 function updateReasoningPanel(activeStep = '') {
   const container = document.getElementById('reasoning-stages');
-  if (!container) return;
+  if (!container) {return;}
   container.innerHTML = '';
   reasoningStages.forEach((stage) => {
     const node = document.createElement('div');
@@ -70,9 +70,9 @@ function getLocalItems(keys = []) {
   for (const key of keys) {
     try {
       const raw = localStorage.getItem(key);
-      if (!raw) continue;
+      if (!raw) {continue;}
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length) return parsed;
+      if (Array.isArray(parsed) && parsed.length) {return parsed;}
     } catch (error) {
       console.warn('Local data parse failed', key, error);
     }
@@ -82,7 +82,7 @@ function getLocalItems(keys = []) {
 
 function buildCapabilityCards() {
   const container = document.getElementById('capability-cards');
-  if (!container) return;
+  if (!container) {return;}
 
   const taskThreads = getLocalItems(['zayvora_task_threads', 'task_threads']);
   const artifacts = getLocalItems(['recent_artifacts', 'zayvora_artifacts']);
@@ -123,7 +123,7 @@ function buildCapabilityCards() {
 
 function buildStatusCards() {
   const container = document.getElementById('status-cards');
-  if (!container) return;
+  if (!container) {return;}
   const installReady = document.getElementById('pwa-install-btn') && !document.getElementById('pwa-install-btn').classList.contains('hidden');
   const runtime = navigator.onLine ? 'Online' : 'Offline';
 
@@ -144,7 +144,7 @@ function buildStatusCards() {
 
 function buildWorkspaceLauncher() {
   const container = document.getElementById('workspace-launcher');
-  if (!container) return;
+  if (!container) {return;}
   const actions = [
     { label: 'Ask Zayvora something', run: () => document.getElementById('main-prompt')?.focus() },
     { label: 'Analyze a repo', run: () => document.getElementById('tab-repo')?.click() },
@@ -166,9 +166,9 @@ function buildWorkspaceLauncher() {
 
 function setTemplateByKey(key) {
   const input = document.getElementById('main-prompt');
-  if (!input) return;
+  if (!input) {return;}
   const template = templates.find((item) => item.key === key);
-  if (!template) return;
+  if (!template) {return;}
   input.value = template.prompt;
   input.focus();
   selectedMode = template.key === 'research' ? 'research' : 'standard';
@@ -179,7 +179,7 @@ function setTemplateByKey(key) {
 
 function renderMetrics(executionMs, data = {}) {
   const metrics = document.getElementById('metrics-output');
-  if (!metrics) return;
+  if (!metrics) {return;}
   const seconds = (executionMs / 1000).toFixed(1);
   const source = data?.reasoning?.source || data?.research?.source || (data?.verification?.offline ? 'cache' : 'toolkit');
   metrics.innerHTML = `
@@ -193,14 +193,14 @@ function renderMetrics(executionMs, data = {}) {
 
 function formatResult(payload) {
   const result = payload?.result ?? payload;
-  if (typeof result === 'string') return result;
+  if (typeof result === 'string') {return result;}
   return JSON.stringify(result, null, 2);
 }
 
 async function runTask() {
   const input = document.getElementById('main-prompt');
   const runButton = document.getElementById('run-task');
-  if (!input || !runButton) return;
+  if (!input || !runButton) {return;}
 
   const prompt = input.value.trim();
   if (!prompt) {
@@ -248,25 +248,25 @@ async function runTask() {
 function setupCommandPalette() {
   const palette = document.getElementById('command-palette');
   const prompt = document.getElementById('main-prompt');
-  if (!palette || !prompt) return;
+  if (!palette || !prompt) {return;}
 
   document.addEventListener('keydown', (event) => {
     const isMac = navigator.platform.toUpperCase().includes('MAC');
     const trigger = (isMac && event.metaKey && event.key.toLowerCase() === 'k')
       || (!isMac && event.ctrlKey && event.key.toLowerCase() === 'k');
 
-    if (!trigger) return;
+    if (!trigger) {return;}
     event.preventDefault();
     palette.hidden = !palette.hidden;
-    if (!palette.hidden) palette.querySelector('button')?.focus();
+    if (!palette.hidden) {palette.querySelector('button')?.focus();}
   });
 
   palette.addEventListener('click', (event) => {
     const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
+    if (!(target instanceof HTMLElement)) {return;}
     const action = target.dataset.action;
     if (!action) {
-      if (target.id === 'command-palette') palette.hidden = true;
+      if (target.id === 'command-palette') {palette.hidden = true;}
       return;
     }
 
@@ -278,7 +278,7 @@ function setupCommandPalette() {
         prompt.value = template.prompt;
         selectedMode = action === 'research' ? 'research' : 'standard';
         addLog(`[PALETTE] Loaded ${template.label}`);
-        if (selectedMode === 'research') addLog('[MODE] NEX Research enabled');
+        if (selectedMode === 'research') {addLog('[MODE] NEX Research enabled');}
       }
     }
     palette.hidden = true;
@@ -290,7 +290,7 @@ function setupWorkspaceTabs() {
   const repoTab = document.getElementById('tab-repo');
   const missionPanel = document.getElementById('mission-panel');
   const repoPanel = document.getElementById('repo-panel');
-  if (!missionTab || !repoTab || !missionPanel || !repoPanel) return;
+  if (!missionTab || !repoTab || !missionPanel || !repoPanel) {return;}
 
   const activate = (key) => {
     const missionActive = key === 'mission';
@@ -319,7 +319,7 @@ function setupMobileInteractions() {
   if (quickInput && quickRun) {
     quickRun.addEventListener('click', () => {
       const mainInput = document.getElementById('main-prompt');
-      if (!mainInput) return;
+      if (!mainInput) {return;}
       mainInput.value = quickInput.value;
       runTask();
     });
@@ -340,7 +340,7 @@ function setupStatusAndCapabilityRefresh() {
 function applyActionFromRoute() {
   const params = new URLSearchParams(window.location.search);
   const action = (params.get('action') || '').toLowerCase();
-  if (!action) return;
+  if (!action) {return;}
   const map = {
     research: 'research',
     create: 'create',
@@ -353,7 +353,7 @@ function applyActionFromRoute() {
     return;
   }
   const key = map[action];
-  if (key) setTemplateByKey(key);
+  if (key) {setTemplateByKey(key);}
 }
 
 function initWorkspace() {
@@ -376,7 +376,7 @@ function initWorkspace() {
   applyActionFromRoute();
 
   const runButton = document.getElementById('run-task');
-  if (runButton) runButton.addEventListener('click', runTask);
+  if (runButton) {runButton.addEventListener('click', runTask);}
 }
 
 function bootWorkspace() {
@@ -385,7 +385,7 @@ function bootWorkspace() {
   } catch (error) {
     console.error('[WORKSPACE] mount failed', error);
     const loading = document.getElementById('workspace-loading');
-    if (loading) loading.textContent = 'Loading Daxini Workspace... (runtime unavailable)';
+    if (loading) {loading.textContent = 'Loading Daxini Workspace... (runtime unavailable)';}
   }
 }
 

@@ -34,7 +34,7 @@ const viewControls = document.getElementById('harness-controls');
 const routerLogPanel = document.getElementById('router-log');
 
 function appendRouterEvent(event) {
-    if (!routerLogPanel) return;
+    if (!routerLogPanel) {return;}
 
     const line = document.createElement('div');
     line.textContent = `${event.name} :: ${JSON.stringify(event.payload)}`;
@@ -57,7 +57,7 @@ if (document.readyState === 'loading') {
     initializeRouterWorkspace();
 }
 
-if (devToggle) devToggle.addEventListener('change', () => workspace.toggleDevMode());
+if (devToggle) {devToggle.addEventListener('change', () => workspace.toggleDevMode());}
 if (debugToggle) {
     debugToggle.addEventListener('change', () => setHarnessDebug(debugToggle.checked));
 }
@@ -65,7 +65,7 @@ if (debugToggle) {
 if (viewControls) {
     viewControls.addEventListener('click', (event) => {
         const button = event.target.closest('button[data-view]');
-        if (!button) return;
+        if (!button) {return;}
 
         button.classList.toggle('active');
         const selectedViews = Array.from(viewControls.querySelectorAll('button[data-view].active')).map((el) => el.dataset.view);
@@ -78,15 +78,15 @@ if (viewControls) {
 
 async function runReasoning() {
     const prompt = input.value.trim();
-    if (!prompt) return;
+    if (!prompt) {return;}
 
     panels.forEach(p => {
-        if (!p.reset) return;
+        if (!p.reset) {return;}
         try { p.reset(); } catch (e) { console.warn('Panel reset failed', e); }
     });
 
     const harnessPanel = document.getElementById('zayvora-harness');
-    if (harnessPanel) harnessPanel.innerHTML = '';
+    if (harnessPanel) {harnessPanel.innerHTML = '';}
 
     input.value = '';
     addLog('user', prompt);
@@ -112,7 +112,7 @@ async function runReasoning() {
 
         async function readStream() {
             const { done, value } = await reader.read();
-            if (done) return;
+            if (done) {return;}
 
             const chunk = decoder.decode(value, { stream: true });
             const messages = chunk.split('\n\n');
@@ -153,7 +153,7 @@ async function runReasoning() {
 
 function handlePipelineEvent(event, data) {
     panels.forEach(p => {
-        if (p.onEvent) p.onEvent(event, data);
+        if (p.onEvent) {p.onEvent(event, data);}
     });
 
     if (event === 'stage' && data.stage) {
@@ -189,5 +189,5 @@ function addLog(role, text) {
     log.scrollTop = log.scrollHeight;
 }
 
-if (submit) submit.addEventListener('click', runReasoning);
-if (input) input.addEventListener('keypress', e => (e.key === 'Enter') && runReasoning());
+if (submit) {submit.addEventListener('click', runReasoning);}
+if (input) {input.addEventListener('keypress', e => (e.key === 'Enter') && runReasoning());}

@@ -56,6 +56,6 @@ export class ExecutionTrace {
     clear() {
         this.log.innerHTML = '';
         const meta = document.getElementById('trace-meta');
-        if (meta) meta.innerText = `0 steps`;
+        if (meta) {meta.innerText = `0 steps`;}
     }
 }

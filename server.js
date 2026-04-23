@@ -14,10 +14,10 @@ import { spawn } from 'child_process';
 import os from 'os';
 import handler from './api/index.js';
 import './scripts/monitor.js'; // Start monitoring
-import db from './security/initDB.js'; // Initialize DB on boot
+import './security/initDB.js'; // Initialize DB on boot
 import { applySecurityHeaders } from './security/cspHeaders.js';
 import { RateLimiter } from './security/rateLimiter.js';
-import { generateClientFingerprint } from './security/browserFingerprint.js';
+import { generateClientFingerprint as _generateClientFingerprint } from './security/browserFingerprint.js';
 import { logRateLimitHit, logUnusualActivity } from './security/securityLogger.js';
 import { suspicionTracker } from './security/suspicionScore.js';
 import { runSystemPruning } from './core/system/index.js';
@@ -26,7 +26,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
 
 // Execute System Pruning Engine (SPE) on boot
-const systemReport = runSystemPruning();
+const _systemReport = runSystemPruning();
 
 // ── Edge Rate Limiter (Layer 1) — 100 req/min per IP ───────
 const edgeLimiter = new RateLimiter(100, 60 * 1000);
@@ -153,7 +153,7 @@ const server = createServer(async (req, res) => {
 
       if (!fs.existsSync(filePath) && !path.extname(filePath)) {
         const withHtml = filePath + '.html';
-        if (fs.existsSync(withHtml)) filePath = withHtml;
+        if (fs.existsSync(withHtml)) {filePath = withHtml;}
       }
 
       if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {

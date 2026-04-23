@@ -20,7 +20,7 @@ export function getTopRisks() {
 export function updateReputation(targetId, targetType, delta, reason) {
     const current = getReputation(targetId);
     let newScore = Math.max(0, Math.min(1.0, (current.score || 0) + delta));
-    if (delta === 0 && newScore > 0) newScore = Math.max(0, newScore - 0.01);
+    if (delta === 0 && newScore > 0) {newScore = Math.max(0, newScore - 0.01);}
 
     scoreMap.set(targetId, {
         target_id: targetId,
@@ -41,14 +41,14 @@ export function isBlacklisted(targetId) {
 
 export function scoreIpByBehavior(ip, behavior) {
     let delta = 0;
-    if (!behavior) return getReputation(ip).score;
+    if (!behavior) {return getReputation(ip).score;}
 
-    if (behavior.classification === 'malicious') delta += 0.08;
-    else if (behavior.classification === 'suspicious') delta += 0.04;
-    else delta -= 0.01;
+    if (behavior.classification === 'malicious') {delta += 0.08;}
+    else if (behavior.classification === 'suspicious') {delta += 0.04;}
+    else {delta -= 0.01;}
 
-    if (behavior.behavior_score >= 0.8) delta += 0.04;
-    if (behavior.behavior_score <= 0.1) delta -= 0.01;
+    if (behavior.behavior_score >= 0.8) {delta += 0.04;}
+    if (behavior.behavior_score <= 0.1) {delta -= 0.01;}
 
     return updateReputation(ip, 'ip', delta, 'BEHAVIOR_SCORE');
 }

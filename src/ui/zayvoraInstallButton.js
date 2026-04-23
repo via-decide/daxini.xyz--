@@ -5,7 +5,7 @@ window.addEventListener("beforeinstallprompt", (e) => {
   deferredPrompt = e;
 
   const btn = document.getElementById("install-zayvora");
-  if (btn) btn.style.display = "block";
+  if (btn) {btn.style.display = "block";}
 
   window.dispatchEvent(new Event("zayvora-install-available"));
 });
@@ -13,11 +13,11 @@ window.addEventListener("beforeinstallprompt", (e) => {
 window.addEventListener("appinstalled", () => {
   deferredPrompt = null;
   const btn = document.getElementById("install-zayvora");
-  if (btn) btn.style.display = "none";
+  if (btn) {btn.style.display = "none";}
 });
 
 export function installZayvora() {
-  if (!deferredPrompt) return;
+  if (!deferredPrompt) {return;}
 
   deferredPrompt.prompt();
 

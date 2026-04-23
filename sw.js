@@ -48,7 +48,7 @@ async function networkFirstDocument(request) {
       cache.put(request, response.clone());
     }
     return response;
-  } catch (error) {
+  } catch (_error) {
     const cached = await caches.match(request);
     return cached || caches.match('/offline.html');
   }
@@ -62,7 +62,7 @@ async function networkFirstApi(request) {
       cache.put(request, response.clone());
     }
     return response;
-  } catch (error) {
+  } catch (_error) {
     const cached = await cache.match(request);
     return cached || new Response(JSON.stringify({ offline: true }), {
       status: 503,
@@ -73,7 +73,7 @@ async function networkFirstApi(request) {
 
 async function cacheFirst(request) {
   const cached = await caches.match(request);
-  if (cached) return cached;
+  if (cached) {return cached;}
 
   const response = await fetch(request);
   if (response && response.ok) {
@@ -85,10 +85,10 @@ async function cacheFirst(request) {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  if (request.method !== 'GET') return;
+  if (request.method !== 'GET') {return;}
 
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
+  if (url.origin !== self.location.origin) {return;}
 
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirstApi(request));

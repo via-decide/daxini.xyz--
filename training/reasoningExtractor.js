@@ -49,7 +49,7 @@ Focus on:
             })
         });
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        if (!response.ok) {throw new Error(`HTTP ${response.status}`);}
         
         const data = await response.json();
         const reasoning = JSON.parse(data.response);

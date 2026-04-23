@@ -1,6 +1,6 @@
 function parseGitHubRepo(repoUrl) {
   const match = repoUrl.trim().match(/^https?:\/\/github\.com\/([^/]+)\/([^/#?]+)/i);
-  if (!match) throw new Error('Please provide a valid GitHub repository URL.');
+  if (!match) {throw new Error('Please provide a valid GitHub repository URL.');}
   return { owner: match[1], repo: match[2].replace(/\.git$/i, '') };
 }
 
@@ -11,10 +11,10 @@ function classifyChanges(files = []) {
   const deletions = files.reduce((sum, file) => sum + (file.deletions || 0), 0);
   const patterns = [];
 
-  if (additions + deletions > 800) patterns.push('large refactor');
-  if (text.includes('security') || text.includes('auth') || text.includes('policy')) patterns.push('security layer changes');
-  if (text.includes('package.json') || text.includes('requirements') || text.includes('lock')) patterns.push('dependency changes');
-  if (files.some((file) => file.status === 'added')) patterns.push('new module added');
+  if (additions + deletions > 800) {patterns.push('large refactor');}
+  if (text.includes('security') || text.includes('auth') || text.includes('policy')) {patterns.push('security layer changes');}
+  if (text.includes('package.json') || text.includes('requirements') || text.includes('lock')) {patterns.push('dependency changes');}
+  if (files.some((file) => file.status === 'added')) {patterns.push('new module added');}
 
   return [...new Set(patterns)];
 }
@@ -22,13 +22,13 @@ function classifyChanges(files = []) {
 export async function loadRepoHistory(repoUrl) {
   const { owner, repo } = parseGitHubRepo(repoUrl);
   const commitsResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits?per_page=25`);
-  if (!commitsResponse.ok) throw new Error('Unable to load commit history for this repository.');
+  if (!commitsResponse.ok) {throw new Error('Unable to load commit history for this repository.');}
   const commits = await commitsResponse.json();
 
   const commitDetails = await Promise.all(
     commits.slice(0, 15).map(async (commit) => {
       const response = await fetch(commit.url);
-      if (!response.ok) return null;
+      if (!response.ok) {return null;}
       return response.json();
     })
   );

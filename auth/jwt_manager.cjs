@@ -6,14 +6,14 @@ const JWT_ISSUER = process.env.JWT_ISSUER || 'via-passport-idp';
 const JWT_AUDIENCE = process.env.JWT_AUDIENCE || 'via-ecosystem';
 
 function parseExpiresToSeconds(expiresIn) {
-  if (typeof expiresIn === 'number') return expiresIn;
+  if (typeof expiresIn === 'number') {return expiresIn;}
   const match = String(expiresIn).match(/^(\d+)([smhd])$/);
-  if (!match) return 3600;
+  if (!match) {return 3600;}
   const value = Number(match[1]);
   const unit = match[2];
-  if (unit === 's') return value;
-  if (unit === 'm') return value * 60;
-  if (unit === 'h') return value * 3600;
+  if (unit === 's') {return value;}
+  if (unit === 'm') {return value * 60;}
+  if (unit === 'h') {return value * 3600;}
   return value * 86400;
 }
 
@@ -42,7 +42,7 @@ function generateToken(payload, options = {}) {
 
 function verifyToken(token) {
   const parts = String(token || '').split('.');
-  if (parts.length !== 3) throw new Error('Invalid token');
+  if (parts.length !== 3) {throw new Error('Invalid token');}
   const [encodedHeader, encodedPayload, signature] = parts;
   const expected = sign(`${encodedHeader}.${encodedPayload}`);
   if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
@@ -50,8 +50,8 @@ function verifyToken(token) {
   }
   const payload = JSON.parse(base64UrlDecode(encodedPayload));
   const now = Math.floor(Date.now() / 1000);
-  if (!payload.exp || payload.exp < now) throw new Error('Token expired');
-  if (payload.iss !== JWT_ISSUER || payload.aud !== JWT_AUDIENCE) throw new Error('Invalid claims');
+  if (!payload.exp || payload.exp < now) {throw new Error('Token expired');}
+  if (payload.iss !== JWT_ISSUER || payload.aud !== JWT_AUDIENCE) {throw new Error('Invalid claims');}
   return payload;
 }
 

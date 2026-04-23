@@ -9,7 +9,7 @@
   /* ── Smooth scroll nav links ──────────────────────────── */
   document.querySelectorAll('a[href^="#"]').forEach(function (link) {
     link.addEventListener('click', function (e) {
-      var target = document.querySelector(link.getAttribute('href'));
+      const target = document.querySelector(link.getAttribute('href'));
       if (target) {
         e.preventDefault();
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -19,7 +19,7 @@
 
   /* ── Section reveal on scroll ─────────────────────────── */
   if ('IntersectionObserver' in window) {
-    var observer = new IntersectionObserver(function (entries) {
+    const observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
@@ -36,13 +36,13 @@
     });
 
     // CSS class for reveal
-    var style = document.createElement('style');
+    const style = document.createElement('style');
     style.textContent = '.section.visible { opacity: 1 !important; transform: translateY(0) !important; }';
     document.head.appendChild(style);
   }
 
   /* ── Dynamic year ─────────────────────────────────────── */
-  var yearEl = document.getElementById('footer-year');
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
+  const yearEl = document.getElementById('footer-year');
+  if (yearEl) {yearEl.textContent = new Date().getFullYear();}
 
 })();

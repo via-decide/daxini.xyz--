@@ -9,7 +9,7 @@ export class WorkerPool {
     this.queue = [];
     this.nextId = 1;
 
-    for (let i = 0; i < this.size; i += 1) this.workers.push(this.#createWorker(i));
+    for (let i = 0; i < this.size; i += 1) {this.workers.push(this.#createWorker(i));}
   }
 
   #spawnWorker(state) {
@@ -19,7 +19,7 @@ export class WorkerPool {
 
     worker.on('message', (msg) => {
       const record = state.jobs.get(msg.id);
-      if (!record) return;
+      if (!record) {return;}
       clearTimeout(record.timer);
       state.jobs.delete(msg.id);
       state.busy = false;
@@ -34,7 +34,7 @@ export class WorkerPool {
         record.reject(new Error('worker-crashed'));
       }
       state.jobs.clear();
-      try { await worker.terminate(); } catch {}
+      try { await worker.terminate(); } catch {/* ignore */}
       state.worker = this.#spawnWorker(state);
       this.#drain();
     });
@@ -57,7 +57,7 @@ export class WorkerPool {
 
   #drain() {
     const idle = this.workers.find((w) => !w.busy);
-    if (!idle || this.queue.length === 0) return;
+    if (!idle || this.queue.length === 0) {return;}
 
     const job = this.queue.shift();
     const id = this.nextId++;
@@ -66,7 +66,7 @@ export class WorkerPool {
     const timer = setTimeout(async () => {
       idle.jobs.delete(id);
       idle.busy = false;
-      try { await idle.worker.terminate(); } catch {}
+      try { await idle.worker.terminate(); } catch {/* ignore */}
       idle.worker = this.#spawnWorker(idle);
       job.reject(new Error('execution-timeout'));
       this.#drain();

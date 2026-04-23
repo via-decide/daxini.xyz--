@@ -8,8 +8,8 @@ const MIME = {
 };
 
 export function serveFileWithCaching(req, res, filePath, statusCode = 200) {
-  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) return false;
-  const ext = path.extname(filePath); const stat = fs.statSync(filePath); const etag = `W/\"${stat.size}-${stat.mtimeMs}\"`;
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {return false;}
+  const ext = path.extname(filePath); const stat = fs.statSync(filePath); const etag = `W/"${stat.size}-${stat.mtimeMs}"`;
   if (req.headers['if-none-match'] === etag) { res.writeHead(304, { ETag: etag }); res.end(); return true; }
   let body = fs.readFileSync(filePath); const acceptGzip = /\bgzip\b/.test(req.headers['accept-encoding'] || '');
   const cacheControl = /(\/(assets|public|workspace|apps)\/|\.(js|css|png|jpg|svg|ico)$)/.test(filePath) ? 'public, max-age=86400' : 'no-cache';

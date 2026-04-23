@@ -127,7 +127,7 @@ export function revokeSession(sessionId) {
  */
 export function getSessionInfo(sessionId) {
   const session = sessions.get(sessionId);
-  if (!session) return null;
+  if (!session) {return null;}
 
   const now = Date.now();
   if (now > session.expiresAt) {
@@ -161,7 +161,7 @@ function evictOldestSession() {
 
   if (oldest) {
     const session = sessions.get(oldest);
-    if (session) identityToSession.delete(session.identity);
+    if (session) {identityToSession.delete(session.identity);}
     sessions.delete(oldest);
   }
 }

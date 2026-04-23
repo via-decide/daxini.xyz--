@@ -2,8 +2,8 @@ import { extractFunctions } from './function-extractor.js';
 import { mapDependencies } from './dependency-mapper.js';
 
 function detectLanguage(filePath = '') {
-  if (filePath.endsWith('.py')) return 'python';
-  if (filePath.endsWith('.rs')) return 'rust';
+  if (filePath.endsWith('.py')) {return 'python';}
+  if (filePath.endsWith('.rs')) {return 'rust';}
   return 'javascript';
 }
 

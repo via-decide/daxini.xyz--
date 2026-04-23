@@ -7,6 +7,10 @@
     "start": "node server.js",
     "build": "node scripts/predeploy-validate.mjs",
     "smoke": "node scripts/smoke-test.mjs",
+    "lint": "eslint . --max-warnings 200",
+    "format": "prettier --write .",
+    "pre-deploy": "bash scripts/pre-deploy.sh",
+    "quality-report": "bash scripts/quality-report.sh",
     "preview": "node server.js",
     "test": "npm run smoke",
     "vercel-build": "npm run build && npm run smoke"
@@ -31,5 +35,15 @@
     "fs-extra": "^11.3.4",
     "nodemailer": "^8.0.5",
     "ws": "^8.20.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.2.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-security": "^4.0.0",
+    "globals": "^17.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3"
   }
 }

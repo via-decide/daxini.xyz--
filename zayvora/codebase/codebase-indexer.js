@@ -34,12 +34,12 @@ export function updateIndexIncremental(file) {
   const parsed = parseCodeFile(file);
   const nextHash = hashContent(file.source || '');
   const currentHash = activeMeta.hashes[file.file_path];
-  if (currentHash === nextHash) return false;
+  if (currentHash === nextHash) {return false;}
 
   activeMeta.hashes[file.file_path] = nextHash;
   activeMeta.indexed_at = new Date().toISOString();
   const position = activeIndex.findIndex((entry) => entry.file_path === file.file_path);
-  if (position >= 0) activeIndex[position] = parsed;
-  else activeIndex.push(parsed);
+  if (position >= 0) {activeIndex[position] = parsed;}
+  else {activeIndex.push(parsed);}
   return true;
 }

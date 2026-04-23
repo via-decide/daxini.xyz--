@@ -33,7 +33,7 @@
 
   function getSession() {
     const raw = localStorage.getItem(SESSION_KEY);
-    if (!raw) return null;
+    if (!raw) {return null;}
     try {
       const parsed = JSON.parse(raw);
       if (!parsed || !parsed.user_id || !parsed.login_time || !parsed.role) {

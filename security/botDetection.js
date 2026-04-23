@@ -17,7 +17,7 @@ export function detectAutomatedSignals(req) {
     // Signal: Missing standard browser headers
     const criticalHeaders = ['accept', 'accept-encoding', 'accept-language'];
     criticalHeaders.forEach(h => {
-        if (!req.headers[h]) risk += 0.15;
+        if (!req.headers[h]) {risk += 0.15;}
     });
 
     // Signal: Common bot libraries

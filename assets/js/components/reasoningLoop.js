@@ -33,7 +33,7 @@ export class ReasoningLoop {
     onEvent(event, data) {
         if (event === 'stage') {
             const el = document.getElementById(`sn-${data.stage}`);
-            if (!el) return;
+            if (!el) {return;}
 
             // Manage active state
             document.querySelectorAll('.stage-node').forEach(n => n.classList.remove('active'));

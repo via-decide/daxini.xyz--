@@ -14,13 +14,13 @@ function hasNewUpdates(updates, lastVisit) {
 
 function renderBadge(show) {
   const badge = document.getElementById('updates-badge');
-  if (!badge) return;
+  if (!badge) {return;}
   badge.hidden = !show;
 }
 
 export async function renderUpdates() {
   const panel = document.getElementById('whats-new');
-  if (!panel) return;
+  if (!panel) {return;}
 
   panel.innerHTML = '';
 
@@ -40,7 +40,7 @@ export async function renderUpdates() {
     });
 
     renderBadge(hasNewUpdates(updates, lastVisit));
-  } catch (error) {
+  } catch (_error) {
     const fallback = document.createElement('div');
     fallback.className = 'update-card';
     fallback.textContent = 'Unable to load updates right now.';

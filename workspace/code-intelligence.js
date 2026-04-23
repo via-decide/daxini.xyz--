@@ -19,7 +19,7 @@ function saveArtifacts(items) {
 }
 
 function renderList(container, items = []) {
-  if (!container) return;
+  if (!container) {return;}
   if (!items.length) {
     container.innerHTML = '<div class="card-meta">No results yet.</div>';
     return;
@@ -63,7 +63,7 @@ export async function initCodeIntelligence() {
 
   const runGenerate = () => {
     const prompt = (searchInput?.value || '').trim();
-    if (!prompt) return;
+    if (!prompt) {return;}
     const artifact = generateCodeFromPrompt(prompt);
     output.textContent = artifact.content;
     lastArtifact = artifact;
@@ -78,23 +78,23 @@ export async function initCodeIntelligence() {
   searchButton?.addEventListener('click', runSearch);
   generateButton?.addEventListener('click', runGenerate);
   searchInput?.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') runSearch();
+    if (event.key === 'Enter') {runSearch();}
   });
 
   downloadButton?.addEventListener('click', () => {
-    if (!lastArtifact) return;
+    if (!lastArtifact) {return;}
     downloadArtifact(lastArtifact);
   });
 
   exportButton?.addEventListener('click', async () => {
-    if (!lastArtifact) return;
+    if (!lastArtifact) {return;}
     await navigator.clipboard.writeText(lastArtifact.content);
     exportButton.textContent = 'Copied';
     setTimeout(() => { exportButton.textContent = 'Export'; }, 1200);
   });
 
   publishButton?.addEventListener('click', () => {
-    if (!lastArtifact) return;
+    if (!lastArtifact) {return;}
     const { index } = getCodebaseIndex();
     index.push({ file_path: `workspace/generated-code/${lastArtifact.fileName}`, language: 'javascript', module_type: 'function-module', functions: ['createModule'], classes: [], imports: [], call_graph: {}, tags: ['generated', 'published'] });
     publishButton.textContent = 'Published';

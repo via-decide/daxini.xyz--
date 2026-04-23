@@ -53,7 +53,7 @@ self.addEventListener('fetch', (event) => {
   // App shell — cache first, then network
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      if (cached) return cached;
+      if (cached) {return cached;}
       return fetch(event.request).then((response) => {
         // Cache successful responses for same-origin
         if (response.ok && url.origin === self.location.origin) {

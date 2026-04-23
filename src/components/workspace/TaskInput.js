@@ -12,7 +12,7 @@ export function createTaskInput({ onRun }) {
 
   async function handleSubmit() {
     const query = input.value.trim();
-    if (!query) return;
+    if (!query) {return;}
     button.disabled = true;
     try {
       await onRun(query);
@@ -23,7 +23,7 @@ export function createTaskInput({ onRun }) {
 
   button.addEventListener('click', handleSubmit);
   input.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') handleSubmit();
+    if (event.key === 'Enter') {handleSubmit();}
   });
 
   return {
