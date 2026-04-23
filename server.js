@@ -214,4 +214,9 @@ wss.on('connection', (socket, req) => {
 
 server.listen(PORT, () => {
   console.log(`[ZAYVORA_PRIME] Sovereign Gateway v4.0 (Hardened) at: http://localhost:${PORT}`);
+  
+  // Auto-Tunnel Boot Sequence
+  if (process.env.AUTO_TUNNEL === 'true') {
+    import('./scripts/tunnel.js').catch(err => console.error('[BOOT] Tunnel failed:', err));
+  }
 });

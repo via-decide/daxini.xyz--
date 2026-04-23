@@ -13,6 +13,8 @@
     "quality-report": "bash scripts/quality-report.sh",
     "preview": "node server.js",
     "test": "npm run smoke",
+    "tunnel": "node scripts/tunnel.js",
+    "public": "npm run build",
     "vercel-build": "npm run build && npm run smoke"
   },
   "repository": {
