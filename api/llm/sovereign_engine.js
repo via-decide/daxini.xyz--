@@ -55,7 +55,7 @@ CRITICAL DIRECTIVES:
 FINAL LINE:
 Always end your response with exactly: "👉 Next Expansion Idea: (one step that evolves system further)"`;
 
-export async function generateCodeStream(prompt, onChunk, onError, onComplete, githubToken = null, performanceMode = 'full', runtimeMode = 'local') {
+export async function generateCodeStream(prompt, onChunk, onError, onComplete, githubToken = null, performanceMode = 'full', runtimeMode = 'local', model = 'zayvora:latest') {
   let systemMsg = SYSTEM_PROMPT;
   
   if (githubToken) {
@@ -72,7 +72,7 @@ export async function generateCodeStream(prompt, onChunk, onError, onComplete, g
   const ctxSize = performanceMode === 'lite' ? 4096 : (performanceMode === 'balanced' ? 8192 : 16384);
 
   const reqBody = {
-    model: MODEL,
+    model: model,
     prompt: prompt,
     system: systemMsg,
     stream: true,
