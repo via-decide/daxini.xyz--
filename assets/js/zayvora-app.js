@@ -267,6 +267,7 @@
 
   // ── Sovereign Pipeline ───────────────────────────────────────
   async function runPipeline(description) {
+    const startTime = performance.now();
     state.executionState = 'running';
     state.cancelRequested = false;
     state.logs = [];
@@ -422,6 +423,11 @@
       updateStages(6, 'done');
       addLog('COMPLETE', 'Synthesis & simulated push finished safely.', 'success');
       
+      // MONITOR: Log Success
+      if (window.AntigravityMonitor) {
+        window.AntigravityMonitor.logMessageSuccess(performance.now() - startTime);
+      }
+      
       task.lines = fullCode.split('\\n').length;
       task.prUrl = null;
       task.outputCode = fullCode;
@@ -432,6 +438,12 @@
     } catch (err) {
       console.error('[API] Execution failed:', err);
       addLog('ERROR', 'System offline or Zayvora node unreachable. Check local connection.', 'error');
+      
+      // MONITOR: Log Error
+      if (window.AntigravityMonitor) {
+        window.AntigravityMonitor.logError('PIPELINE_FAILURE', err.message);
+      }
+      
       finishTask(task, 'failed');
     }
   }
