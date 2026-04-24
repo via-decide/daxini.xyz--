@@ -8,7 +8,7 @@
  * ZERO EXTERNAL API DEPENDENCIES.
  */
 
-const OLLAMA_ENDPOINT = 'https://bind-currencies-salvation-observe.trycloudflare.com/api/generate';
+const OLLAMA_ENDPOINT = 'https://pie-bracelets-coordinated-lauren.trycloudflare.com/api/generate';
 const MODEL = 'zayvora:latest';
 export const ENGINE_NAME = 'Zayvora Local Engine';
 export const ENGINE_PROVIDER = 'zayvora-local';

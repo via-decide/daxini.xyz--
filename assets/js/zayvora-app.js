@@ -289,13 +289,15 @@
     addLog('SYSTEM', 'Performing Standard Operating Procedure (SOP) classification...', 'info');
 
     try {
+      // 1. Classify Task
       const sopRes = await fetch('/api/sop/classify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           summary: description,
-          // Heuristic: check if prompt mentions security, auth, or growth
-          files_changed: description.toLowerCase().includes('security') || description.toLowerCase().includes('auth') || description.toLowerCase().includes('growth') ? ['api/index.js'] : []
+          // Removed lazy heuristic — brain now analyzes summary keywords
+          files_changed: [], 
+          repos_touched: []
         })
       });
       
@@ -308,9 +310,36 @@
       
       addLog('SOP', `Task classified as [${sopData.tier}]: ${sopData.rationale}`, sopData.tier === 'T3' ? 'warn' : 'info');
 
-      // Enforcement: T3 requires rollback plan in prompt
+      // 2. Validate SOP Block (if present)
+      const sopMatch = description.match(/sop:\s*([\s\S]*?)(?=\n\n|\n$|$)/i);
+      if (sopMatch) {
+        addLog('SYSTEM', 'SOP block detected. Validating...', 'info');
+        // Very basic YAML parser for the block
+        const block = sopMatch[1];
+        const sopObj = {};
+        block.split('\n').forEach(line => {
+          const [k, ...v] = line.split(':');
+          if (k && v.length) sopObj[k.trim()] = v.join(':').trim();
+        });
+
+        const valRes = await fetch('/api/sop/validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sop: sopObj })
+        });
+        const valData = await valRes.json();
+        if (!valData.pass) {
+            addLog('ERROR', `SOP VALIDATION FAILED: ${valData.failures.join(', ')}`, 'error');
+            state.executionState = 'idle';
+            updateExecStatus('SOP Invalid');
+            return;
+        }
+        addLog('SOP', '✅ SOP block validated successfully.', 'success');
+      }
+
+      // 3. Enforcement: T3 requires rollback plan in prompt (even if no SOP block)
       if (sopData.tier === 'T3' && !description.toLowerCase().includes('rollback')) {
-        addLog('ERROR', 'SOP PROTOCOL VIOLATION: T3 tasks require a ROLLBACK plan in the prompt.', 'error');
+        addLog('ERROR', 'SOP PROTOCOL VIOLATION: T3 tasks REQUIRE a ROLLBACK plan in the prompt.', 'error');
         state.executionState = 'idle';
         updateExecStatus('SOP Refusal');
         return;

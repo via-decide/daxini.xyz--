@@ -188,11 +188,23 @@ export default async function handler(req, res) {
 
     // ── Specialized Routes ──────────────────────────────────
     
-    // SOP Classification Proxy (Brain Port 6000)
-    if (path === '/api/sop/classify') {
+    // SOP Classification Proxy (Brain Port 6000 or Tunneled)
+    if (path === '/api/sop/classify' || path === '/api/sop/validate') {
         if (req.method !== 'POST') {return res.status(405).json({ error: 'Method not allowed' });}
+        
+        let brainUrl = process.env.BRAIN_URL || 'http://localhost:6000';
+        
+        // Try dynamic tunnel config fallback
         try {
-            const brainRes = await fetch('http://localhost:6000/sop/classify', {
+            const { BRAIN_ENDPOINT } = await import('./brain_config.js').catch(() => ({}));
+            if (BRAIN_ENDPOINT) brainUrl = BRAIN_ENDPOINT;
+        } catch (_e) {}
+
+        const targetPath = path.replace('/api/sop', '/sop');
+        
+        try {
+            console.log(`[GATEWAY] Proxying SOP request to: ${brainUrl}${targetPath}`);
+            const brainRes = await fetch(`${brainUrl}${targetPath}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(req.body)
@@ -200,7 +212,8 @@ export default async function handler(req, res) {
             const data = await brainRes.json();
             return res.status(brainRes.status).json(data);
         } catch (err) {
-            return res.status(503).json({ error: 'Zayvora Brain Offline', details: err.message });
+            console.error(`[GATEWAY] Brain Proxy Failed: ${err.message}`);
+            return res.status(503).json({ error: 'Zayvora Brain Offline', details: err.message, target: brainUrl });
         }
     }
     
