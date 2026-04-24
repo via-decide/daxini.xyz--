@@ -278,6 +278,47 @@
     if (logsEl) {logsEl.innerHTML = '';}
     clearOutput();
 
+    // ── Phase 0: SOP Classification ──
+    const tierBadge = $('#zv-tier-badge');
+    if (tierBadge) {
+      tierBadge.style.display = 'none';
+      tierBadge.className = 'zv-tier-badge';
+    }
+
+    updateExecStatus('Classifying SOP...');
+    addLog('SYSTEM', 'Performing Standard Operating Procedure (SOP) classification...', 'info');
+
+    try {
+      const sopRes = await fetch('/api/sop/classify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          summary: description,
+          // Heuristic: check if prompt mentions security, auth, or growth
+          files_changed: description.toLowerCase().includes('security') || description.toLowerCase().includes('auth') || description.toLowerCase().includes('growth') ? ['api/index.js'] : []
+        })
+      });
+      
+      const sopData = await sopRes.json();
+      if (tierBadge) {
+        tierBadge.textContent = `${sopData.tier}: ${sopData.rationale.split('.')[0]}`;
+        tierBadge.classList.add(`zv-tier-${sopData.tier.toLowerCase()}`);
+        tierBadge.style.display = 'inline-block';
+      }
+      
+      addLog('SOP', `Task classified as [${sopData.tier}]: ${sopData.rationale}`, sopData.tier === 'T3' ? 'warn' : 'info');
+
+      // Enforcement: T3 requires rollback plan in prompt
+      if (sopData.tier === 'T3' && !description.toLowerCase().includes('rollback')) {
+        addLog('ERROR', 'SOP PROTOCOL VIOLATION: T3 tasks require a ROLLBACK plan in the prompt.', 'error');
+        state.executionState = 'idle';
+        updateExecStatus('SOP Refusal');
+        return;
+      }
+    } catch (sopErr) {
+      addLog('WARN', 'SOP classification skipped: Brain offline.', 'warn');
+    }
+
     updateProgress(0);
     updateExecStatus('Running...');
 

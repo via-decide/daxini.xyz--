@@ -188,6 +188,22 @@ export default async function handler(req, res) {
 
     // ── Specialized Routes ──────────────────────────────────
     
+    // SOP Classification Proxy (Brain Port 6000)
+    if (path === '/api/sop/classify') {
+        if (req.method !== 'POST') {return res.status(405).json({ error: 'Method not allowed' });}
+        try {
+            const brainRes = await fetch('http://localhost:6000/sop/classify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(req.body)
+            });
+            const data = await brainRes.json();
+            return res.status(brainRes.status).json(data);
+        } catch (err) {
+            return res.status(503).json({ error: 'Zayvora Brain Offline', details: err.message });
+        }
+    }
+    
     // ── Sovereign Hardware Identity ────────────────────────
     
     // Provisioning Endpoint (Mac Mini Database Native)
