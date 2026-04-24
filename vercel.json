@@ -1,10 +1,22 @@
 {
+  "version": 2,
+  "cleanUrls": true,
   "functions": {
     "api/index.js": {
-      "runtime": "nodejs18.x"
+      "runtime": "nodejs18.x",
+      "memory": 1024,
+      "maxDuration": 60
     }
   },
   "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/api",
+      "destination": "/api/index.js"
+    },
     {
       "source": "/zayvora",
       "destination": "/zayvora.html"
@@ -14,8 +26,6 @@
       "destination": "/workspace.html"
     }
   ],
-  "version": 2,
-  "cleanUrls": true,
   "headers": [
     {
       "source": "/(.*)",
@@ -66,24 +76,6 @@
           "value": "nosniff"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/api",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/zayvora",
-      "destination": "/zayvora.html"
-    },
-    {
-      "source": "/workspace",
-      "destination": "/workspace.html"
     }
   ]
 }
