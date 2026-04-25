@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'daxini-v2';
+const CACHE_VERSION = 'daxini-v3';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 
