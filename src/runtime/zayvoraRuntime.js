@@ -1,38 +1,124 @@
-async function runToolkit(task) {
-  if (typeof window.runToolkit === 'function') {
-    return window.runToolkit(task);
-  }
+/**
+ * src/runtime/zayvoraRuntime.js
+ * 
+ * THE BRIDGE — Load-bearing orchestration path.
+ * Connects the Dashboard UI to the Sovereign Engine.
+ */
 
-  if (typeof window.runToolkitPlugin === 'function') {
-    return window.runToolkitPlugin('default-tool', task);
-  }
+(function() {
+  'use strict';
 
-  return {
-    text: `Local runtime executed task:
-${JSON.stringify(task, null, 2)}`
-  };
-}
+  console.log('[Runtime] Zayvora Sovereign Bridge active.');
 
-window.addEventListener('zayvora-execute', async (event) => {
-  const task = event.detail;
+  /**
+   * Main Execution Handler
+   * Responds to 'zayvora-execute' custom events.
+   */
+  window.addEventListener('zayvora-execute', async (event) => {
+    const { taskId, prompt, options } = event.detail;
+    console.log(`[Bridge] Executing task ${taskId}...`);
 
-  console.log('Executing locally:', task);
+    try {
+      await runZayvoraPipeline(taskId, prompt, options);
+    } catch (err) {
+      console.error('[Bridge] Fatal execution error:', err);
+      dispatchResult(taskId, { error: err.message });
+    }
+  });
 
-  try {
-    const result = await runToolkit(task);
+  /**
+   * Pipeline Logic
+   * Phase 1: Local Plugin Fallback
+   * Phase 2: Remote SSE API (Streaming)
+   */
+  async function runZayvoraPipeline(taskId, prompt, options = {}) {
+    // 1. Check for registered local toolkit plugins (window.runToolkit)
+    if (typeof window.runToolkit === 'function') {
+      console.log('[Bridge] Found local toolkit plugin. Routing...');
+      try {
+        const result = await window.runToolkit({ prompt, ...options });
+        dispatchResult(taskId, result);
+        return;
+      } catch (e) {
+        console.warn('[Bridge] Local toolkit failed, falling back to API:', e);
+      }
+    }
 
-    window.dispatchEvent(
-      new CustomEvent('zayvora-result', {
-        detail: result
+    // 2. Fallback to /api/zayvora/execute (SSE Streaming)
+    const auth = JSON.parse(sessionStorage.getItem('zv_passport') || '{}');
+    const apiEndpoint = '/api/zayvora/execute';
+    
+    console.log('[Bridge] Routing to API SSE stream...');
+
+    const response = await fetch(apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${auth.uid || ''}`
+      },
+      body: JSON.stringify({ 
+        prompt,
+        github_token: auth.ghToken || null,
+        model: options.model || 'zayvora:latest',
+        performance_mode: options.perfMode || 'full'
       })
-    );
-  } catch (error) {
-    window.dispatchEvent(
-      new CustomEvent('zayvora-result', {
-        detail: {
-          error: error instanceof Error ? error.message : String(error)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Engine returned ${response.status}: ${response.statusText}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let fullText = '';
+    let totalBytes = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      totalBytes += value.length;
+      
+      // Process SSE lines
+      const lines = chunk.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const dataStr = line.slice(6).trim();
+          if (dataStr === '[DONE]') continue;
+          
+          try {
+            const data = JSON.parse(dataStr);
+            if (data.error) throw new Error(data.error);
+            if (data.text) {
+              fullText += data.text;
+              // Emit PROGRESS event (C-stream)
+              dispatchProgress(taskId, data.text, totalBytes);
+            }
+          } catch (e) {
+            console.warn('[Bridge] Malformed SSE chunk:', dataStr);
+          }
         }
-      })
-    );
+      }
+    }
+
+    // 3. Dispatch Final Result
+    dispatchResult(taskId, { text: fullText, totalBytes });
   }
-});
+
+  /**
+   * Event Dispatchers
+   */
+  function dispatchProgress(taskId, chunk, totalBytes) {
+    window.dispatchEvent(new CustomEvent('zayvora-progress', {
+      detail: { taskId, chunk, totalBytes }
+    }));
+  }
+
+  function dispatchResult(taskId, result) {
+    window.dispatchEvent(new CustomEvent('zayvora-result', {
+      detail: { taskId, result }
+    }));
+  }
+
+})();

@@ -1,0 +1,45 @@
+/Users/dharamdaxini/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+Calling `python -m mlx_lm.lora...` directly is deprecated. Use `mlx_lm.lora...` or `python -m mlx_lm lora ...` instead.
+Loading pretrained model
+Loading datasets
+Training
+Trainable parameters: 0.165% (6.291M/3821.080M)
+Starting training..., iters: 200
+Calculating loss...:   0%|          | 0/5 [00:00<?, ?it/s]Calculating loss...:  20%|██        | 1/5 [00:01<00:05,  1.32s/it]Calculating loss...:  40%|████      | 2/5 [00:01<00:02,  1.39it/s]Calculating loss...:  60%|██████    | 3/5 [00:02<00:01,  1.68it/s]Calculating loss...:  80%|████████  | 4/5 [00:02<00:00,  2.10it/s]Calculating loss...: 100%|██████████| 5/5 [00:02<00:00,  2.16it/s]Calculating loss...: 100%|██████████| 5/5 [00:02<00:00,  1.79it/s]
+Iter 1: Val loss 6.407, Val took 2.820s
+Iter 10: Train loss 4.334, Learning Rate 1.000e-05, It/sec 0.771, Tokens/sec 107.507, Trained Tokens 1395, Peak mem 9.106 GB
+Iter 20: Train loss 2.310, Learning Rate 1.000e-05, It/sec 0.013, Tokens/sec 1.894, Trained Tokens 2883, Peak mem 9.211 GB
+Iter 30: Train loss 1.296, Learning Rate 1.000e-05, It/sec 0.049, Tokens/sec 5.954, Trained Tokens 4109, Peak mem 9.211 GB
+Iter 40: Train loss 1.180, Learning Rate 1.000e-05, It/sec 0.038, Tokens/sec 5.265, Trained Tokens 5477, Peak mem 9.211 GB
+Calculating loss...:   0%|          | 0/5 [00:00<?, ?it/s]Calculating loss...:  20%|██        | 1/5 [00:00<00:01,  2.05it/s]Calculating loss...:  40%|████      | 2/5 [00:00<00:01,  2.16it/s]Calculating loss...:  60%|██████    | 3/5 [00:01<00:00,  2.59it/s]Calculating loss...:  80%|████████  | 4/5 [00:01<00:00,  2.85it/s]Calculating loss...: 100%|██████████| 5/5 [00:01<00:00,  3.03it/s]Calculating loss...: 100%|██████████| 5/5 [00:01<00:00,  2.74it/s]
+Iter 50: Val loss 2.071, Val took 1.985s
+Iter 50: Train loss 1.184, Learning Rate 1.000e-05, It/sec 1.674, Tokens/sec 221.001, Trained Tokens 6797, Peak mem 9.211 GB
+Iter 60: Train loss 1.255, Learning Rate 1.000e-05, It/sec 1.587, Tokens/sec 207.238, Trained Tokens 8103, Peak mem 9.211 GB
+Iter 70: Train loss 0.727, Learning Rate 1.000e-05, It/sec 1.726, Tokens/sec 205.566, Trained Tokens 9294, Peak mem 9.211 GB
+Iter 80: Train loss 0.664, Learning Rate 1.000e-05, It/sec 1.719, Tokens/sec 208.111, Trained Tokens 10505, Peak mem 9.211 GB
+Iter 90: Train loss 0.866, Learning Rate 1.000e-05, It/sec 1.651, Tokens/sec 215.254, Trained Tokens 11809, Peak mem 9.211 GB
+Calculating loss...:   0%|          | 0/5 [00:00<?, ?it/s]Calculating loss...:  20%|██        | 1/5 [00:00<00:01,  2.37it/s]Calculating loss...:  40%|████      | 2/5 [00:00<00:01,  2.80it/s]Calculating loss...:  60%|██████    | 3/5 [00:01<00:00,  2.49it/s]Calculating loss...:  80%|████████  | 4/5 [00:01<00:00,  2.32it/s]Calculating loss...: 100%|██████████| 5/5 [00:01<00:00,  2.56it/s]Calculating loss...: 100%|██████████| 5/5 [00:01<00:00,  2.51it/s]
+Iter 100: Val loss 1.265, Val took 2.208s
+Iter 100: Train loss 1.048, Learning Rate 1.000e-05, It/sec 1.315, Tokens/sec 197.590, Trained Tokens 13312, Peak mem 9.211 GB
+Iter 100: Saved adapter weights to training/adapters/zayvora-vNext/adapters.safetensors and training/adapters/zayvora-vNext/0000100_adapters.safetensors.
+Iter 110: Train loss 0.822, Learning Rate 1.000e-05, It/sec 1.386, Tokens/sec 199.958, Trained Tokens 14755, Peak mem 9.237 GB
+Iter 120: Train loss 0.763, Learning Rate 1.000e-05, It/sec 1.590, Tokens/sec 213.198, Trained Tokens 16096, Peak mem 9.237 GB
+Iter 130: Train loss 0.599, Learning Rate 1.000e-05, It/sec 1.591, Tokens/sec 200.126, Trained Tokens 17354, Peak mem 9.237 GB
+Iter 140: Train loss 0.694, Learning Rate 1.000e-05, It/sec 0.071, Tokens/sec 8.603, Trained Tokens 18560, Peak mem 9.237 GB
+Calculating loss...:   0%|          | 0/5 [00:00<?, ?it/s]Calculating loss...:  20%|██        | 1/5 [00:00<00:01,  2.11it/s]Calculating loss...:  40%|████      | 2/5 [00:00<00:01,  2.71it/s]Calculating loss...:  60%|██████    | 3/5 [00:01<00:00,  2.49it/s]Calculating loss...:  80%|████████  | 4/5 [00:01<00:00,  2.79it/s]Calculating loss...: 100%|██████████| 5/5 [00:01<00:00,  2.61it/s]Calculating loss...: 100%|██████████| 5/5 [00:01<00:00,  2.59it/s]
+Iter 150: Val loss 0.742, Val took 2.175s
+Iter 150: Train loss 0.439, Learning Rate 1.000e-05, It/sec 1.327, Tokens/sec 178.393, Trained Tokens 19904, Peak mem 9.237 GB
+Iter 160: Train loss 0.437, Learning Rate 1.000e-05, It/sec 1.708, Tokens/sec 215.666, Trained Tokens 21167, Peak mem 9.237 GB
+Iter 170: Train loss 0.447, Learning Rate 1.000e-05, It/sec 0.524, Tokens/sec 63.968, Trained Tokens 22387, Peak mem 9.237 GB
+Iter 180: Train loss 0.537, Learning Rate 1.000e-05, It/sec 1.481, Tokens/sec 204.441, Trained Tokens 23767, Peak mem 9.237 GB
+Iter 190: Train loss 0.485, Learning Rate 1.000e-05, It/sec 1.675, Tokens/sec 211.710, Trained Tokens 25031, Peak mem 9.237 GB
+Calculating loss...:   0%|          | 0/5 [00:00<?, ?it/s]Calculating loss...:  20%|██        | 1/5 [00:00<00:01,  2.28it/s]Calculating loss...:  40%|████      | 2/5 [00:00<00:01,  2.25it/s]Calculating loss...:  60%|██████    | 3/5 [00:01<00:00,  2.60it/s]Calculating loss...:  80%|████████  | 4/5 [00:01<00:00,  2.40it/s]Calculating loss...: 100%|██████████| 5/5 [00:01<00:00,  2.62it/s]Calculating loss...: 100%|██████████| 5/5 [00:01<00:00,  2.51it/s]
+Iter 200: Val loss 0.497, Val took 2.164s
+Iter 200: Train loss 0.448, Learning Rate 1.000e-05, It/sec 1.357, Tokens/sec 196.226, Trained Tokens 26477, Peak mem 9.237 GB
+Iter 200: Saved adapter weights to training/adapters/zayvora-vNext/adapters.safetensors and training/adapters/zayvora-vNext/0000200_adapters.safetensors.
+Saved final weights to training/adapters/zayvora-vNext/adapters.safetensors.
+[TRAINER] Targeted Model: /Users/dharamdaxini/Downloads/zayvora_engine
+[TRAINER] Dataset: training/data/zayvora_update_dataset.jsonl
+[TRAINER] Executing: python3 -m mlx_lm.lora --model /Users/dharamdaxini/Downloads/zayvora_engine --train --data training/data --iters 200 --batch-size 1 --learning-rate 1e-5 --steps-per-report 10 --steps-per-eval 50 --adapter-path training/adapters/zayvora-vNext
+[SUCCESS] Adapter saved to training/adapters/zayvora-vNext

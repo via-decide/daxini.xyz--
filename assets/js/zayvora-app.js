@@ -358,7 +358,7 @@
     const preSteps = [
       { stage: 'FLIGHT_PLAN', delay: 800, msgs: [
         { m: `🛫 Global Flight Plan (Operation Beast-Mode)`, t: 'accent' },
-        { m: `Mode: DIRECT_SYNTHESIS`, t: 'info' },
+        { m: `Mode: BRIDGE_ORCHESTRATION`, t: 'info' },
         { m: `Repo: ${task.repo}`, t: 'info' }
       ]},
       { stage: 'PLAN', delay: 1200, msgs: [
@@ -385,85 +385,36 @@
 
     state.currentStage = 3; // GENERATE
     updateStages(3, 'active');
-    addLog('GENERATE', '⚙️ BEAST-MODE: Synthesizing natively via local Zayvora:latest...', 'accent');
+    addLog('GENERATE', '⚙️ BEAST-MODE: Synthesizing via Sovereign Bridge...', 'accent');
 
     try {
-      const auth = JSON.parse(sessionStorage.getItem('zv_passport') || '{/* ignore */}');
-      const runtimeMode = document.getElementById('zv-runtime-mode')?.value || 'local';
-      const perfMode = document.getElementById('zv-perf-mode')?.value || 'full';
       const modelVariant = document.getElementById('zv-model-variant')?.value || 'zayvora:latest';
-      
-      // Sovereign Architecture: If hosted on static Cloudflare edge, route execution to local gateway
-      const isLive = window.location.hostname === 'daxini.xyz' || window.location.hostname === 'www.daxini.xyz' || window.location.hostname === 'daxini.space';
-      
-      // ANTIGRAVITY DIRECTIVE: Default to local inference gateway
-      const apiEndpoint = (isLive) ? 'https://www.daxini.xyz/api/zayvora/execute' : '/api/zayvora/execute';
-      
-      console.log(`[API] Executing pipeline via: ${apiEndpoint}`);
-      
-      const response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${auth.uid || ''}`
-        },
-        body: JSON.stringify({ 
-          prompt: description,
-          github_token: auth.ghToken || null,
-          runtime_mode: runtimeMode,
-          performance_mode: perfMode,
-          model: modelVariant
-        })
-      });
+      const perfMode = document.getElementById('zv-perf-mode')?.value || 'full';
 
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
-      }
+      addLog('BRIDGE', 'Dispatching execution request to runtime...', 'info');
+      updateProgress(35);
 
-      addLog('LLM', 'Stream connected. Synthesizing...', 'accent');
-      updateProgress(30);
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      
       let fullCode = "";
       
-      while (true) {
-        if (state.cancelRequested) {
-          reader.cancel();
-          addLog('CANCELLED', 'Pipeline cancelled by user.', 'warn');
-          finishTask(task, 'failed');
-          return;
+      // Call Bridge Helper
+      const result = await dispatchViaBridge({
+        taskId: task.id,
+        prompt: description,
+        options: { model: modelVariant, perfMode }
+      }, (chunk) => {
+        // onProgress callback
+        fullCode += chunk;
+        if (fullCode.length % 200 === 0) {
+          addLog('STREAM', `Synthesizing tokens... (${fullCode.length} bytes)`, 'info');
         }
+      });
 
-        const { done, value } = await reader.read();
-        if (done) {break;}
-
-        const str = decoder.decode(value, { stream: true });
-        const lines = str.split('\\n');
-        
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const dataStr = line.slice(6);
-            if (dataStr === '[DONE]') {continue;}
-            try {
-              const data = JSON.parse(dataStr);
-              if (data.error) {
-                addLog('ERROR', data.error, 'error');
-                throw new Error(data.error);
-              }
-              if (data.text) {
-                fullCode += data.text;
-                if (fullCode.length % 200 === 0) {
-                    addLog('STREAM', `Synthesizing _tokens... (${fullCode.length} bytes)`, 'info');
-                }
-              }
-            } catch (_e) {/* ignore */}
-          }
-        }
+      if (result.error) {
+        throw new Error(result.error);
       }
 
-      addLog('GENERATE', `✅ Synthesized code locally — syntax verification passed`, 'success');
+      fullCode = result.text || fullCode;
+      addLog('GENERATE', `✅ Synthesized code via Bridge — verification passed`, 'success');
 
       // ── Post-Generation Demo Steps ──
       const postSteps = [
@@ -500,7 +451,7 @@
         window.AntigravityMonitor.logMessageSuccess(performance.now() - startTime);
       }
       
-      task.lines = fullCode.split('\\n').length;
+      task.lines = fullCode.split('\n').length;
       task.prUrl = null;
       task.outputCode = fullCode;
       
@@ -508,8 +459,8 @@
       showRealOutput(task, fullCode);
 
     } catch (err) {
-      console.error('[API] Execution failed:', err);
-      addLog('ERROR', 'System offline or Zayvora node unreachable. Check local connection.', 'error');
+      console.error('[Pipeline] Execution failed:', err);
+      addLog('ERROR', `Pipeline failure: ${err.message}`, 'error');
       
       // MONITOR: Log Error
       if (window.AntigravityMonitor) {
@@ -518,6 +469,46 @@
       
       finishTask(task, 'failed');
     }
+  }
+
+  /**
+   * Bridge Helper (C-stream)
+   * Dispatches 'zayvora-execute' and listens for 'zayvora-progress' / 'zayvora-result'
+   */
+  function dispatchViaBridge(taskData, onProgress) {
+    return new Promise((resolve, reject) => {
+      const { taskId } = taskData;
+      
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error('Bridge execution timed out (60s)'));
+      }, 60000); // 60s timeout
+
+      function handleProgress(e) {
+        if (e.detail.taskId === taskId) {
+          onProgress(e.detail.chunk);
+        }
+      }
+
+      function handleResult(e) {
+        if (e.detail.taskId === taskId) {
+          cleanup();
+          resolve(e.detail.result);
+        }
+      }
+
+      function cleanup() {
+        clearTimeout(timeout);
+        window.removeEventListener('zayvora-progress', handleProgress);
+        window.removeEventListener('zayvora-result', handleResult);
+      }
+
+      window.addEventListener('zayvora-progress', handleProgress);
+      window.addEventListener('zayvora-result', handleResult);
+
+      // Trigger the bridge
+      window.dispatchEvent(new CustomEvent('zayvora-execute', { detail: taskData }));
+    });
   }
 
   function handleCancel(task) {

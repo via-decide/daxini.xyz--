@@ -28,7 +28,7 @@ async function startTunnels() {
 
   ports.forEach(({ port, name, update }) => {
     console.log(`[AUTO-TUNNEL] Starting Cloudflare tunnel for ${name} (port ${port})...`);
-    const tunnel = spawn(CLOUDFLARED_PATH, ['tunnel', '--url', `http://localhost:${port}`]);
+    const tunnel = spawn(CLOUDFLARED_PATH, ['tunnel', '--url', `http://127.0.0.1:${port}`]);
     
     tunnel.stderr.on('data', (data) => {
       const output = data.toString();

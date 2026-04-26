@@ -10,8 +10,8 @@ import { issueSessionToken } from '../security/sessionToken.js';
 import { guardPrompt, getBlockedResponse } from '../security/promptGuard.js';
 import { requestExecution, completeExecution } from '../security/runtimeGuard.js';
 import { checkAttemptStatus, recordFailedAttempt, recordSuccessfulAttempt } from '../security/patternAuth.js';
-import { validateRequestBody, _sanitizeHTML, _escapeHTML } from '../security/inputSanitizer.js';
-import { logLoginAttempt, logPromptInjection, _logRateLimitHit, _logRuntimeKill, logUnusualActivity } from '../security/securityLogger.js';
+import { validateRequestBody, sanitizeHTML, escapeHTML } from '../security/inputSanitizer.js';
+import { logLoginAttempt, logPromptInjection, logRateLimitHit, logRuntimeKill, logUnusualActivity } from '../security/securityLogger.js';
 import { generateRecoveryKey, hashRecoveryKey, verifyRecoveryKey, backupPassport, restorePassport, createFullBackup, getBackupStatus } from '../security/sovereignBackup.js';
 
 const passportRegistry = new Map([

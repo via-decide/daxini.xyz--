@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'daxini-v3';
+const CACHE_VERSION = 'daxini-v4';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 
@@ -19,6 +19,7 @@ const STATIC_ASSETS = [
   '/assets/js/github.js',
   '/assets/js/zayvora-auth.js',
   '/assets/js/zayvora-app.js',
+  '/src/runtime/zayvoraRuntime.js',
   '/manifest.json',
   '/offline.html'
 ];

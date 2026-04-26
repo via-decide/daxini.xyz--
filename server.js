@@ -212,7 +212,7 @@ wss.on('connection', (socket, req) => {
   socket.on('close', () => proc.kill());
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`[ZAYVORA_PRIME] Sovereign Gateway v4.0 (Hardened) at: http://localhost:${PORT}`);
   
   // Auto-Tunnel Boot Sequence
