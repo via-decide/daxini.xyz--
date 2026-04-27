@@ -1,0 +1,25 @@
+{
+  "name": "Zayvora by Daxini",
+  "short_name": "Zayvora",
+  "description": "India's AI-native local OS. Zero cloud.",
+  "start_url": "/zayvora",
+  "scope": "/zayvora",
+  "display": "standalone",
+  "background_color": "#040407",
+  "theme_color": "#040407",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/zayvora-pwa/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/zayvora-pwa/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
