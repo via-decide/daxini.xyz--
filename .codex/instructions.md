@@ -1,63 +1,260 @@
-# DAXINI — EXECUTION RULES
+# CODEX AGENT RULES — ZAYVORA / ALCHEMIST / DAXINI
 
-CORE PRINCIPLE:
+════════════════════════════════════════════
+REPO IDENTITY
+════════════════════════════════════════════
 
-Daxini is a UI layer that consumes pipeline output
+Stack: Vanilla JS, HTML, CSS  
+No build step  
+No npm  
+No bundler  
+No frameworks  
 
----
+Runs directly in browser  
+Static deploy (GitHub Pages / Vercel static)
 
-SYSTEM ROLE:
+Zayvora = OS layer  
+Alchemist = content + session engine  
+Daxini = distribution + economy  
 
-- display session output
-- render text / image
-- trigger pipeline
+════════════════════════════════════════════
+AI EXECUTION PROTOCOL (MANDATORY)
+════════════════════════════════════════════
 
----
+READ → ANALYZE → PLAN → CONFIRM → MODIFY → VERIFY
 
-PIPELINE RULE:
+Skipping steps is PROHIBITED
 
-- DO NOT recreate pipeline
-- DO NOT simulate generation
-- ALWAYS call existing pipeline
+════════════════════════════════════════════
+CORE PRINCIPLE
+════════════════════════════════════════════
 
----
+- Follow instructions EXACTLY  
+- NO interpretation  
+- NO assumptions  
+- NO architecture changes  
+- NO refactors  
 
-UI RULES (CRITICAL):
+If unclear → ASK  
+If conflict → STOP  
 
-- swipe system is CORE
-- DO NOT modify gestures
-- DO NOT break animation loop
+════════════════════════════════════════════
+MANDATORY REPO ANALYSIS
+════════════════════════════════════════════
+
+Before modifying any file:
+
+- Read FULL file  
+- Identify purpose  
+- Identify dependencies  
+- Identify safe insertion points  
+
+Never edit blindly
+
+════════════════════════════════════════════
+MODIFICATION SAFETY RULES
+════════════════════════════════════════════
+
+Max files changed: 3  
+Max lines per file: 15  
+
+If exceeded:
+
+→ STOP  
+→ propose new task  
+
+════════════════════════════════════════════
+PROHIBITED ACTIONS
+════════════════════════════════════════════
+
+- NO rewriting full files  
+- NO renaming files  
+- NO deleting files  
+- NO moving directories  
+- NO introducing frameworks  
+- NO adding package.json  
+- NO build tools  
+- NO Node.js APIs  
+
+════════════════════════════════════════════
+STATIC SITE RULE (CRITICAL)
+════════════════════════════════════════════
+
+This is NOT a Node.js project  
+
+Never introduce:
+
+- process.env  
+- require()  
+- npm  
+- bundlers  
+
+Everything must run in browser
+
+════════════════════════════════════════════
+UI SAFETY RULE (CRITICAL)
+════════════════════════════════════════════
+
+Swipe UI is CORE SYSTEM  
+
+NEVER:
+
+- modify swipe logic  
+- change gesture system  
+- break animation loop  
 
 ONLY:
 
-- append UI elements
-- attach listeners
+- attach event listeners  
+- use integration layer  
+
+UI = stable  
+Logic = external  
+
+════════════════════════════════════════════
+MULTI-VERSION CONTROL (CRITICAL)
+════════════════════════════════════════════
+
+Codex MUST:
+
+1. Generate 3 versions internally  
+2. Compare ALL versions  
+3. Select BEST version  
+4. Output ONLY selected version  
+
+If multiple outputs:
+
+→ STOP  
+→ MULTIPLE_OUTPUT_VIOLATION  
+
+════════════════════════════════════════════
+FINAL OUTPUT GATE
+════════════════════════════════════════════
+
+- EXACTLY ONE PR per task  
+- NEVER create multiple PRs  
+- NEVER output multiple implementations  
+
+════════════════════════════════════════════
+TASK TYPE SYSTEM (VERY IMPORTANT)
+════════════════════════════════════════════
+
+1. MODULE TASK
+
+→ creates new .js files  
+→ used only when feature does not exist  
 
 ---
 
-INTEGRATION MODE:
+2. INTEGRATION TASK
 
-DEFAULT MODE
+→ MUST NOT create new modules  
+→ MUST NOT create new .js files  
 
-ALLOWED:
+ONLY:
 
-- bind events
-- connect pipeline output
-- render results
+- connect existing systems  
+- bind events  
+- activate flows  
 
-FORBIDDEN:
+If violated:
 
-- creating new logic systems
-- rewriting session engine
+→ MODULE_CREATION_BLOCKED  
 
 ---
 
-FAIL CONDITIONS:
+3. SYSTEM TASK
 
-If pipeline not found:
+→ modifies orchestration only  
+→ no logic duplication  
 
-→ return PIPELINE_NOT_CONNECTED
+════════════════════════════════════════════
+BUG SCAN BEFORE EDIT
+════════════════════════════════════════════
 
-If UI container not found:
+Check for:
 
-→ return UI_CONTAINER_MISSING
+- duplicate const  
+- undefined variables  
+- broken script order  
+- invalid JSON  
+- DOM before load  
+
+Fix BEFORE adding code  
+
+════════════════════════════════════════════
+ALCHEMIST SYSTEM RULES
+════════════════════════════════════════════
+
+- session-driven architecture  
+- block-based content  
+- ingestion → structured blocks  
+- no raw input storage  
+
+════════════════════════════════════════════
+SESSION ECONOMY RULES
+════════════════════════════════════════════
+
+- session costs credits  
+- publish returns partial credits  
+- recover restores session  
+- discard = full loss  
+
+No double refund  
+No negative balance  
+
+════════════════════════════════════════════
+ZAY FORMAT RULES
+════════════════════════════════════════════
+
+.zay package must include:
+
+- manifest.json  
+- content/  
+- assets/  
+- state/  
+
+No missing dependencies  
+
+════════════════════════════════════════════
+REPO BOOTSTRAP RULE (ANTI-REFRESH)
+════════════════════════════════════════════
+
+Codex MUST at task start:
+
+1. Verify AGENTS.md  
+2. Verify .codex/instructions.md  
+3. Verify .codex/session.md  
+
+If missing:
+
+→ STOP  
+→ BOOTSTRAP_MISSING  
+
+Codex MUST output:
+
+BOOTSTRAP LOADED:
+- AGENTS.md ✓
+- instructions.md ✓
+- session.md ✓
+
+════════════════════════════════════════════
+STATELESS EXECUTION RULE
+════════════════════════════════════════════
+
+Codex runs in fresh environment every task  
+
+Therefore:
+
+- NEVER rely on previous state  
+- ALWAYS derive from repo  
+- ALL logic must exist in repo  
+
+════════════════════════════════════════════
+WHEN IN DOUBT
+════════════════════════════════════════════
+
+ASK FIRST  
+DO NOT MODIFY  
+
+Breaking working system = CRITICAL FAILURE
