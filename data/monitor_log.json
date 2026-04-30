@@ -125,3 +125,8 @@
 {"timestamp":"2026-04-25T02:14:30.870Z","os_load":2.94189453125,"memory_used_mb":28,"system_uptime":"7h","security":{"events_1h":0,"suspicion_pressure":0}}
 {"timestamp":"2026-04-25T02:19:30.870Z","os_load":2.92236328125,"memory_used_mb":28,"system_uptime":"7h","security":{"events_1h":0,"suspicion_pressure":0}}
 {"timestamp":"2026-04-25T02:24:30.864Z","os_load":3.078125,"memory_used_mb":26,"system_uptime":"7h","security":{"events_1h":0,"suspicion_pressure":0}}
+{"timestamp":"2026-04-30T07:40:59.547Z","os_load":2.71630859375,"memory_used_mb":59,"system_uptime":"111h","security":{"events_1h":0,"suspicion_pressure":0}}
+{"timestamp":"2026-04-30T07:45:59.545Z","os_load":3.82763671875,"memory_used_mb":51,"system_uptime":"111h","security":{"events_1h":0,"suspicion_pressure":0}}
+{"timestamp":"2026-04-30T07:50:59.559Z","os_load":2.70703125,"memory_used_mb":53,"system_uptime":"112h","security":{"events_1h":0,"suspicion_pressure":0}}
+{"timestamp":"2026-04-30T07:55:59.557Z","os_load":3.177734375,"memory_used_mb":54,"system_uptime":"112h","security":{"events_1h":0,"suspicion_pressure":0}}
+{"timestamp":"2026-04-30T08:00:59.555Z","os_load":3.1943359375,"memory_used_mb":54,"system_uptime":"112h","security":{"events_1h":0,"suspicion_pressure":0}}
