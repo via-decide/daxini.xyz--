@@ -21,7 +21,8 @@ const templates = [
 
 let selectedMode = 'standard';
 let lastSuccessfulAction = 'No successful action yet.';
-const reasoningStages = ['DECOMPOSE', 'RETRIEVE', 'SYNTHESIZE', 'CALCULATE', 'VERIFY', 'REVISE'];
+const reasoningStages = ['INPUT', 'PARSE', 'ANALYZE', 'VERIFY', 'SYNTHESIZE', 'OUTPUT'];
+let reasoningLoopTimer;
 
 function buildTemplates() {
   const container = document.getElementById('task-templates');
@@ -54,17 +55,18 @@ function setResult(message) {
   if (result) {result.textContent = message;}
 }
 
-function updateReasoningPanel(activeStep = '') {
+function updateReasoningPanel(activeStep = '', withIndex = false) {
   const container = document.getElementById('reasoning-stages');
   if (!container) {return;}
   container.innerHTML = '';
   reasoningStages.forEach((stage) => {
     const node = document.createElement('div');
     node.className = `reasoning-stage ${stage.toLowerCase() === activeStep.toLowerCase() ? 'active' : ''}`;
-    node.textContent = stage;
+    node.textContent = withIndex && stage.toLowerCase() === activeStep.toLowerCase() ? `${stage} • Stage ${reasoningStages.indexOf(stage) + 1}/6` : stage;
     container.appendChild(node);
   });
 }
+
 
 function getLocalItems(keys = []) {
   for (const key of keys) {
@@ -370,7 +372,9 @@ function initWorkspace() {
   setupCommandPalette();
   setupMobileInteractions();
   setupStatusAndCapabilityRefresh();
-  updateReasoningPanel();
+  try { clearInterval(reasoningLoopTimer); let currentIndex = 0; updateReasoningPanel(reasoningStages[0], true);
+    reasoningLoopTimer = setInterval(() => { currentIndex = (currentIndex + 1) % reasoningStages.length; updateReasoningPanel(reasoningStages[currentIndex], true); }, 1300);
+  } catch (error) { const container = document.getElementById('reasoning-stages'); if (container) {container.textContent = 'System Ready';} }
   buildCapabilityCards();
   buildStatusCards();
   applyActionFromRoute();
