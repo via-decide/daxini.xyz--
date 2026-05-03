@@ -15,3 +15,12 @@
 - Browser-only/static-site assumptions
 - No new build/dependency tooling
 - Prefer minimal, reversible edits
+
+## Bootstrap State
+- initialized: true
+- bootstrap_complete: true
+- rules_resolved: true
+
+## Bootstrap Notes
+- Required bootstrap files are present: `.codex/instructions.md` and `.codex/session.md`.
+- Repository remains configured as a static-site/browser-only project per guardrails.
