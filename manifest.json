@@ -1,7 +1,7 @@
 {
-  "name": "Zayvora — Sovereign AI",
+  "name": "Zayvora \u2014 Sovereign AI",
   "short_name": "Zayvora",
-  "start_url": "/zayvora",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0A1118",
   "theme_color": "#0A1118",
@@ -16,5 +16,7 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "scope": "./",
+  "id": "./"
 }

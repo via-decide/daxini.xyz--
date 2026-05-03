@@ -1,27 +1,21 @@
-const CACHE_VERSION = 'daxini-v4';
+const CACHE_VERSION = 'daxini-v5';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/workspace.html',
-  '/zayvora.html',
-  '/assets/css/base.css',
-  '/assets/css/layout.css',
-  '/assets/css/components.css',
-  '/assets/css/modules.css',
-  '/assets/css/zayvora.css',
-  '/assets/js/app.js',
-  '/assets/js/stack.js',
-  '/assets/js/reasoning.js',
-  '/assets/js/graph.js',
-  '/assets/js/github.js',
-  '/assets/js/zayvora-auth.js',
-  '/assets/js/zayvora-app.js',
-  '/src/runtime/zayvoraRuntime.js',
-  '/manifest.json',
-  '/offline.html'
+  './',
+  './index.html',
+  './offline.html',
+  './manifest.json',
+  './assets/css/base.css',
+  './assets/css/layout.css',
+  './assets/css/components.css',
+  './assets/css/modules.css',
+  './assets/js/app.js',
+  './assets/js/stack.js',
+  './assets/js/reasoning.js',
+  './assets/js/graph.js',
+  './assets/js/github.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -51,7 +45,7 @@ async function networkFirstDocument(request) {
     return response;
   } catch (_error) {
     const cached = await caches.match(request);
-    return cached || caches.match('/offline.html');
+    return cached || caches.match('./offline.html');
   }
 }
 
