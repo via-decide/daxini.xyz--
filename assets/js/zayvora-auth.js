@@ -142,6 +142,20 @@
         }
     }
 
+    async function runQrLogin() {
+        const status = $('#zv-login-status'), img = $('#zv-qr-image');
+        try {
+            if (status) { status.textContent = 'Generating QR challenge...'; status.className = 'zv-auth-status info'; }
+            const gen = await fetch('/api/auth/generate'); const challenge = await gen.json();
+            if (!gen.ok || !challenge?.qr || !challenge?.payload) { throw new Error('QR generation failed'); }
+            if (img) { img.src = challenge.qr; img.style.display = 'block'; }
+            const verify = await fetch('/api/auth/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(challenge.payload) });
+            const data = await verify.json();
+            if (!verify.ok) { console.log('AUTH_FAILED'); throw new Error(data?.error || 'Identity Rejected'); }
+            verifyPassport(data.nfc_tag_id || challenge.payload.nfc_tag_id, data.pin || challenge.payload.pin);
+        } catch (err) { if (status) { status.textContent = err.message; status.className = 'zv-auth-status error'; } }
+    }
+
     function bindAuthEvents() {
         const form = $('#zv-auth-form');
         if (form) {
@@ -173,6 +187,7 @@
                 });
             }
         }
+        const qrBtn = $('#zv-qr-btn'); if (qrBtn) { qrBtn.addEventListener('click', runQrLogin); }
 
         const logoutBtn = $('#zv-logout-btn');
         if (logoutBtn) {
