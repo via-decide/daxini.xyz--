@@ -40,7 +40,8 @@ const MIME = {
 
 const REWRITES = {
   '/workspace': '/workspace.html',
-  '/zayvora': '/zayvora.html'
+  '/zayvora': '/zayvora.html',
+  '/join': '/join.html'
 };
 
 function serveFile(filePath, res) {
@@ -75,10 +76,20 @@ const server = createServer(async (req, res) => {
 
   // ── Layer 3: Security Headers on ALL responses ──────────
   applySecurityHeaders(res, {
-    allowedScriptSources: ["'self'", 'https://cdn.jsdelivr.net'],
-    allowedConnectSources: ["'self'"],
+    allowedScriptSources: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://checkout.razorpay.com'],
+    allowedConnectSources: [
+      "'self'", 
+      'https://api.github.com', 
+      'https://api.razorpay.com', 
+      'https://lumberjack.razorpay.com',
+      'http://localhost:11434',
+      'http://127.0.0.1:11434',
+      'http://localhost:6000',
+      'http://127.0.0.1:6000'
+    ],
     allowedStyleSources: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
     allowedFontSources: ["'self'", 'https://fonts.googleapis.com', 'https://fonts.gstatic.com'],
+    allowedFrameSources: ["'self'", 'https://checkout.razorpay.com'],
   });
 
   // ── Layer 6: Reject oversized payloads ──────────────────
@@ -106,7 +117,10 @@ const server = createServer(async (req, res) => {
         if (size > 1024 * 1024) { resolve({}); return; }
         body += c;
       });
-      req.on('end', () => { try { resolve(JSON.parse(body)); } catch { resolve({}); } });
+      req.on('end', () => { 
+        req.rawBody = body; // Store raw body for webhook verification
+        try { resolve(JSON.parse(body)); } catch { resolve({}); } 
+      });
     });
     return handler(req, res);
   }
@@ -212,7 +226,7 @@ wss.on('connection', (socket, req) => {
   socket.on('close', () => proc.kill());
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`[ZAYVORA_PRIME] Sovereign Gateway v4.0 (Hardened) at: http://localhost:${PORT}`);
   
   // Auto-Tunnel Boot Sequence

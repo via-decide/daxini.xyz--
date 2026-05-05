@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  const API_URL = 'https://api.github.com/orgs/via-decide/repos?sort=updated&per_page=6';
+  const API_URL = 'https://api.github.com/users/via-decide/repos?sort=updated&per_page=6';
 
   function init() {
     const grid = document.getElementById('gh-grid');

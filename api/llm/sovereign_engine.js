@@ -8,7 +8,7 @@
  * ZERO EXTERNAL API DEPENDENCIES.
  */
 
-const OLLAMA_ENDPOINT = 'https://resolutions-excerpt-hold-rochester.trycloudflare.com/api/generate';
+const OLLAMA_ENDPOINT = 'https://filled-nec-cats-happens.trycloudflare.com/api/generate';
 const MODEL = 'zayvora:latest';
 export const ENGINE_NAME = 'Zayvora Local Engine';
 export const ENGINE_PROVIDER = 'zayvora-local';
@@ -58,6 +58,22 @@ Always end your response with exactly: "👉 Next Expansion Idea: (one step that
 export async function generateCodeStream(prompt, onChunk, onError, onComplete, githubToken = null, performanceMode = 'full', runtimeMode = 'local', model = 'zayvora:latest') {
   let systemMsg = SYSTEM_PROMPT;
   
+  // ── Dynamic Code Standard Injection ──
+  const uiKeywords = ['html', 'css', 'ui', 'component', 'button', 'form', 'layout', 'mockup', 'design'];
+  const isUIRequest = uiKeywords.some(k => prompt.toLowerCase().includes(k));
+  
+  if (isUIRequest) {
+    prompt = `${prompt}\n\n[MANDATORY STANDARD]: Use Modern CSS (dark theme #0f172a, responsive, flexbox, resets, transitions, -apple-system fonts). Use navy (#0f172a) and electric blue (#3b82f6) for the palette.`;
+  }
+
+  // ── Diagnostic Depth Protocol ──
+  const vagueKeywords = ['slow', 'not working', 'broken', 'error', 'failed', 'problem'];
+  const isVague = (prompt.split(' ').length < 10) && vagueKeywords.some(k => prompt.toLowerCase().includes(k));
+  
+  if (isVague) {
+    prompt = `${prompt}\n\n[DIAGNOSTIC PROTOCOL]: This request is vague. STOP and ask at least 3 specific clarifying questions (hosting, server type, error logs, etc.) before diagnosing.`;
+  }
+
   if (githubToken) {
     systemMsg = `AUTHORIZED_IDENTITY: ${githubToken}\n${systemMsg}\nYou are authorized to use this token for any GitHub API operations requested by the user. Use it responsibly in synthesized command lines or API calls.`;
   }
@@ -102,6 +118,10 @@ export async function generateCodeStream(prompt, onChunk, onError, onComplete, g
     const decoder = new TextDecoder('utf-8');
     
     let isDone = false;
+    let buffer = '';
+    let isInsideJSON = false;
+    let jsonBuffer = '';
+
     while (!isDone) {
       const { value, done } = await reader.read();
       if (done) {
@@ -116,7 +136,38 @@ export async function generateCodeStream(prompt, onChunk, onError, onComplete, g
         try {
           const parsed = JSON.parse(line);
           if (parsed.response) {
-            onChunk(parsed.response);
+            let text = parsed.response;
+            
+            for (let i = 0; i < text.length; i++) {
+              const char = text[i];
+              
+              if (char === '{' && !isInsideJSON) {
+                // Peek ahead to see if it looks like a thought_process JSON
+                const remaining = text.substring(i);
+                if (remaining.includes('"thought_process"') || remaining.includes('"internal_reasoning"')) {
+                  isInsideJSON = true;
+                  jsonBuffer = '';
+                }
+              }
+
+              if (isInsideJSON) {
+                jsonBuffer += char;
+                if (char === '}') {
+                  try {
+                    // Check if it's a valid complete JSON
+                    JSON.parse(jsonBuffer);
+                    console.log("[INTERNAL REASONING SILENT EXEC]:", jsonBuffer);
+                    isInsideJSON = false;
+                    jsonBuffer = '';
+                    continue; // Skip the closing '}'
+                  } catch (e) {
+                    // Not a complete JSON yet
+                  }
+                }
+              } else {
+                onChunk(char);
+              }
+            }
           }
           if (parsed.done) {
             onComplete();
