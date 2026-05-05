@@ -28,8 +28,8 @@ const PORT = process.env.PORT || 3000;
 // Execute System Pruning Engine (SPE) on boot
 const _systemReport = runSystemPruning();
 
-// ── Edge Rate Limiter (Layer 1) — 100 req/min per IP ───────
-const edgeLimiter = new RateLimiter(100, 60 * 1000);
+// ── Edge Rate Limiter (Layer 1) — 500 req/min per IP ───────
+const edgeLimiter = new RateLimiter(500, 60 * 1000);
 
 const MIME = {
   '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript',

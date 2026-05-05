@@ -45,20 +45,28 @@
     }
 
     // 2. Fallback to /api/zayvora/execute (SSE Streaming)
-    const auth = JSON.parse(sessionStorage.getItem('zv_passport') || '{}');
+    const passport = JSON.parse(sessionStorage.getItem('zv_passport') || '{}');
     const apiEndpoint = '/api/zayvora/execute';
     
-    console.log('[Bridge] Routing to API SSE stream...');
+    // Construct Sovereign Auth object for body propagation
+    const auth = {
+      hardware_id: passport.uid || 'GUEST_NODE',
+      session_token: passport.jwt || 'GUEST_TOKEN',
+      signature: 'signed_by_browser_bridge_v1'
+    };
+
+    console.log('[Bridge] Routing to API SSE stream with Sovereign Auth...');
 
     const response = await fetch(apiEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${auth.uid || ''}`
+        'Authorization': `Bearer ${passport.jwt || ''}`
       },
       body: JSON.stringify({ 
+        auth, // Propagate full auth context
         prompt,
-        github_token: auth.ghToken || null,
+        github_token: passport.ghToken || null,
         model: options.model || 'zayvora:latest',
         performance_mode: options.perfMode || 'full'
       })

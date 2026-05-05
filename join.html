@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Join the Daxini Ecosystem</title>
+    <!-- Brand Font: Space Grotesk / Inter fallback -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0C0C0C;
+            --accent: #FF671F;
+            --text: #FFFFFF;
+            --text-dim: #888888;
+            --border: #333333;
+            --error: #FF3B30;
+            --success: #34C759;
+            --font: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            overflow-x: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- Components --- */
+
+        .btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 14px;
+            padding: 16px 24px;
+            font-size: 1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            width: 100%;
+            display: block;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text);
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-dim);
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            background: #151515;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .input-group input.invalid {
+            border-color: var(--error);
+        }
+
+        .pill-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .pill {
+            border: 2px solid var(--border);
+            border-radius: 99px;
+            padding: 10px 18px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .pill.selected {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+        }
+
+        /* --- Progress Bar --- */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.05);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            transition: width 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        /* --- Screens --- */
+        .screen {
+            display: none;
+            height: 100vh;
+            width: 100vw;
+            padding: 24px;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .screen.active { display: flex; }
+
+        /* Screen 0: Split */
+        #screen-split {
+            flex-direction: row;
+            padding: 0;
+        }
+
+        .split-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            cursor: pointer;
+            transition: background 0.3s;
+            position: relative;
+        }
+
+        .split-card:first-child { border-right: 1px solid var(--border); }
+        .split-card:hover { background: rgba(255,255,255,0.02); }
+
+        .split-card .icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .split-card h2 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .split-card p {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            max-width: 160px;
+        }
+
+        .split-footer {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .split-footer p {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Form Layout */
+        .header-nav {
+            display: flex;
+            align-items: center;
+            margin-bottom: 32px;
+            margin-top: 20px;
+        }
+
+        .back-btn {
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            margin-right: 16px;
+            padding: 10px;
+            margin-left: -10px;
+        }
+
+        .step-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .form-content { flex: 1; }
+
+        .form-footer {
+            padding: 20px 0;
+            border-top: 1px solid var(--border);
+            margin-top: 20px;
+        }
+
+        /* Success Screen */
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px auto 30px;
+            font-size: 2.5rem;
+            color: #000;
+        }
+
+        .success-text {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .success-text h2 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .success-text p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        .confirmation-card {
+            background: #111;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px dashed var(--border);
+        }
+
+        .conf-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+        }
+
+        .conf-item:last-child { margin-bottom: 0; }
+        .conf-label { color: var(--text-dim); text-transform: uppercase; }
+        .conf-value { font-weight: 700; color: var(--accent); }
+
+        /* Universal Footer */
+        .global-footer {
+            padding: 20px 0;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #222;
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid var(--border);
+            text-align: center;
+            min-width: 240px;
+        }
+
+        #toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 600px) {
+            #screen-split { flex-direction: column; }
+            .split-card:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+            .container { padding: 20px; }
+            .split-card { padding: 60px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="main-progress"></div>
+    </div>
+
+    <!-- SCREEN 0: SPLIT ENTRY -->
+    <div id="screen-split" class="screen active">
+        <div class="split-card" onclick="startTrack('buyer')">
+            <div class="icon">🛒</div>
+            <h2>I'm a Buyer</h2>
+            <p>Discover local AI products & services</p>
+        </div>
+        <div class="split-card" onclick="startTrack('seller')">
+            <div class="icon">🏪</div>
+            <h2>I'm a Seller</h2>
+            <p>List your products or services free</p>
+        </div>
+        <div class="split-footer">
+            <p>Part of the Daxini · Aporaksha sovereign stack</p>
+            <p>daxini.xyz · aporaksha.com</p>
+        </div>
+    </div>
+
+    <!-- TRACK SCREENS (DYNAMIC) -->
+    <div id="track-container" class="screen">
+        <div class="header-nav">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <div class="step-title" id="step-title">Step 1</div>
+        </div>
+        
+        <div class="form-content" id="form-step-content">
+            <!-- Content injected via JS -->
+        </div>
+
+        <div class="form-footer">
+            <button class="btn" id="next-btn" onclick="goNext()">Next →</button>
+        </div>
+
+        <div class="global-footer">
+            daxini.xyz · aporaksha.com · Gandhidham, India
+        </div>
+    </div>
+
+    <!-- SUCCESS SCREEN -->
+    <div id="screen-success" class="screen">
+        <div class="success-icon">✓</div>
+        <div class="success-text" id="success-message">
+            <h2>You're on the list.</h2>
+            <p>We'll notify you soon.</p>
+        </div>
+        
+        <div class="confirmation-card">
+            <div class="conf-item">
+                <span class="conf-label">Confirmation ID</span>
+                <span class="conf-value" id="conf-id">REG-XXXXXX</span>
+            </div>
+            <div class="conf-item">
+                <span class="conf-label">Timestamp</span>
+                <span class="conf-value" id="conf-time">--:--</span>
+            </div>
+        </div>
+
+        <a href="https://viadecide.com" class="btn" id="success-cta" style="margin-bottom: 16px;">Explore Demo →</a>
+        <button class="btn btn-outline" onclick="resetApp()">← Register Another</button>
+
+        <div class="global-footer" style="margin-top: 40px;">
+            daxini.xyz · aporaksha.com · Gandhidham, India
+        </div>
+    </div>
+
+    <div id="toast">Message here</div>
+
+    <script>
+        // --- Configuration ---
+        const SUPABASE_URL = "https://zdarsygrpqbbcafrqcjt.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkYXJzeWdycHFiYmNhZnJxY2p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5ODczMTUsImV4cCI6MjA4NjU2MzMxNX0.ut97BRi9_UFkeZuG_6Ue4mXdAAmtH6MFFdi2vUgHiW4";
+
+        // --- State Management ---
+        let state = {
+            track: null, // 'buyer' or 'seller'
+            step: 0,
+            data: {},
+            deviceId: localStorage.getItem("decide_device_id") || null
+        };
+
+        if (!state.deviceId) {
+            state.deviceId = 'dev-' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem("decide_device_id", state.deviceId);
+        }
+
+        const TRACK_CONFIG = {
+            buyer: {
+                totalSteps: 3,
+                steps: [
+                    {
+                        title: "Who are you?",
+                        fields: [
+                            { name: 'name', label: 'Name', type: 'text', placeholder: 'Your full name', required: true },
+                            { name: 'phone', label: 'Phone', type: 'tel', placeholder: '+91 XXXXX XXXXX', required: true },
+                            { name: 'city', label: 'City', type: 'text', placeholder: 'Gandhidham, Rajkot...', required: true }
+                        ]
+                    },
+                    {
+                        title: "What do you want?",
+                        type: 'pill-multi',
+                        options: ['Electronics', 'Food', 'Groceries', 'Fashion', 'Services', 'Books', 'Accessories', 'Medicines'],
+                        minRequired: 1
+                    },
+                    {
+                        title: "Stay in the loop",
+                        fields: [
+                            { name: 'email', label: 'Email (Optional)', type: 'email', placeholder: 'you@example.com' },
+                            { name: 'whatsapp_optin', label: 'WhatsApp Updates', type: 'toggle', default: true, text: 'Notify me when Decide launches in my city' }
+                        ],
+                        cta: 'Join as Buyer ✓'
+                    }
+                ]
+            },
+            seller: {
+                totalSteps: 4,
+                steps: [
+                    {
+                        title: "Your Business",
+                        fields: [
+                            { name: 'business_name', label: 'Business Name', type: 'text', placeholder: 'Shop or Brand Name', required: true },
+                            { name: 'owner_name', label: 'Owner Name', type: 'text', placeholder: 'Full Name', required: true },
+                            { name: 'city', label: 'City', type: 'text', placeholder: 'Your City', required: true }
+                        ]
+                    },
+                    {
+                        title: "Category",
+                        type: 'pill-single',
+                        options: ['🍽️ Food', '📱 Electronics', '👕 Fashion', '🛒 Groceries', '🧰 Services', '📦 Other'],
+                        required: true
+                    },
+                    {
+                        title: "Contact & Compliance",
+                        fields: [
+                            { name: 'whatsapp', label: 'WhatsApp Number', type: 'tel', placeholder: 'For order alerts', required: true },
+                            { name: 'upi_id', label: 'UPI ID (Optional)', type: 'text', placeholder: 'user@bank' },
+                            { name: 'gstin', label: 'GSTIN (Optional)', type: 'text', placeholder: 'Leave blank if not registered' }
+                        ]
+                    },
+                    {
+                        title: "Your Pitch",
+                        fields: [
+                            { name: 'pitch', label: 'What should we build for you?', type: 'textarea', placeholder: 'e.g. I want a direct order link...' }
+                        ],
+                        cta: 'Join as Seller ✓'
+                    }
+                ]
+            }
+        };
+
+        // --- Core Functions ---
+
+        function startTrack(track) {
+            state.track = track;
+            state.step = 1;
+            state.data = {};
+            showScreen('track-container');
+            renderStep();
+        }
+
+        function goBack() {
+            if (state.step > 1) {
+                state.step--;
+                renderStep();
+            } else {
+                showScreen('screen-split');
+            }
+        }
+
+        function goNext() {
+            if (validateStep()) {
+                if (state.step < TRACK_CONFIG[state.track].totalSteps) {
+                    state.step++;
+                    renderStep();
+                } else {
+                    submitData();
+                }
+            }
+        }
+
+        function renderStep() {
+            const config = TRACK_CONFIG[state.track];
+            const stepData = config.steps[state.step - 1];
+            
+            // Update Progress
+            const pct = (state.step / config.totalSteps) * 100;
+            document.getElementById('main-progress').style.width = pct + '%';
+            
+            // Update Title
+            document.getElementById('step-title').innerText = `Step ${state.step} — ${stepData.title}`;
+            
+            // Render Content
+            const container = document.getElementById('form-step-content');
+            container.innerHTML = '';
+
+            if (stepData.fields) {
+                stepData.fields.forEach(f => {
+                    const group = document.createElement('div');
+                    group.className = 'input-group';
+                    
+                    if (f.type === 'toggle') {
+                        group.innerHTML = `
+                            <label>${f.label}</label>
+                            <div style="display:flex; align-items:center; gap:12px; background:#151515; padding:14px; border-radius:12px; border: 2px solid var(--border);">
+                                <input type="checkbox" id="${f.name}" ${state.data[f.name] !== undefined ? (state.data[f.name] ? 'checked' : '') : (f.default ? 'checked' : '')} style="width:24px; height:24px; accent-color:var(--accent);">
+                                <span style="font-size:0.9rem; color:var(--text-dim);">${f.text}</span>
+                            </div>
+                        `;
+                    } else if (f.type === 'textarea') {
+                        group.innerHTML = `
+                            <label>${f.label}</label>
+                            <textarea id="${f.name}" placeholder="${f.placeholder}">${state.data[f.name] || ''}</textarea>
+                        `;
+                    } else {
+                        group.innerHTML = `
+                            <label>${f.label}</label>
+                            <input type="${f.type}" id="${f.name}" placeholder="${f.placeholder}" value="${state.data[f.name] || ''}">
+                        `;
+                    }
+                    container.appendChild(group);
+                });
+            } else if (stepData.type === 'pill-multi' || stepData.type === 'pill-single') {
+                const grid = document.createElement('div');
+                grid.className = 'pill-grid';
+                
+                stepData.options.forEach(opt => {
+                    const pill = document.createElement('div');
+                    pill.className = 'pill';
+                    pill.innerText = opt;
+                    
+                    const isSelected = stepData.type === 'pill-multi' 
+                        ? (state.data.interests || []).includes(opt)
+                        : state.data.category === opt;
+                    
+                    if (isSelected) pill.classList.add('selected');
+
+                    pill.onclick = () => {
+                        if (stepData.type === 'pill-multi') {
+                            if (!state.data.interests) state.data.interests = [];
+                            if (state.data.interests.includes(opt)) {
+                                state.data.interests = state.data.interests.filter(i => i !== opt);
+                            } else {
+                                state.data.interests.push(opt);
+                            }
+                        } else {
+                            state.data.category = opt;
+                        }
+                        renderStep();
+                    };
+                    grid.appendChild(pill);
+                });
+                container.appendChild(grid);
+            }
+
+            // Update CTA
+            document.getElementById('next-btn').innerText = stepData.cta || 'Next →';
+        }
+
+        function validateStep() {
+            const stepData = TRACK_CONFIG[state.track].steps[state.step - 1];
+            let isValid = true;
+
+            if (stepData.fields) {
+                stepData.fields.forEach(f => {
+                    if (f.type === 'toggle') {
+                        state.data[f.name] = document.getElementById(f.name).checked;
+                    } else {
+                        const val = document.getElementById(f.name).value.trim();
+                        if (f.required && !val) {
+                            document.getElementById(f.name).classList.add('invalid');
+                            isValid = false;
+                        } else {
+                            if (document.getElementById(f.name)) document.getElementById(f.name).classList.remove('invalid');
+                            state.data[f.name] = val;
+                        }
+                    }
+                });
+            } else if (stepData.type === 'pill-multi') {
+                if (!state.data.interests || state.data.interests.length < (stepData.minRequired || 0)) {
+                    showToast(`Please select at least ${stepData.minRequired} option`);
+                    isValid = false;
+                }
+            } else if (stepData.type === 'pill-single') {
+                if (!state.data.category) {
+                    showToast(`Please select a category`);
+                    isValid = false;
+                }
+            }
+
+            return isValid;
+        }
+
+        async function submitData() {
+            const btn = document.getElementById('next-btn');
+            btn.disabled = true;
+            btn.innerText = 'Syncing...';
+
+            const payload = {
+                ...state.data,
+                source: "daxini.xyz/join",
+                device_id: state.deviceId,
+                timestamp: new Date().toISOString()
+            };
+
+            const fnName = state.track === 'buyer' ? 'decide-buyer-join' : 'seller-interest';
+            const regId = 'REG-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error('Network fail');
+                
+                showSuccess(regId);
+            } catch (err) {
+                console.warn('Supabase Offline. Falling back to local storage.');
+                const key = state.track === 'buyer' ? 'buyer_registrations' : 'seller_registrations';
+                const existing = JSON.parse(localStorage.getItem(key) || '[]');
+                existing.push({ ...payload, reg_id: regId });
+                localStorage.setItem(key, JSON.stringify(existing));
+                
+                showSuccess(regId);
+            }
+        }
+
+        function showSuccess(id) {
+            showScreen('screen-success');
+            document.getElementById('conf-id').innerText = id;
+            document.getElementById('conf-time').innerText = new Date().toLocaleTimeString();
+
+            const msg = document.getElementById('success-message');
+            const cta = document.getElementById('success-cta');
+
+            if (state.track === 'buyer') {
+                msg.innerHTML = `<h2>You're on the list.</h2><p>We'll notify you the moment Decide goes live in ${state.data.city || 'your city'}.</p>`;
+                cta.innerText = 'Explore Demo →';
+                cta.href = 'https://viadecide.com';
+            } else {
+                msg.innerHTML = `<h2>Interest Registered.</h2><p>Our team will reach out on WhatsApp within 48 hours.</p>`;
+                cta.innerText = 'View Seller Demo →';
+                cta.href = 'https://viadecide.com#seller';
+            }
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        function resetApp() {
+            state.track = null;
+            state.step = 0;
+            state.data = {};
+            document.getElementById('main-progress').style.width = '0%';
+            showScreen('screen-split');
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2400);
+        }
+    </script>
+</body>
+</html>
