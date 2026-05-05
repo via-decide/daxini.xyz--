@@ -1375,6 +1375,89 @@ async function dbDelete(storeName, key) {
   });
 }
 
+
+
+/* ─── Chat Message Storage (IndexedDB local-first) ─── */
+const MESSAGE_DB_NAME = 'daxini';
+const MESSAGE_DB_VERSION = 1;
+const MESSAGE_STORE = 'messages';
+
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(MESSAGE_DB_NAME, MESSAGE_DB_VERSION);
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      let store;
+
+      if (!db.objectStoreNames.contains(MESSAGE_STORE)) {
+        store = db.createObjectStore(MESSAGE_STORE, { keyPath: 'id' });
+      } else {
+        store = event.target.transaction.objectStore(MESSAGE_STORE);
+      }
+
+      if (!store.indexNames.contains('userId')) {
+        store.createIndex('userId', 'userId', { unique: false });
+      }
+      if (!store.indexNames.contains('createdAt')) {
+        store.createIndex('createdAt', 'createdAt', { unique: false });
+      }
+      if (!store.indexNames.contains('streamStatus')) {
+        store.createIndex('streamStatus', 'metadata.streamStatus', { unique: false });
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveMessageLocal(message) {
+  const db = await initDB();
+  const now = Date.now();
+  const payload = {
+    ...message,
+    id: message.id || crypto.randomUUID(),
+    createdAt: message.createdAt || now,
+    updatedAt: now,
+    metadata: {
+      model: message.metadata?.model || '',
+      tokensUsed: Number(message.metadata?.tokensUsed || 0),
+      inferenceTimeMs: Number(message.metadata?.inferenceTimeMs || 0),
+      streamStatus: message.metadata?.streamStatus || 'pending'
+    }
+  };
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(MESSAGE_STORE, 'readwrite');
+    tx.objectStore(MESSAGE_STORE).put(payload);
+    tx.oncomplete = () => resolve(payload);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function restoreChat(userId) {
+  const db = await initDB();
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(MESSAGE_STORE, 'readonly');
+    const index = tx.objectStore(MESSAGE_STORE).index('userId');
+    const request = index.getAll(userId);
+
+    request.onsuccess = () => {
+      const rows = request.result || [];
+      rows.sort((a, b) => Number(a.createdAt) - Number(b.createdAt));
+      resolve(rows);
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+window.ZayvoraMessageStorage = {
+  initDB,
+  saveMessageLocal,
+  restoreChat
+};
 async function dbClear(storeName) {
   const db = await openDB();
   return new Promise((resolve, reject) => {

@@ -1,6 +1,7 @@
 import { createActionLauncher } from '../components/workspace/ActionLauncher.js';
 import { createTaskInput } from '../components/workspace/TaskInput.js';
 import { createExecutionPanel } from '../components/workspace/ExecutionPanel.js';
+import { createCheckoutButton } from '../components/workspace/CheckoutButton.js';
 import { getTemplateByCategory, executeTemplate } from '../integrations/viaTools.js';
 import { triggerInstall } from '../pwa/install.js';
 
@@ -121,6 +122,8 @@ async function initWorkspace() {
   const executionPanel = createExecutionPanel();
   executionPanel.setSteps(await fetchRuntimeSteps());
 
+  const checkoutButton = createCheckoutButton();
+
   const taskInput = createTaskInput({
     async onRun(query) {
       const mapped = await executeTemplate({ category: selectedCategory, query });
@@ -132,7 +135,7 @@ async function initWorkspace() {
     }
   });
 
-  shell.append(actionLauncher, executionPanel.element, taskInput.element);
+  shell.append(actionLauncher, executionPanel.element, checkoutButton.element, taskInput.element);
   taskInput.setValue('');
 }
 

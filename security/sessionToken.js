@@ -4,15 +4,22 @@
  */
 
 import crypto from 'crypto';
+import { hostname } from 'os';
 
 const DEFAULT_TTL_SECONDS = parseInt(process.env.WORKSPACE_SESSION_TTL || '1200', 10); // 20 minutes
-const SESSION_SECRET = process.env.SECURITY_SECRET || (() => {
+
+// Lazy getter so a missing env var doesn't crash the module at boot time.
+// The throw is deferred to the first actual token operation, leaving all
+// other routes (health checks, static assets, etc.) unaffected.
+function getSessionSecret() {
+  const secret = process.env.SECURITY_SECRET;
+  if (secret) return secret;
   if (process.env.NODE_ENV === 'production') {
     throw new Error('[FATAL] SECURITY_SECRET env var is required in production. Cannot use fallback.');
   }
   console.warn('[SECURITY] WARNING: Using dev-only fallback secret. Set SECURITY_SECRET in .env for production.');
-  return 'dev-only-fallback-' + require('os').hostname();
-})();
+  return 'dev-only-fallback-' + hostname();
+}
 
 function toBase64Url(value) {
   return Buffer.from(value)
@@ -29,7 +36,7 @@ function fromBase64Url(value) {
 
 function sign(input) {
   return crypto
-    .createHmac('sha256', SESSION_SECRET)
+    .createHmac('sha256', getSessionSecret())
     .update(input)
     .digest('base64')
     .replace(/=/g, '')

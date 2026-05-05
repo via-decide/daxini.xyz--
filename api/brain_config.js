@@ -1,1 +1,1 @@
-export const BRAIN_ENDPOINT = 'https://gazette-cradle-overhead-atomic.trycloudflare.com';
+export const BRAIN_ENDPOINT = 'https://www-horizontal-northeast-pal.trycloudflare.com';

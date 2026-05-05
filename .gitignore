@@ -30,3 +30,22 @@ server.log
 # OS
 .DS_Store
 Thumbs.db
+
+# Binary assets and build outputs (text-only repo policy)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.zip
+*.tar
+*.gz
+*.exe
+*.bin
+*.dll
+dist/
+build/

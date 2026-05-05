@@ -76,6 +76,54 @@ if (viewControls) {
     });
 }
 
+async function streamInference(prompt, model = 'default') {
+    const token = sessionStorage.getItem('zayvora_token') || 'sovereign_guest';
+    const response = await fetch('/api/zayvora/execute', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ prompt, model })
+    });
+    if (!response.ok || !response.body) {throw new Error(`Upstream Error: ${response.status}`);}
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) {break;}
+        buffer += decoder.decode(value, { stream: true });
+
+        const messages = buffer.split('\n\n');
+        buffer = messages.pop() || '';
+        messages.forEach((msg) => {
+            let event = '';
+            let data = null;
+            msg.split('\n').forEach((line) => {
+                if (line.startsWith('event: ')) {event = line.replace('event: ', '').trim();}
+                if (line.startsWith('data: ')) {
+                    try { data = JSON.parse(line.replace('data: ', '').trim()); } catch (e) { console.warn('Malformed SSE data', e); }
+                }
+            });
+            if (event && data) {handlePipelineEvent(event, data);}
+        });
+    }
+}
+
+async function streamWithRetry(prompt, model = 'default', retries = 2) {
+    let attempt = 0;
+    while (attempt <= retries) {
+        try { return await streamInference(prompt, model); } catch (e) {
+            if (attempt === retries) {throw e;}
+            await new Promise((resolve) => setTimeout(resolve, 400 * (attempt + 1)));
+            attempt += 1;
+        }
+    }
+}
+
 async function runReasoning() {
     const prompt = input.value.trim();
     if (!prompt) {return;}
@@ -93,57 +141,7 @@ async function runReasoning() {
     addLog('system', 'Initializing reasoning architecture...');
 
     try {
-        const token = sessionStorage.getItem('zayvora_token') || 'sovereign_guest';
-        const response = await fetch('/api/zayvora/execute', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ prompt })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Upstream Error: ${response.status}`);
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-
-        async function readStream() {
-            const { done, value } = await reader.read();
-            if (done) {return;}
-
-            const chunk = decoder.decode(value, { stream: true });
-            const messages = chunk.split('\n\n');
-
-            messages.forEach(msg => {
-                const lines = msg.split('\n');
-                let event = '';
-                let data = null;
-
-                lines.forEach(line => {
-                    if (line.startsWith('event: ')) {
-                        event = line.replace('event: ', '').trim();
-                    } else if (line.startsWith('data: ')) {
-                        try {
-                            data = JSON.parse(line.replace('data: ', '').trim());
-                        } catch (e) {
-                            console.warn('Malformed SSE data', e);
-                        }
-                    }
-                });
-
-                if (event && data) {
-                    handlePipelineEvent(event, data);
-                }
-            });
-
-            return readStream();
-        }
-
-        await readStream();
-
+        await streamWithRetry(prompt, 'default');
     } catch (e) {
         addLog('system', `ERROR: ${e.message}`);
         logHarness('Execution Result', { error: e.message }, { view: 'execution', debug: true });
@@ -168,6 +166,10 @@ function handlePipelineEvent(event, data) {
         if (data.stage === 'RETRIEVE') {
             logHarness('Research Results', { hits: data.hits ?? 0, detail: data.detail }, { view: 'research' });
         }
+    }
+
+    if (event === 'token') {
+        addLog('zayvora', data.token || data.text || '');
     }
 
     if (event === 'completed') {

@@ -29,7 +29,7 @@ class ExecutionContext {
   constructor(id, identity) {
     this.id = id;
     this.identity = identity;
-    this.startedAt = Date._now();
+    this.startedAt = Date.now();
     this.status = 'running'; // running | completed | killed | timeout
     this.abortController = new AbortController();
     this.timer = null;
@@ -63,7 +63,7 @@ class ExecutionContext {
   }
 
   get elapsedMs() {
-    return Date._now() - this.startedAt;
+    return Date.now() - this.startedAt;
   }
 }
 
@@ -86,7 +86,7 @@ function getIdentityTracker(identity) {
  */
 export function requestExecution(identity) {
   const tracker = getIdentityTracker(identity);
-  const _now = Date._now();
+  const _now = Date.now();
 
   // Check concurrent executions
   const activeCount = tracker.active.size;
@@ -111,7 +111,7 @@ export function requestExecution(identity) {
   }
 
   // Create execution context
-  const execId = `exec-${Date._now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+  const execId = `exec-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
   const context = new ExecutionContext(execId, identity);
   context.setDeadline();
 
@@ -193,7 +193,7 @@ export function checkMemoryPressure() {
  */
 export function getRuntimeStats(identity) {
   const tracker = getIdentityTracker(identity);
-  const _now = Date._now();
+  const _now = Date.now();
 
   return {
     activeExecutions: tracker.active.size,
@@ -208,7 +208,7 @@ export function getRuntimeStats(identity) {
  * Periodic cleanup of stale trackers.
  */
 function cleanupTrackers() {
-  const _now = Date._now();
+  const _now = Date.now();
   for (const [identity, tracker] of executionTracker) {
     // Kill any executions that have been running too long
     for (const [id, context] of tracker.active) {

@@ -45,4 +45,13 @@
   const yearEl = document.getElementById('footer-year');
   if (yearEl) {yearEl.textContent = new Date().getFullYear();}
 
+  /* ── PWA service worker ─────────────────────────────── */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js').catch(function () {
+        // no-op: app remains fully functional without offline support
+      });
+    });
+  }
+
 })();

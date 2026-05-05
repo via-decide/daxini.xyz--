@@ -44,6 +44,8 @@
             <div class="workspace-tabs" role="tablist" aria-label="Workspace panels">
                 <button id="tab-mission" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="mission-panel">Mission Control</button>
                 <button id="tab-repo" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="repo-panel">Repository Intelligence</button>
+                <button id="tab-chat" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="chat-panel">Chat UI</button>
+                <button id="tab-settings" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="settings-panel">Settings</button>
             </div>
 
             <section id="mission-panel" role="tabpanel" aria-labelledby="tab-mission">
@@ -81,6 +83,28 @@
                 <div id="repo-status" class="task-progress" aria-live="polite">Paste a GitHub repository URL to begin.</div>
                 <div id="repo-summary" class="result-output">Repository Evolution summary will appear here.</div>
                 <div id="commit-graph" class="result-output"></div>
+            </section>
+
+            <section id="chat-panel" class="repo-panel" role="tabpanel" aria-labelledby="tab-chat" hidden>
+                <h3>Chat UI</h3>
+                <div id="chat-messages" class="result-output" style="min-height:180px;max-height:260px;overflow:auto;"></div>
+                <div class="repo-input-row">
+                    <input id="chat-input" type="text" placeholder="Type a message..." aria-label="Chat input">
+                    <button id="chat-send" type="button">Send</button>
+                </div>
+            </section>
+
+            <section id="settings-panel" class="repo-panel" role="tabpanel" aria-labelledby="tab-settings" hidden>
+                <h3>Settings</h3>
+                <div class="repo-input-row">
+                    <input id="chat-username" type="text" placeholder="Display name" aria-label="Display name">
+                    <button id="settings-save" type="button">Save config</button>
+                </div>
+                <div class="launcher-grid code-actions">
+                    <button id="settings-export" class="launcher-action" type="button">Export config</button>
+                    <button id="settings-clear" class="launcher-action" type="button">Clear chat</button>
+                </div>
+                <div id="settings-status" class="task-progress">Settings not saved yet.</div>
             </section>
 
             <section class="live-log mobile-log" aria-label="Live execution log on mobile">
