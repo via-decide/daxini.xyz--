@@ -106,6 +106,10 @@ export function escapeHTML(input) {
     .replace(/\//g, '&#x2F;');
 }
 
+// ── Export Aliases (Compatibility) ────────────────────────
+export const _sanitizeHTML = sanitizeHTML;
+export const _escapeHTML = escapeHTML;
+
 // ── JSON Validation ────────────────────────────────────────
 
 /**
