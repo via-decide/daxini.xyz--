@@ -719,5 +719,127 @@
             setTimeout(() => t.classList.remove('show'), 2400);
         }
     </script>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daxini Join</title>
+  <style>
+    :root { --bg:#0C0C0C; --fg:#f2f2f2; --muted:#aaa; --accent:#FF671F; --danger:#ff4d4f; --card:#161616; --line:#333; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui, Arial, sans-serif; background:var(--bg); color:var(--fg); }
+    .screen { display:none; min-height:100vh; padding:18px 16px 74px; }
+    .screen.active { display:block; }
+    .entry { display:grid; grid-template-columns:1fr 1fr; gap:12px; height:calc(100vh - 70px); padding:12px; }
+    .entry-card { background:var(--card); border:2px solid var(--line); border-radius:18px; display:flex; align-items:center; justify-content:center; text-align:center; padding:18px; cursor:pointer; }
+    .entry-card h2 { margin:0 0 8px; font-size:clamp(1rem,3.6vw,1.5rem); }
+    .entry-card p { margin:0; color:var(--muted); font-size:.94rem; }
+    .entry-card:hover, .entry-card:focus { border-color:var(--accent); }
+    .progress-wrap { height:4px; background:#1f1f1f; border-radius:99px; margin-bottom:14px; overflow:hidden; }
+    .progress { height:100%; background:var(--accent); width:0; transition:width .2s ease; }
+    .row { margin-bottom:12px; }
+    label { display:block; font-weight:700; margin-bottom:6px; }
+    input, textarea { width:100%; background:#121212; color:#fff; border:2px solid var(--line); border-radius:12px; padding:11px; font-size:1rem; }
+    input.invalid, textarea.invalid { border-color:var(--danger); }
+    .back { background:none; color:#fff; border:none; font-weight:900; margin:0 0 12px; padding:0; cursor:pointer; }
+    .actions { margin-top:16px; }
+    button.cta { width:100%; border:none; border-radius:14px; font-weight:900; text-transform:uppercase; padding:13px 12px; cursor:pointer; background:var(--accent); color:#000; }
+    .pill-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .pill { border:2px solid var(--line); border-radius:999px; padding:10px; text-align:center; font-weight:800; cursor:pointer; }
+    .pill.selected { border-color:var(--accent); background:var(--accent); color:#000; }
+    .switch-row { display:flex; align-items:center; justify-content:space-between; gap:12px; background:#141414; border:2px solid var(--line); border-radius:12px; padding:10px 12px; }
+    .success { display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; min-height:calc(100vh - 120px); }
+    .check { width:96px; height:96px; border-radius:50%; background:var(--accent); color:#000; display:flex; align-items:center; justify-content:center; font-size:3rem; font-weight:900; }
+    .small { color:var(--muted); font-size:.9rem; }
+    .footer, .entry-footer { position:fixed; left:0; right:0; bottom:0; padding:10px 14px; text-align:center; color:var(--muted); font-size:.85rem; background:linear-gradient(to top, rgba(12,12,12,.95), rgba(12,12,12,0)); }
+    .toast { position:fixed; left:50%; bottom:70px; transform:translateX(-50%); background:#1e1e1e; border:1px solid #393939; border-radius:12px; padding:10px 14px; opacity:0; pointer-events:none; transition:opacity .2s ease; }
+    .toast.show { opacity:1; }
+    a.linkbtn { display:inline-block; margin-top:12px; text-decoration:none; color:#000; background:var(--accent); padding:11px 14px; border-radius:14px; font-weight:900; text-transform:uppercase; }
+  </style>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <section id="screen0" class="screen active" style="padding:0; overflow:hidden;">
+    <div class="entry">
+      <button class="entry-card" data-track="buyer"><div><h2>🛒 I'M A BUYER</h2><p>Discover local AI products & services</p></div></button>
+      <button class="entry-card" data-track="seller"><div><h2>🏪 I'M A SELLER</h2><p>List your products or services free</p></div></button>
+    </div>
+    <div class="entry-footer">Part of the Daxini · Aporaksha sovereign stack<br/>daxini.xyz · aporaksha.com</div>
+  </section>
+
+  <section id="track" class="screen"><div class="progress-wrap"><div id="progress" class="progress"></div></div><button class="back" id="backBtn">← BACK</button><div id="stage"></div><div class="footer">daxini.xyz · aporaksha.com · Gandhidham, India</div></section>
+  <section id="success" class="screen"><div class="success" id="successBox"></div><div class="footer">daxini.xyz · aporaksha.com · Gandhidham, India</div></section>
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const SUPABASE_URL = "https://zdarsygrpqbbcafrqcjt.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkYXJzeWdycHFiYmNhZnJxY2p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5ODczMTUsImV4cCI6MjA4NjU2MzMxNX0.ut97BRi9_UFkeZuG_6Ue4mXdAAmtH6MFFdi2vUgHiW4";
+    const DEVICE_KEY = 'decide_device_id';
+    const buyer = { interests:[], whatsapp_optin:true };
+    const seller = {};
+    let track = null, step = 0;
+
+    const device_id = localStorage.getItem(DEVICE_KEY) || crypto.randomUUID();
+    localStorage.setItem(DEVICE_KEY, device_id);
+
+    function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2400); }
+    async function apiPost(fnName,payload,fallbackKey){
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':`Bearer ${SUPABASE_ANON_KEY}`},body:JSON.stringify(payload)});
+        if (!res.ok) throw new Error('non-2xx');
+        return true;
+      } catch (e) {
+        const list = JSON.parse(localStorage.getItem(fallbackKey) || '[]'); list.push(payload); localStorage.setItem(fallbackKey, JSON.stringify(list));
+        return false;
+      }
+    }
+    function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    function valid(el,ok){ el.classList.toggle('invalid',!ok); return ok; }
+    function buyerSteps(){ return [
+      `<h2>Who are you?</h2><div class='row'><label>Name</label><input id='b_name'></div><div class='row'><label>Phone</label><input id='b_phone' type='tel' placeholder='+91 98765 43210'></div><div class='row'><label>City</label><input id='b_city' placeholder='Gandhidham, Rajkot, Ahmedabad...'></div><div class='actions'><button class='cta' onclick='next()'>NEXT →</button></div>`,
+      `<h2>What do you want to discover?</h2><div class='pill-grid'>${['Electronics','Food','Groceries','Fashion','Services','Books','Accessories','Medicines'].map(v=>`<button class='pill ${buyer.interests.includes(v)?'selected':''}' onclick='pickMulti(event,"${v}")'>${v}</button>`).join('')}</div><div class='actions'><button class='cta' onclick='next()'>NEXT →</button></div>`,
+      `<h2>Stay in the loop</h2><div class='row'><label>For early access updates</label><input id='b_email' type='email'></div><div class='switch-row'><span>Notify me when Decide launches in my city</span><input id='b_wa' type='checkbox' ${buyer.whatsapp_optin?'checked':''}></div><div class='actions'><button class='cta' onclick='submitBuyer()'>JOIN AS BUYER ✓</button></div>`
+    ]; }
+    function sellerSteps(){ return [
+      `<h2>Your business</h2><div class='row'><label>Business Name</label><input id='s_business'></div><div class='row'><label>Owner Name</label><input id='s_owner'></div><div class='row'><label>City</label><input id='s_city'></div><div class='actions'><button class='cta' onclick='next()'>NEXT →</button></div>`,
+      `<h2>Category</h2><div class='pill-grid'>${['🍽️ Food','📱 Electronics','👕 Fashion','🛒 Groceries','🧰 Services','📦 Other'].map(v=>`<button class='pill ${seller.category===v?'selected':''}' onclick='pickOne(event,"${v}")'>${v}</button>`).join('')}</div><div class='actions'><button class='cta' onclick='next()'>NEXT →</button></div>`,
+      `<h2>Contact & compliance</h2><div class='row'><label>WhatsApp Number</label><input id='s_whatsapp' type='tel'></div><div class='row'><label>UPI ID (optional)</label><input id='s_upi'></div><div class='row'><label>GSTIN (optional)</label><input id='s_gstin' placeholder='Leave blank if not registered'></div><div class='actions'><button class='cta' onclick='next()'>NEXT →</button></div>`,
+      `<h2>Your pitch</h2><div class='row'><label>What do you want Decide to build for your business?</label><textarea id='s_pitch' rows='4' placeholder='e.g. I want a direct order link for my customers...'></textarea></div><div class='actions'><button class='cta' onclick='submitSeller()'>JOIN AS SELLER ✓</button></div>`
+    ]; }
+    function render(){ show('track'); const steps = track==='buyer'?buyerSteps():sellerSteps(); document.getElementById('stage').innerHTML = steps[step]; document.getElementById('progress').style.width = `${((step+1)/steps.length)*100}%`; }
+    function pickMulti(e,v){ e.preventDefault(); buyer.interests = buyer.interests.includes(v)?buyer.interests.filter(x=>x!==v):[...buyer.interests,v]; render(); }
+    function pickOne(e,v){ e.preventDefault(); seller.category = v; render(); }
+    function next(){ if(!validateStep()) return; step++; render(); }
+    function validateStep(){
+      if(track==='buyer' && step===0){ const n=b_name.value.trim(),p=b_phone.value.trim(),c=b_city.value.trim(); buyer.name=n; buyer.phone=p; buyer.city=c; return valid(b_name,!!n)&valid(b_phone,/^[+\d\s-]{10,15}$/.test(p))&valid(b_city,!!c); }
+      if(track==='buyer' && step===1){ if(!buyer.interests.length){ toast('Select at least one interest.'); return false; } }
+      if(track==='seller' && step===0){ seller.business_name=s_business.value.trim(); seller.owner_name=s_owner.value.trim(); seller.city=s_city.value.trim(); return valid(s_business,!!seller.business_name)&valid(s_owner,!!seller.owner_name)&valid(s_city,!!seller.city); }
+      if(track==='seller' && step===1){ if(!seller.category){ toast('Select one category.'); return false; } }
+      if(track==='seller' && step===2){ seller.whatsapp=s_whatsapp.value.trim(); seller.upi_id=s_upi.value.trim(); seller.gstin=s_gstin.value.trim(); return valid(s_whatsapp,/^[+\d\s-]{10,15}$/.test(seller.whatsapp)); }
+      return true;
+    }
+    function back(){ if(step>0){ step--; render(); } }
+    async function submitBuyer(){
+      buyer.email = (b_email.value||'').trim(); buyer.whatsapp_optin = !!b_wa.checked;
+      const payload = { name:buyer.name, phone:buyer.phone, city:buyer.city, interests:buyer.interests, email:buyer.email||undefined, whatsapp_optin:buyer.whatsapp_optin, source:'daxini.xyz/join', device_id };
+      await apiPost('decide-buyer-join', payload, 'buyer_registrations'); showSuccess('buyer', buyer.city);
+    }
+    async function submitSeller(){
+      seller.pitch = (s_pitch.value||'').trim();
+      const payload = { business_name:seller.business_name, owner_name:seller.owner_name, city:seller.city, category:seller.category, whatsapp:seller.whatsapp, upi_id:seller.upi_id||undefined, gstin:seller.gstin||undefined, pitch:seller.pitch||undefined, source:'daxini.xyz/join', device_id };
+      await apiPost('seller-interest', payload, 'seller_registrations'); showSuccess('seller', seller.city);
+    }
+    function showSuccess(kind,city){
+      const id = 'REG-' + Math.random().toString(36).slice(2,8).toUpperCase(); const ts = new Date().toLocaleString();
+      document.getElementById('successBox').innerHTML = kind==='buyer'
+      ? `<div class='check'>✓</div><h2>You're on the list.</h2><p>We'll notify you the moment Decide goes live in ${city}.</p><a class='linkbtn' href='https://viadecide.com' target='_blank' rel='noopener'>EXPLORE DEMO →</a><p class='small'>Confirmation ID: ${id}<br/>Timestamp: ${ts}</p><button class='cta' onclick='resetAll()'>← REGISTER ANOTHER</button>`
+      : `<div class='check'>✓</div><h2>Your interest is registered.</h2><p>Our team will reach out on WhatsApp within 48 hours.</p><a class='linkbtn' href='https://viadecide.com#seller' target='_blank' rel='noopener'>VIEW SELLER DEMO →</a><p class='small'>Confirmation ID: ${id}<br/>Timestamp: ${ts}</p><button class='cta' onclick='resetAll()'>← REGISTER ANOTHER</button>`;
+      show('success');
+    }
+    function resetAll(){ track=null; step=0; Object.keys(buyer).forEach(k=>delete buyer[k]); buyer.interests=[]; buyer.whatsapp_optin=true; Object.keys(seller).forEach(k=>delete seller[k]); show('screen0'); }
+    document.querySelectorAll('[data-track]').forEach(btn=>btn.onclick=()=>{ track=btn.dataset.track; step=0; render(); });
+    document.getElementById('backBtn').onclick = back;
+  </script>
 </body>
 </html>

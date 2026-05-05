@@ -21,7 +21,9 @@ const templates = [
 
 let selectedMode = 'standard';
 let lastSuccessfulAction = 'No successful action yet.';
-const reasoningStages = ['DECOMPOSE', 'RETRIEVE', 'SYNTHESIZE', 'CALCULATE', 'VERIFY', 'REVISE'];
+const chatMessages = [];
+const reasoningStages = ['INPUT', 'PARSE', 'ANALYZE', 'VERIFY', 'SYNTHESIZE', 'OUTPUT'];
+let reasoningLoopTimer;
 
 function buildTemplates() {
   const container = document.getElementById('task-templates');
@@ -54,17 +56,18 @@ function setResult(message) {
   if (result) {result.textContent = message;}
 }
 
-function updateReasoningPanel(activeStep = '') {
+function updateReasoningPanel(activeStep = '', withIndex = false) {
   const container = document.getElementById('reasoning-stages');
   if (!container) {return;}
   container.innerHTML = '';
   reasoningStages.forEach((stage) => {
     const node = document.createElement('div');
     node.className = `reasoning-stage ${stage.toLowerCase() === activeStep.toLowerCase() ? 'active' : ''}`;
-    node.textContent = stage;
+    node.textContent = withIndex && stage.toLowerCase() === activeStep.toLowerCase() ? `${stage} • Stage ${reasoningStages.indexOf(stage) + 1}/6` : stage;
     container.appendChild(node);
   });
 }
+
 
 function getLocalItems(keys = []) {
   for (const key of keys) {
@@ -288,22 +291,37 @@ function setupCommandPalette() {
 function setupWorkspaceTabs() {
   const missionTab = document.getElementById('tab-mission');
   const repoTab = document.getElementById('tab-repo');
+  const chatTab = document.getElementById('tab-chat');
+  const settingsTab = document.getElementById('tab-settings');
   const missionPanel = document.getElementById('mission-panel');
   const repoPanel = document.getElementById('repo-panel');
-  if (!missionTab || !repoTab || !missionPanel || !repoPanel) {return;}
+  const chatPanel = document.getElementById('chat-panel');
+  const settingsPanel = document.getElementById('settings-panel');
+  if (!missionTab || !repoTab || !chatTab || !settingsTab || !missionPanel || !repoPanel || !chatPanel || !settingsPanel) {return;}
 
   const activate = (key) => {
-    const missionActive = key === 'mission';
-    missionTab.classList.toggle('active', missionActive);
-    repoTab.classList.toggle('active', !missionActive);
-    missionTab.setAttribute('aria-selected', missionActive ? 'true' : 'false');
-    repoTab.setAttribute('aria-selected', missionActive ? 'false' : 'true');
-    missionPanel.hidden = !missionActive;
-    repoPanel.hidden = missionActive;
+    const tabs = { mission: missionTab, repo: repoTab, chat: chatTab, settings: settingsTab };
+    const panels = { mission: missionPanel, repo: repoPanel, chat: chatPanel, settings: settingsPanel };
+    Object.entries(tabs).forEach(([name, tab]) => { tab.classList.toggle('active', name === key); tab.setAttribute('aria-selected', name === key ? 'true' : 'false'); });
+    Object.entries(panels).forEach(([name, panel]) => { panel.hidden = name !== key; });
   };
 
   missionTab.addEventListener('click', () => activate('mission'));
   repoTab.addEventListener('click', () => activate('repo'));
+  chatTab.addEventListener('click', () => activate('chat'));
+  settingsTab.addEventListener('click', () => activate('settings'));
+}
+
+function setupChatAndSettings() {
+  const render = () => { const box = document.getElementById('chat-messages'); if (box) { box.innerHTML = chatMessages.map((m) => `<p><strong>${m.user}:</strong> ${m.text}</p>`).join(''); box.scrollTop = box.scrollHeight; } };
+  const send = document.getElementById('chat-send'); const input = document.getElementById('chat-input');
+  if (send && input) { send.addEventListener('click', () => { const text = input.value.trim(); if (!text) {return;} const user = localStorage.getItem('chat_username') || 'You'; chatMessages.push({ user, text }); localStorage.setItem('chat_messages', JSON.stringify(chatMessages)); input.value = ''; render(); }); }
+  const saved = JSON.parse(localStorage.getItem('chat_messages') || '[]'); if (Array.isArray(saved)) { chatMessages.push(...saved); render(); }
+  const username = document.getElementById('chat-username'); const save = document.getElementById('settings-save'); const status = document.getElementById('settings-status');
+  if (username) { username.value = localStorage.getItem('chat_username') || ''; }
+  if (save && username && status) { save.addEventListener('click', () => { localStorage.setItem('chat_username', username.value.trim() || 'You'); status.textContent = 'Config saved.'; }); }
+  document.getElementById('settings-export')?.addEventListener('click', () => { const blob = new Blob([JSON.stringify({ username: localStorage.getItem('chat_username') || 'You', messages: chatMessages }, null, 2)], { type: 'application/json' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'daxini-chat-settings.json'; link.click(); URL.revokeObjectURL(link.href); });
+  document.getElementById('settings-clear')?.addEventListener('click', () => { chatMessages.length = 0; localStorage.removeItem('chat_messages'); render(); if (status) {status.textContent = 'Chat cleared.';} });
 }
 
 function setupMobileInteractions() {
@@ -365,12 +383,15 @@ function initWorkspace() {
   initRepoPanel({ onLog: addLog });
   initCodeIntelligence().then(() => addLog('[CODEBASE] Intelligence ready')).catch((error) => addLog(`[CODEBASE] ${error.message}`));
   setupWorkspaceTabs();
+  setupChatAndSettings();
   buildTemplates();
   buildWorkspaceLauncher();
   setupCommandPalette();
   setupMobileInteractions();
   setupStatusAndCapabilityRefresh();
-  updateReasoningPanel();
+  try { clearInterval(reasoningLoopTimer); let currentIndex = 0; updateReasoningPanel(reasoningStages[0], true);
+    reasoningLoopTimer = setInterval(() => { currentIndex = (currentIndex + 1) % reasoningStages.length; updateReasoningPanel(reasoningStages[currentIndex], true); }, 1300);
+  } catch (error) { const container = document.getElementById('reasoning-stages'); if (container) {container.textContent = 'System Ready';} }
   buildCapabilityCards();
   buildStatusCards();
   applyActionFromRoute();

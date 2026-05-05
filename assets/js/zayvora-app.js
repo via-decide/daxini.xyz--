@@ -45,6 +45,7 @@
   // ── Init ────────────────────────────────────────────────
   function init() {
     renderStages();
+    restoreRecentChatMessages();
     renderRecentCommands();
     renderTasks();
     bindEvents();
@@ -140,7 +141,8 @@
     textarea.value = '';
     updateCharCount();
 
-    // Run sovereign pipeline
+    // Save local user message then run sovereign pipeline
+    persistLocalMessage('user', text, { streamStatus: 'complete' });
     runPipeline(text);
   }
 
@@ -235,6 +237,7 @@
         <div class="zv-code-block" id="zv-code-content">${highlighted}</div>
       </div>
 
+      ${imageSrc ? `<div class="zv-output-section"><img src="${escapeHtml(imageSrc)}" alt="Generated image" style="max-width:100%;border-radius:12px;margin-top:10px;"></div>` : ''}
       <div class="zv-pr-card">
         <div class="zv-pr-header">
           <span class="zv-pr-icon">🔀</span>
@@ -397,10 +400,11 @@
       let fullCode = "";
       
       // Call Bridge Helper
+      const outputMode = /(^|\s)(image|generate image|img)(\s|$)/i.test(description) ? 'IMAGE' : 'TEXT';
       const result = await dispatchViaBridge({
         taskId: task.id,
         prompt: description,
-        options: { model: modelVariant, perfMode }
+        options: { model: modelVariant, perfMode, mode: outputMode }
       }, (chunk) => {
         // onProgress callback
         fullCode += chunk;
@@ -456,7 +460,7 @@
       task.outputCode = fullCode;
       
       finishTask(task, 'success');
-      showRealOutput(task, fullCode);
+      showRealOutput(task, fullCode, result.type === 'IMAGE' ? (result.result || result.url || '') : '');
 
     } catch (err) {
       console.error('[Pipeline] Execution failed:', err);
@@ -475,6 +479,10 @@
    * Bridge Helper (C-stream)
    * Dispatches 'zayvora-execute' and listens for 'zayvora-progress' / 'zayvora-result'
    */
+  function runZayvoraPipeline(input, mode = 'TEXT', taskId = Date.now().toString(36)) {
+    return dispatchViaBridge({ taskId, prompt: input, options: { mode } }, () => {});
+  }
+
   function dispatchViaBridge(taskData, onProgress) {
     return new Promise((resolve, reject) => {
       const { taskId } = taskData;
@@ -517,6 +525,7 @@
   }
 
   function finishTask(task, status) {
+    persistLocalMessage('assistant', status === 'success' ? `Task completed: ${task.description}` : `Task failed: ${task.description}`, { streamStatus: status === 'success' ? 'complete' : 'failed' });
     state.executionState = status === 'success' ? 'done' : 'idle';
     updateTask(task.id, { status, completedAt: new Date().toISOString(), lines: task.lines });
     updateExecStatus(status === 'success' ? 'Complete' : 'Failed');
@@ -525,7 +534,7 @@
     }
   }
 
-  function showRealOutput(task, code) {
+  function showRealOutput(task, code, imageSrc = '') {
     const container = $('#zv-output');
     if (!container) {return;}
 
@@ -554,6 +563,7 @@
         </div>
         <div id="zv-code-content">\${_htmlOutput}</div>
       </div>
+      ${imageSrc ? `<div class="zv-output-section"><img src="${escapeHtml(imageSrc)}" alt="Generated image" style="max-width:100%;border-radius:12px;margin-top:10px;"></div>` : ''}
       <div class="zv-pr-card">
         <div class="zv-pr-header">
           <span class="zv-pr-icon">🔒</span>
@@ -597,6 +607,35 @@
   function updateExecStatus(text) {
     const el = $('.zv-exec-status');
     if (el) {el.textContent = text;}
+  }
+
+
+  function getCurrentUserId() {
+    const auth = JSON.parse(sessionStorage.getItem('zv_passport') || '{}');
+    return auth.uid || 'anonymous';
+  }
+
+  function persistLocalMessage(role, content, metadata = {}) {
+    if (typeof window.saveMessageLocal !== 'function') {return;}
+    window.saveMessageLocal({
+      userId: getCurrentUserId(),
+      role,
+      content,
+      metadata: {
+        tokensUsed: metadata.tokensUsed || 0,
+        inferenceTimeMs: metadata.inferenceTimeMs || 0,
+        streamStatus: metadata.streamStatus || 'pending'
+      }
+    }).catch(() => {});
+  }
+
+  function restoreRecentChatMessages() {
+    if (typeof window.restoreChat !== 'function') {return;}
+    window.restoreChat(getCurrentUserId()).then((messages) => {
+      const userMessages = messages.filter((m) => m.role === 'user');
+      state.recentCommands = userMessages.slice(-8).reverse().map((m) => m.content);
+      renderRecentCommands();
+    }).catch(() => {});
   }
 
   // ── Mobile Navigation ───────────────────────────────────
