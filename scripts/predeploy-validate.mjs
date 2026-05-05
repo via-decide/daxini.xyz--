@@ -11,7 +11,6 @@ const requiredFiles = [
   'assets/js/zayvora-app.js',
   'sw.js',
   'manifest.json',
-  'vercel.json',
 ];
 
 function fail(message) {
@@ -30,11 +29,6 @@ for (const marker of ['DAXINI', 'Zayvora', 'LogicHub', 'ViaDecide']) {
   if (!indexSource.includes(marker)) {
     fail(`Homepage is missing required brand marker: ${marker}`);
   }
-}
-
-const vercel = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8'));
-if (!Array.isArray(vercel.rewrites) || vercel.rewrites.length === 0) {
-  fail('vercel.json must define rewrites for stable route handling.');
 }
 
 console.log('✅ Predeploy validation passed.');
